@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "RyokoAI - AI Travel Agent",
     description: "Find the best travel deals with AI",
-    url: "https://ryokoai.com",
+    url: "https://ryokoai.vercel.app",
     siteName: "RyokoAI",
     type: "website",
   },

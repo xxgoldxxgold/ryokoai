@@ -40,3 +40,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env.local\n.env\nnode_modules/\n.next/\ndata/\nlogs/
+
+.vercel
