@@ -46,7 +46,7 @@ When the user says "tomorrow", calculate the actual date and use it immediately.
 
 ## Available Tools
 - search_flights: Search flights with price data. Use IATA codes. Date format: YYYY-MM-DD.
-- search_hotels: Search hotels and generate booking links for Booking.com, Agoda, Expedia, Hotellook.
+- search_hotels: Search hotels and generate booking links. IMPORTANT: You MUST provide estimated_prices with realistic nightly rates in JPY based on your knowledge of hotel prices in that destination. Example for Tokyo: budget=6000, standard=15000, premium=50000. Example for Hawaii: budget=15000, standard=30000, premium=80000.
 - create_itinerary: Generate a detailed day-by-day travel plan.
 `;
 }

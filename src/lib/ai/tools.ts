@@ -1,7 +1,7 @@
 export const AI_TOOLS = [
   {
     name: "search_hotels",
-    description: "Search hotels with real-time price comparison across multiple OTAs (Agoda, Booking.com, Expedia, etc.). Use this when the user wants to find accommodation. Returns prices from multiple booking sites so the user can compare and book the cheapest option.",
+    description: "Search hotels and generate booking links for multiple OTAs. IMPORTANT: You MUST provide estimated_prices with realistic nightly rate estimates in JPY for each price tier (budget, standard, premium). Base your estimates on your knowledge of hotel prices in that destination.",
     input_schema: {
       type: "object" as const,
       properties: {
@@ -21,20 +21,18 @@ export const AI_TOOLS = [
           type: "number",
           description: "Number of adult guests"
         },
-        children: {
-          type: "number",
-          description: "Number of children (default 0)"
-        },
-        budget_max_per_night: {
-          type: "number",
-          description: "Maximum budget per night in USD (optional)"
-        },
-        star_rating_min: {
-          type: "number",
-          description: "Minimum star rating 1-5 (optional)"
+        estimated_prices: {
+          type: "object",
+          description: "REQUIRED: Your estimated nightly hotel rates in JPY for this destination. Provide realistic estimates based on your knowledge.",
+          properties: {
+            budget: { type: "number", description: "Budget hotel nightly rate in JPY (e.g., 5000-8000 for Tokyo)" },
+            standard: { type: "number", description: "Standard hotel nightly rate in JPY (e.g., 10000-20000 for Tokyo)" },
+            premium: { type: "number", description: "Premium/luxury hotel nightly rate in JPY (e.g., 30000-80000 for Tokyo)" }
+          },
+          required: ["budget", "standard", "premium"]
         }
       },
-      required: ["destination", "check_in", "check_out", "adults"]
+      required: ["destination", "check_in", "check_out", "adults", "estimated_prices"]
     }
   },
   {

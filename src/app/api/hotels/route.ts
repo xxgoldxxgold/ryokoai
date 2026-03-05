@@ -3,7 +3,7 @@ import { buildHotelSearchUrl } from '@/lib/travelpayouts/hotels';
 
 export async function POST(req: NextRequest) {
   try {
-    const { destination, check_in, check_out, adults = 1 } = await req.json();
+    const { destination, check_in, check_out, adults = 1, estimated_prices } = await req.json();
 
     if (!destination || !check_in || !check_out) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
       check_out,
       adults,
       booking_links: links,
+      estimated_prices: estimated_prices || null,
       message: `${destination}のホテルを以下のサイトで比較できます。`,
     });
   } catch (error) {
