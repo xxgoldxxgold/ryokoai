@@ -146,7 +146,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
           }
         })
         .catch(() => {});
-    }, 5000);
+    }, 3000);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
