@@ -169,6 +169,9 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
       .finally(() => setXoteloLoading(false));
   }, [hotelKey, checkin, checkout, adults]);
 
+  // Debug logging
+  console.log('[UnifiedPriceRanking] geoPhase:', geoPhase, 'geoPrices:', geoPrices.length, 'xoteloRates:', xoteloRates.length, 'xoteloLoading:', xoteloLoading, 'hotelName:', hotelName, 'hotelKey:', hotelKey);
+
   if (geoPhase === 'idle' && !xoteloLoading && xoteloRates.length === 0) return null;
 
   // Build unified list
