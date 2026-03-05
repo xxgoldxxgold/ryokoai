@@ -85,7 +85,7 @@ export default function ChatSessionPage() {
                 metadata = parsed.data || {};
               } else if (parsed.type === 'tool_result') {
                 if (parsed.tool === 'search_hotels') {
-                  metadata.hotels = parsed.data;
+                  metadata.hotel_links = parsed.data;
                 } else if (parsed.tool === 'search_flights') {
                   metadata.flights = parsed.data;
                 }

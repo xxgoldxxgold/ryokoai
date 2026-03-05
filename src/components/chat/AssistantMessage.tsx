@@ -1,5 +1,6 @@
 import Avatar from '@/components/ui/Avatar';
 import HotelResults from './HotelResults';
+import HotelLinks from './HotelLinks';
 import FlightResults from './FlightResults';
 import ItineraryView from './ItineraryView';
 import type { ChatMessage } from '@/types/chat';
@@ -9,6 +10,11 @@ interface AssistantMessageProps {
 }
 
 export default function AssistantMessage({ message }: AssistantMessageProps) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const meta = message.metadata as any;
+  const hotelLinks = meta?.hotel_links;
+  const hasHotelArray = Array.isArray(meta?.hotels) && meta.hotels.length > 0;
+
   return (
     <div className="flex gap-3">
       <Avatar isAI className="shrink-0 mt-1" />
@@ -17,16 +23,20 @@ export default function AssistantMessage({ message }: AssistantMessageProps) {
           {message.content}
         </div>
 
-        {message.metadata?.hotels && message.metadata.hotels.length > 0 && (
-          <HotelResults hotels={message.metadata.hotels} />
+        {hotelLinks && (
+          <HotelLinks data={hotelLinks} />
         )}
 
-        {message.metadata?.flights && message.metadata.flights.length > 0 && (
-          <FlightResults flights={message.metadata.flights} />
+        {hasHotelArray && (
+          <HotelResults hotels={meta.hotels} />
         )}
 
-        {message.metadata?.itinerary && (
-          <ItineraryView itinerary={message.metadata.itinerary} />
+        {meta?.flights && Array.isArray(meta.flights) && meta.flights.length > 0 && (
+          <FlightResults flights={meta.flights} />
+        )}
+
+        {meta?.itinerary && (
+          <ItineraryView itinerary={meta.itinerary} />
         )}
       </div>
     </div>

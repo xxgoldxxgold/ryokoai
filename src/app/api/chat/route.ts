@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
 
               if (block.name === 'search_hotels') {
                 toolResult = await callHotelSearch(block.input as Record<string, unknown>);
-                metadata.hotels = toolResult;
+                metadata.hotel_links = toolResult;
               } else if (block.name === 'search_flights') {
                 toolResult = await callFlightSearch(block.input as Record<string, unknown>);
                 metadata.flights = toolResult;
