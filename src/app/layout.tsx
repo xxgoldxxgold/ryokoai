@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { DM_Sans, Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 
@@ -33,6 +34,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <Script
+          src="https://emrld.ltd/NTA0NTU1.js?t=504555"
+          strategy="afterInteractive"
+          data-noptimize="1"
+          data-cfasync="false"
+          data-wpfc-render="false"
+        />
+      </head>
       <body
         className={`${dmSans.variable} ${notoSansJP.variable} font-sans antialiased bg-[#0a0a0f] text-[#e8e6e1]`}
       >
