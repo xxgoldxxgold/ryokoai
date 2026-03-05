@@ -45,7 +45,7 @@ export default function ChatInput({ onSend, isLoading }: ChatInputProps) {
         value={text}
         onChange={(e) => { setText(e.target.value); handleInput(); }}
         onKeyDown={handleKeyDown}
-        placeholder="Where do you want to go? ✈️"
+        placeholder="どこに行きたいですか？ ✈️"
         rows={1}
         className="flex-1 bg-transparent text-white text-sm placeholder:text-white/30 resize-none focus:outline-none leading-relaxed max-h-40"
         disabled={isLoading}

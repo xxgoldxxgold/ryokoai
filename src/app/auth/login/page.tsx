@@ -33,7 +33,7 @@ export default function LoginPage() {
         window.location.href = '/chat';
       }
     } catch {
-      setError('Login failed. Please try again.');
+      setError('ログインに失敗しました。もう一度お試しください。');
     } finally {
       setLoading(false);
     }
@@ -45,13 +45,13 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center px-4 pt-16">
         <Card className="w-full max-w-sm p-6 space-y-6">
           <div className="text-center">
-            <h1 className="text-xl font-bold text-gold">Log in to RyokoAI</h1>
-            <p className="text-white/40 text-sm mt-1">Save your travel plans and history</p>
+            <h1 className="text-xl font-bold text-gold">RyokoAIにログイン</h1>
+            <p className="text-white/40 text-sm mt-1">旅行プランと履歴を保存できます</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs text-white/50 mb-1">Email</label>
+              <label className="block text-xs text-white/50 mb-1">メールアドレス</label>
               <Input
                 type="email"
                 value={email}
@@ -61,12 +61,12 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-white/50 mb-1">Password</label>
+              <label className="block text-xs text-white/50 mb-1">パスワード</label>
               <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Your password"
+                placeholder="パスワード"
                 required
               />
             </div>
@@ -74,14 +74,14 @@ export default function LoginPage() {
             {error && <div className="text-red-400 text-xs">{error}</div>}
 
             <Button type="submit" disabled={loading} className="w-full">
-              {loading ? 'Logging in...' : 'Log in'}
+              {loading ? 'ログイン中...' : 'ログイン'}
             </Button>
           </form>
 
           <div className="text-center text-sm text-white/40">
-            Don&apos;t have an account?{' '}
+            アカウントをお持ちでない方は{' '}
             <Link href="/auth/signup" className="text-gold hover:underline">
-              Sign up
+              新規登録
             </Link>
           </div>
         </Card>

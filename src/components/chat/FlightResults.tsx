@@ -44,7 +44,7 @@ export default function FlightResults({ flights }: FlightResultsProps) {
                 </div>
                 <div className="h-px bg-white/10 relative">
                   <div className="absolute left-1/2 -translate-x-1/2 -top-1 text-white/30 text-[10px]">
-                    {flight.outbound.stops === 0 ? 'Direct' : `${flight.outbound.stops} stop${flight.outbound.stops > 1 ? 's' : ''}`}
+                    {flight.outbound.stops === 0 ? '直行便' : `乗継${flight.outbound.stops}回`}
                   </div>
                 </div>
               </div>
@@ -66,7 +66,7 @@ export default function FlightResults({ flights }: FlightResultsProps) {
                   </div>
                   <div className="h-px bg-white/10 relative">
                     <div className="absolute left-1/2 -translate-x-1/2 -top-1 text-white/30 text-[10px]">
-                      {flight.inbound.stops === 0 ? 'Direct' : `${flight.inbound.stops} stop${flight.inbound.stops > 1 ? 's' : ''}`}
+                      {flight.inbound.stops === 0 ? '直行便' : `乗継${flight.inbound.stops}回`}
                     </div>
                   </div>
                 </div>
@@ -91,7 +91,7 @@ export default function FlightResults({ flights }: FlightResultsProps) {
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-white/70">{offer.agency}</span>
-                    {offer.is_cheapest && <Badge variant="success">Best Price!</Badge>}
+                    {offer.is_cheapest && <Badge variant="success">最安値!</Badge>}
                   </div>
                   <div className="flex items-center gap-3">
                     <span className={offer.is_cheapest ? 'text-green-400 font-bold' : 'text-white/60'}>
@@ -99,7 +99,7 @@ export default function FlightResults({ flights }: FlightResultsProps) {
                     </span>
                     <a href={offer.affiliate_url} target="_blank" rel="noopener noreferrer">
                       <Button size="sm" variant={offer.is_cheapest ? 'primary' : 'secondary'}>
-                        Book
+                        予約
                       </Button>
                     </a>
                   </div>
@@ -110,7 +110,7 @@ export default function FlightResults({ flights }: FlightResultsProps) {
 
           {flight.savings.amount > 0 && (
             <div className="text-green-400 text-xs text-center">
-              Save {formatPrice(flight.savings.amount)} ({flight.savings.percentage}%) with {flight.savings.cheapest_agency}
+              {flight.savings.cheapest_agency}で {formatPrice(flight.savings.amount)}（{flight.savings.percentage}%）お得!
             </div>
           )}
         </Card>

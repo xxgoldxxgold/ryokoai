@@ -17,7 +17,7 @@ export default function Sidebar({ sessions = [], currentSessionId }: SidebarProp
           className="flex items-center gap-2 px-4 py-2.5 bg-gold/10 text-gold rounded-xl hover:bg-gold/20 transition-colors text-sm font-medium w-full"
         >
           <Plus size={16} />
-          New Chat
+          新しいチャット
         </Link>
       </div>
 

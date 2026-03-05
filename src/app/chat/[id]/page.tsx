@@ -12,7 +12,7 @@ const WELCOME_MESSAGE: ChatMessage = {
   session_id: '',
   role: 'assistant',
   content:
-    "Hi! I'm RyokoAI, your AI travel agent. I'll help you find the best travel deals by comparing prices across 100+ booking sites.\n\nWhere would you like to go? Tell me about your dream trip!",
+    "こんにちは！RyokoAIです。100以上の予約サイトから最安値を比較して、あなたにぴったりの旅行プランを見つけます。\n\nどこに行きたいですか？ご希望の旅行について教えてください！",
   metadata: {},
   created_at: new Date().toISOString(),
 };
@@ -111,7 +111,7 @@ export default function ChatSessionPage() {
           id: crypto.randomUUID(),
           session_id: sessionId,
           role: 'assistant',
-          content: 'Sorry, something went wrong. Please try again.',
+          content: 'すみません、エラーが発生しました。もう一度お試しください。',
           metadata: {},
           created_at: new Date().toISOString(),
         };

@@ -7,7 +7,7 @@ export default function PlanDetailPage() {
       <Header />
       <main className="flex-1 pt-24 px-4 max-w-4xl mx-auto w-full">
         <Card className="p-8 text-center">
-          <p className="text-white/50">Plan details will appear here.</p>
+          <p className="text-white/50">プランの詳細がここに表示されます。</p>
         </Card>
       </main>
     </div>

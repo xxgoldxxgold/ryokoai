@@ -15,12 +15,12 @@ const notoSansJP = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
-  title: "RyokoAI - AI Travel Agent | Find the Best Deals",
+  title: "RyokoAI - AI旅行代理店 | 最安値を自動比較",
   description:
-    "Compare hotel and flight prices across Agoda, Booking.com, Expedia and 100+ sites. AI-powered travel planning for free.",
+    "Agoda、Booking.com、Expediaなど100以上の予約サイトからホテル・航空券の最安値をAIが自動比較。チャットで簡単に旅行プランを作成。",
   openGraph: {
-    title: "RyokoAI - AI Travel Agent",
-    description: "Find the best travel deals with AI",
+    title: "RyokoAI - AI旅行代理店",
+    description: "AIがホテル・航空券の最安値を自動比較",
     url: "https://ryokoai.vercel.app",
     siteName: "RyokoAI",
     type: "website",
@@ -33,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="ja">
       <head>
         <Script
           src="https://emrld.ltd/NTA0NTU2.js?t=504556"

@@ -84,9 +84,9 @@ export default function HotelResults({ hotels, sessionId }: HotelResultsProps) {
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-white/70">{offer.agency_name}</span>
-                    {offer.is_cheapest && <Badge variant="success">Best Price!</Badge>}
+                    {offer.is_cheapest && <Badge variant="success">最安値!</Badge>}
                     {offer.free_cancellation && (
-                      <span className="text-green-400/60">Free cancellation</span>
+                      <span className="text-green-400/60">無料キャンセル</span>
                     )}
                   </div>
                   <div className="flex items-center gap-3">
@@ -100,7 +100,7 @@ export default function HotelResults({ hotels, sessionId }: HotelResultsProps) {
                       onClick={() => trackClick(offer.agency_name, hotel.name, offer.affiliate_url, offer.total_price, sessionId)}
                     >
                       <Button size="sm" variant={offer.is_cheapest ? 'primary' : 'secondary'}>
-                        Book
+                        予約
                       </Button>
                     </a>
                   </div>
@@ -111,7 +111,7 @@ export default function HotelResults({ hotels, sessionId }: HotelResultsProps) {
 
           {hotel.savings.amount > 0 && (
             <div className="text-green-400 text-xs text-center">
-              Save up to {formatPrice(hotel.savings.amount)} ({hotel.savings.percentage}%) vs {hotel.savings.cheapest_agency !== hotel.offers.find(o => !o.is_cheapest)?.agency_name ? 'other sites' : hotel.savings.cheapest_agency}
+              最大 {formatPrice(hotel.savings.amount)}（{hotel.savings.percentage}%）お得!
             </div>
           )}
         </Card>

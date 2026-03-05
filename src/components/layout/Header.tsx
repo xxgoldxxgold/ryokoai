@@ -17,16 +17,16 @@ export default function Header() {
 
         <nav className="hidden md:flex items-center gap-6">
           <Link href="/chat" className="text-white/70 hover:text-white transition-colors text-sm">
-            Chat
+            チャット
           </Link>
           <Link href="/plans" className="text-white/70 hover:text-white transition-colors text-sm">
-            My Plans
+            マイプラン
           </Link>
           <Link href="/auth/login">
-            <Button variant="secondary" size="sm">Log in</Button>
+            <Button variant="secondary" size="sm">ログイン</Button>
           </Link>
           <Link href="/chat">
-            <Button size="sm">Start Planning</Button>
+            <Button size="sm">旅行を計画する</Button>
           </Link>
         </nav>
 
@@ -42,16 +42,16 @@ export default function Header() {
         <div className="md:hidden bg-[#0a0a0f] border-b border-white/[0.06] px-4 pb-4">
           <nav className="flex flex-col gap-3">
             <Link href="/chat" className="text-white/70 hover:text-white py-2" onClick={() => setMenuOpen(false)}>
-              Chat
+              チャット
             </Link>
             <Link href="/plans" className="text-white/70 hover:text-white py-2" onClick={() => setMenuOpen(false)}>
-              My Plans
+              マイプラン
             </Link>
             <Link href="/auth/login" onClick={() => setMenuOpen(false)}>
-              <Button variant="secondary" size="sm" className="w-full">Log in</Button>
+              <Button variant="secondary" size="sm" className="w-full">ログイン</Button>
             </Link>
             <Link href="/chat" onClick={() => setMenuOpen(false)}>
-              <Button size="sm" className="w-full">Start Planning</Button>
+              <Button size="sm" className="w-full">旅行を計画する</Button>
             </Link>
           </nav>
         </div>

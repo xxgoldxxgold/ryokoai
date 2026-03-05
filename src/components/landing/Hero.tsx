@@ -10,22 +10,23 @@ export default function Hero() {
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight">
-          Find the best travel deals{' '}
-          <span className="text-gold">with AI</span>
+          <span className="text-gold">AI</span>が最安値を見つける
+          <br />
+          旅行代理店
         </h1>
         <p className="mt-4 text-base md:text-lg text-white/50 max-w-2xl mx-auto leading-relaxed">
-          Compare prices across Agoda, Booking.com, Expedia and more — all in one chat.
+          Agoda、Booking.com、Expediaなど100以上の予約サイトを一括比較。
           <br />
-          <span className="text-white/30">Agoda, Booking.com, Expedia等を一括比較 — チャットで簡単予約</span>
+          チャットで話すだけで、最適な旅行プランを提案します。
         </p>
 
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link href="/chat">
             <Button size="lg" className="text-base">
-              Start Planning →
+              旅行を計画する →
             </Button>
           </Link>
-          <span className="text-white/30 text-sm">Free, no account required</span>
+          <span className="text-white/30 text-sm">無料・アカウント登録不要</span>
         </div>
       </div>
     </section>

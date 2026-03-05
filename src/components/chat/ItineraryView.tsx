@@ -18,7 +18,7 @@ export default function ItineraryView({ itinerary }: ItineraryViewProps) {
         {itinerary.days.map((day) => (
           <div key={day.day_number}>
             <div className="text-white/70 text-xs font-medium mb-2">
-              Day {day.day_number} — {day.date}
+              {day.day_number}日目 — {day.date}
             </div>
             <div className="space-y-2 pl-3 border-l border-white/[0.06]">
               {day.items.map((item, idx) => (
@@ -41,7 +41,7 @@ export default function ItineraryView({ itinerary }: ItineraryViewProps) {
                           rel="noopener noreferrer"
                           className="text-gold/70 hover:text-gold text-[10px] underline"
                         >
-                          Book this
+                          予約する
                         </a>
                       )}
                     </div>
@@ -54,7 +54,7 @@ export default function ItineraryView({ itinerary }: ItineraryViewProps) {
       </div>
 
       <div className="text-xs text-white/50 text-center pt-2 border-t border-white/[0.06]">
-        Estimated total: {formatPrice(itinerary.total_cost.min, itinerary.total_cost.currency)} – {formatPrice(itinerary.total_cost.max, itinerary.total_cost.currency)}
+        合計目安: {formatPrice(itinerary.total_cost.min, itinerary.total_cost.currency)} 〜 {formatPrice(itinerary.total_cost.max, itinerary.total_cost.currency)}
       </div>
     </Card>
   );

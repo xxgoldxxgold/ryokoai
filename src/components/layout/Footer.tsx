@@ -9,13 +9,13 @@ export default function Footer() {
             RyokoAI &copy; {new Date().getFullYear()}
           </div>
           <nav className="flex items-center gap-6 text-sm text-white/40">
-            <Link href="/about" className="hover:text-white/70 transition-colors">About</Link>
-            <Link href="/privacy" className="hover:text-white/70 transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-white/70 transition-colors">Terms</Link>
+            <Link href="/about" className="hover:text-white/70 transition-colors">RyokoAIについて</Link>
+            <Link href="/privacy" className="hover:text-white/70 transition-colors">プライバシー</Link>
+            <Link href="/terms" className="hover:text-white/70 transition-colors">利用規約</Link>
           </nav>
         </div>
         <div className="mt-4 text-center text-xs text-white/20">
-          Powered by Travelpayouts. RyokoAI earns a commission when you book through our links. Prices are the same as booking directly.
+          Powered by Travelpayouts. RyokoAIはリンク経由の予約でコミッションを受け取ります。価格は直接予約と同じです。追加料金は一切かかりません。
         </div>
       </div>
     </footer>

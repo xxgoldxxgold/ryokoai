@@ -34,7 +34,7 @@ export default function SignupPage() {
         setSuccess(true);
       }
     } catch {
-      setError('Signup failed. Please try again.');
+      setError('登録に失敗しました。もう一度お試しください。');
     } finally {
       setLoading(false);
     }
@@ -46,18 +46,18 @@ export default function SignupPage() {
       <div className="flex-1 flex items-center justify-center px-4 pt-16">
         <Card className="w-full max-w-sm p-6 space-y-6">
           <div className="text-center">
-            <h1 className="text-xl font-bold text-gold">Create Account</h1>
-            <p className="text-white/40 text-sm mt-1">Start planning your trips with AI</p>
+            <h1 className="text-xl font-bold text-gold">アカウント作成</h1>
+            <p className="text-white/40 text-sm mt-1">AIで旅行計画を始めましょう</p>
           </div>
 
           {success ? (
             <div className="text-center text-green-400 text-sm">
-              Check your email to confirm your account!
+              確認メールを送信しました。メールを確認してアカウントを有効化してください。
             </div>
           ) : (
             <form onSubmit={handleSignup} className="space-y-4">
               <div>
-                <label className="block text-xs text-white/50 mb-1">Email</label>
+                <label className="block text-xs text-white/50 mb-1">メールアドレス</label>
                 <Input
                   type="email"
                   value={email}
@@ -67,12 +67,12 @@ export default function SignupPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-white/50 mb-1">Password</label>
+                <label className="block text-xs text-white/50 mb-1">パスワード</label>
                 <Input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 6 characters"
+                  placeholder="6文字以上"
                   minLength={6}
                   required
                 />
@@ -81,15 +81,15 @@ export default function SignupPage() {
               {error && <div className="text-red-400 text-xs">{error}</div>}
 
               <Button type="submit" disabled={loading} className="w-full">
-                {loading ? 'Creating...' : 'Create Account'}
+                {loading ? '作成中...' : 'アカウント作成'}
               </Button>
             </form>
           )}
 
           <div className="text-center text-sm text-white/40">
-            Already have an account?{' '}
+            既にアカウントをお持ちの方は{' '}
             <Link href="/auth/login" className="text-gold hover:underline">
-              Log in
+              ログイン
             </Link>
           </div>
         </Card>
