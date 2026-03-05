@@ -129,8 +129,7 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
 
   if (phase === 'done' && prices.length === 0) return null;
 
-  const jpPrice = prices.find((p) => p.country === 'jp');
-  const baselinePrice = jpPrice?.price || (prices.length > 0 ? prices[prices.length - 1].price : 0);
+  const baselinePrice = prices.length > 0 ? prices[prices.length - 1].price : 0;
 
   return (
     <div className="bg-[#1E293B] border border-white/5 rounded-xl p-5 space-y-4">
@@ -179,7 +178,7 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
           <div className="space-y-2">
             {prices.map((p, i) => {
               const isCheapest = i === 0;
-              const isBaseline = p.country === 'jp';
+              const isMostExpensive = i === prices.length - 1 && prices.length > 1;
               const diffPercent = baselinePrice
                 ? Math.round(((p.price - baselinePrice) / baselinePrice) * 100)
                 : 0;
@@ -210,10 +209,10 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
                         最安
                       </span>
                     )}
-                    {isBaseline && !isCheapest && (
+                    {isMostExpensive && !isCheapest && (
                       <span className="text-[10px] text-white/30 w-14 text-right">基準</span>
                     )}
-                    {!isCheapest && !isBaseline && diffPercent !== 0 && (
+                    {!isCheapest && !isMostExpensive && diffPercent !== 0 && (
                       <span className={`text-[10px] w-14 text-right ${diffPercent < 0 ? 'text-emerald-400' : 'text-red-400/60'}`}>
                         {diffPercent > 0 ? '+' : ''}{diffPercent}%
                       </span>
