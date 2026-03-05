@@ -24,7 +24,8 @@ export default function ChatInput({ onSend, isLoading }: ChatInputProps) {
   }
 
   function handleKeyDown(e: KeyboardEvent) {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    // PC: Ctrl+Enter or Cmd+Enter で送信。Enterは改行のみ
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
       handleSend();
     }
