@@ -70,7 +70,6 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
         .then((r) => r.json())
         .then((d) => {
           if (d.error === 'Server busy') {
-            // Retry after 10s, up to 3 times
             if (retryRef.current < 3) {
               retryRef.current++;
               setTimeout(startJob, 10000);
@@ -83,7 +82,6 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
           setPhase('polling');
 
           if (d.status === 'done' && d.cached) {
-            // Fetch full results
             fetch(`/api/geo-prices?action=status&${params}`)
               .then((r) => r.json())
               .then((full) => {
@@ -93,19 +91,21 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
             return;
           }
 
-          setData(d);
+          if (d.status && !d.error) {
+            setData(d);
+          }
         })
         .catch(() => setPhase('error'));
     };
 
     startJob();
 
-    // Poll every 5s
     intervalRef.current = setInterval(() => {
       fetch(`/api/geo-prices?action=status&${params}`)
         .then((r) => r.json())
         .then((d) => {
-          if (d.status === 'not_found' || d.error) return;
+          if (d.status === 'not_found') return;
+          if (d.error) return;
           setData(d);
           if (d.status === 'done' || d.status === 'error') {
             setPhase('done');
@@ -120,15 +120,12 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
     };
   }, [hotelName, checkin, checkout, adults, buildParams]);
 
-  if (phase === 'idle' || phase === 'error') return null;
+  if (phase === 'idle') return null;
 
   const isLoading = phase === 'starting' || phase === 'polling';
   const prices = data?.prices || [];
   const savings = data?.savings;
   const total = data?.total || 3;
-
-  if (phase === 'done' && prices.length === 0) return null;
-
   const baselinePrice = prices.length > 0 ? prices[prices.length - 1].price : 0;
 
   return (
@@ -143,6 +140,7 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
         </p>
       </div>
 
+      {/* Loading state */}
       {isLoading && (
         <div className="space-y-2">
           <div className="flex items-center gap-2 mb-3">
@@ -173,6 +171,21 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
         </div>
       )}
 
+      {/* Error state */}
+      {phase === 'error' && (
+        <div className="text-white/30 text-xs text-center py-4">
+          価格の取得に失敗しました。しばらくしてからお試しください。
+        </div>
+      )}
+
+      {/* Done with no results */}
+      {phase === 'done' && prices.length === 0 && (
+        <div className="text-white/30 text-xs text-center py-4">
+          価格データを取得できませんでした。
+        </div>
+      )}
+
+      {/* Results */}
       {!isLoading && prices.length > 0 && (
         <>
           <div className="space-y-2">
