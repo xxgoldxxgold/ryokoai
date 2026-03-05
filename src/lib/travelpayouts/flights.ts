@@ -106,5 +106,5 @@ export function buildFlightAffiliateUrl(
 
   searchPath += adults.toString();
 
-  return `https://www.aviasales.com/search/${searchPath}?marker=${marker}`;
+  return `https://www.aviasales.com/search/${searchPath}?marker=${marker}&locale=ja`;
 }
