@@ -5,8 +5,7 @@ import { Suspense, useEffect, useState, useMemo } from 'react';
 import { generateAgodaLinks, generateBookingLinks } from '@/lib/generateLinks';
 import { daysBetween } from '@/lib/utils';
 import OtaSection from '@/components/OtaSection';
-import OtaPriceComparison from '@/components/OtaPriceComparison';
-import GeoPriceComparison from '@/components/GeoPriceComparison';
+import UnifiedPriceRanking from '@/components/UnifiedPriceRanking';
 import SearchForm from '@/components/SearchForm';
 import Link from 'next/link';
 
@@ -143,25 +142,15 @@ function SearchResults() {
         </div>
       )}
 
-      {/* Geo Price Comparison - country-based pricing */}
+      {/* Unified Price Ranking - Booking.com geo prices + Xotelo OTA prices */}
       {hotel && checkin && checkout && (
-        <GeoPriceComparison
+        <UnifiedPriceRanking
           hotelName={selectedName || hotel}
-          checkin={checkin}
-          checkout={checkout}
-          adults={adults}
-          rooms={rooms}
-        />
-      )}
-
-      {/* OTA Price Comparison - only shown after hotel is selected */}
-      {selectedKey && (
-        <OtaPriceComparison
           hotelKey={selectedKey}
           checkin={checkin}
           checkout={checkout}
           adults={adults}
-          currency="USD"
+          rooms={rooms}
         />
       )}
 
