@@ -33,7 +33,7 @@ export default function SearchForm() {
           type="text"
           value={hotel}
           onChange={(e) => setHotel(e.target.value)}
-          placeholder="ホテル名またはOTAのURL"
+          placeholder="ホテル名 または TripAdvisorのURL"
           required
           className="w-full px-4 py-3 rounded-xl bg-[#1E293B] border border-white/10 text-white placeholder:text-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50"
         />
@@ -95,8 +95,11 @@ export default function SearchForm() {
         type="submit"
         className="w-full py-3.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-medium text-sm transition-colors"
       >
-        国別リンクを生成
+        価格を比較する
       </button>
+      <p className="text-white/20 text-[10px] text-center">
+        TripAdvisorのURLを貼ると、リアルタイムのOTA価格比較も表示されます
+      </p>
     </form>
   );
 }
