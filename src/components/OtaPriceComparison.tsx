@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 interface Rate {
   code: string;
@@ -10,46 +10,68 @@ interface Rate {
 }
 
 interface OtaPriceComparisonProps {
-  hotelKey: string | null;
+  hotelKeys: string[];
   checkin: string;
   checkout: string;
   adults: number;
   currency: string;
+  onKeyResolved?: (key: string) => void;
 }
 
-export default function OtaPriceComparison({ hotelKey, checkin, checkout, adults, currency }: OtaPriceComparisonProps) {
+export default function OtaPriceComparison({ hotelKeys, checkin, checkout, adults, currency, onKeyResolved }: OtaPriceComparisonProps) {
   const [rates, setRates] = useState<Rate[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [triedKeys, setTriedKeys] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (!hotelKey) return;
-
+  const fetchRates = useCallback(async (keys: string[]) => {
     setLoading(true);
     setError(null);
 
-    fetch(`/api/hotel-rates?hotel_key=${encodeURIComponent(hotelKey)}&checkin=${checkin}&checkout=${checkout}&currency=${currency}&adults=${adults}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error && (!data.rates || data.rates.length === 0)) {
-          setError(data.error);
-        } else {
-          const sorted = [...(data.rates || [])].sort((a: Rate, b: Rate) => (a.rate + a.tax) - (b.rate + b.tax));
-          setRates(sorted);
-        }
-      })
-      .catch(() => setError('価格データの取得に失敗しました'))
-      .finally(() => setLoading(false));
-  }, [hotelKey, checkin, checkout, adults, currency]);
+    for (const key of keys) {
+      try {
+        const res = await fetch(
+          `/api/hotel-rates?hotel_key=${encodeURIComponent(key)}&checkin=${checkin}&checkout=${checkout}&currency=${currency}&adults=${adults}`
+        );
+        const data = await res.json();
+        const ratesList = data.rates || [];
 
-  if (!hotelKey) return null;
+        if (ratesList.length > 0) {
+          const sorted = [...ratesList].sort((a: Rate, b: Rate) => (a.rate + a.tax) - (b.rate + b.tax));
+          setRates(sorted);
+          setTriedKeys((prev) => [...prev, key]);
+          onKeyResolved?.(key);
+          setLoading(false);
+          return;
+        }
+        setTriedKeys((prev) => [...prev, key]);
+      } catch {
+        setTriedKeys((prev) => [...prev, key]);
+      }
+    }
+
+    setError('価格データが見つかりませんでした');
+    setLoading(false);
+  }, [checkin, checkout, adults, currency, onKeyResolved]);
+
+  useEffect(() => {
+    if (hotelKeys.length === 0) return;
+    setRates([]);
+    setTriedKeys([]);
+    fetchRates(hotelKeys);
+  }, [hotelKeys, fetchRates]);
+
+  if (hotelKeys.length === 0) return null;
 
   if (loading) {
     return (
       <div className="bg-[#1E293B] border border-white/5 rounded-xl p-5 space-y-3">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin" />
-          <span className="text-white/50 text-sm">OTA価格を取得中...</span>
+          <span className="text-white/50 text-sm">
+            OTA価格を取得中...
+            {triedKeys.length > 0 && ` (${triedKeys.length + 1}/${hotelKeys.length}件目を検索中)`}
+          </span>
         </div>
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
@@ -66,6 +88,11 @@ export default function OtaPriceComparison({ hotelKey, checkin, checkout, adults
         <p className="text-white/40 text-sm">
           価格データは取得できませんでした。下のリンクから各サイトで直接ご確認ください。
         </p>
+        {triedKeys.length > 0 && (
+          <p className="text-white/20 text-xs mt-1">
+            {triedKeys.length}件のホテルデータを検索しましたが、料金情報が見つかりませんでした。
+          </p>
+        )}
       </div>
     );
   }

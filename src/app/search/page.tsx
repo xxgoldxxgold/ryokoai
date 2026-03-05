@@ -1,18 +1,13 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState, useMemo } from 'react';
+import { Suspense, useEffect, useState, useMemo, useCallback } from 'react';
 import { generateAgodaLinks, generateBookingLinks } from '@/lib/generateLinks';
 import { daysBetween } from '@/lib/utils';
 import OtaSection from '@/components/OtaSection';
 import OtaPriceComparison from '@/components/OtaPriceComparison';
 import SearchForm from '@/components/SearchForm';
 import Link from 'next/link';
-
-interface HotelCandidate {
-  name: string;
-  hotel_key: string;
-}
 
 function extractDirectKey(input: string): string | null {
   const taMatch = input.match(/Hotel_Review-(g\d+-d\d+)/);
@@ -31,10 +26,10 @@ function SearchResults() {
   const rooms = Number(searchParams.get('rooms')) || 1;
 
   const directKey = useMemo(() => hotel ? extractDirectKey(hotel) : null, [hotel]);
-  const [hotelKey, setHotelKey] = useState<string | null>(directKey);
+  const [hotelKeys, setHotelKeys] = useState<string[]>(directKey ? [directKey] : []);
   const [hotelName, setHotelName] = useState<string | null>(null);
-  const [candidates, setCandidates] = useState<HotelCandidate[]>([]);
   const [searching, setSearching] = useState(false);
+  const [resolvedKey, setResolvedKey] = useState<string | null>(directKey);
 
   useEffect(() => {
     if (directKey || !hotel) return;
@@ -43,17 +38,19 @@ function SearchResults() {
     fetch(`/api/hotel-search?query=${encodeURIComponent(hotel)}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.hotel_key) {
-          setHotelKey(data.hotel_key);
+        if (data.candidates?.length > 0) {
+          const keys = data.candidates.map((c: { hotel_key: string }) => c.hotel_key);
+          setHotelKeys(keys);
           setHotelName(data.hotel_name);
-        }
-        if (data.candidates?.length > 1) {
-          setCandidates(data.candidates);
         }
       })
       .catch(() => {})
       .finally(() => setSearching(false));
   }, [hotel, directKey]);
+
+  const handleKeyResolved = useCallback((key: string) => {
+    setResolvedKey(key);
+  }, []);
 
   if (!hotel || !checkin || !checkout) {
     return (
@@ -85,40 +82,21 @@ function SearchResults() {
       {searching && (
         <div className="flex items-center gap-2 text-white/40 text-sm">
           <div className="w-3 h-3 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin" />
-          TripAdvisorでホテルを検索中...
+          ホテルを検索中...
         </div>
       )}
 
-      {/* Candidate selector */}
-      {candidates.length > 1 && (
-        <div className="bg-[#1E293B] border border-white/5 rounded-xl p-4 space-y-2">
-          <p className="text-white/50 text-xs">もしかして：</p>
-          <div className="space-y-1">
-            {candidates.map((c) => (
-              <button
-                key={c.hotel_key}
-                onClick={() => { setHotelKey(c.hotel_key); setHotelName(c.name); setCandidates([]); }}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                  c.hotel_key === hotelKey
-                    ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
-                    : 'text-white/60 hover:bg-white/5'
-                }`}
-              >
-                {c.name}
-              </button>
-            ))}
-          </div>
-        </div>
+      {/* OTA Price Comparison (Xotelo) - tries all candidate keys */}
+      {!searching && hotelKeys.length > 0 && (
+        <OtaPriceComparison
+          hotelKeys={hotelKeys}
+          checkin={checkin}
+          checkout={checkout}
+          adults={adults}
+          currency="USD"
+          onKeyResolved={handleKeyResolved}
+        />
       )}
-
-      {/* OTA Price Comparison (Xotelo) */}
-      <OtaPriceComparison
-        hotelKey={hotelKey}
-        checkin={checkin}
-        checkout={checkout}
-        adults={adults}
-        currency="USD"
-      />
 
       {/* Country link sections */}
       <OtaSection name="Agoda" color="bg-red-500/30" links={agodaLinks} />
