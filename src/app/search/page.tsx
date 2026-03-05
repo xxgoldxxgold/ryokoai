@@ -50,8 +50,8 @@ function SearchResults() {
         const cands: Candidate[] = data.candidates || [];
         setCandidates(cands);
 
-        // 候補が1件だけなら自動選択
-        if (cands.length === 1) {
+        // サーバーが auto_select=true を返した場合、または候補1件のみの場合に自動選択
+        if (cands.length > 0 && (data.auto_select || cands.length === 1)) {
           setSelectedKey(cands[0].hotel_key);
           setSelectedName(cands[0].name);
         }
