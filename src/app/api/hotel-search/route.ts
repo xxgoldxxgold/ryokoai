@@ -7,7 +7,7 @@ interface Candidate {
 
 function slugToName(slug: string): string {
   return slug
-    .replace(/-/g, ' ')
+    .replace(/[_-]/g, ' ')
     .replace(/\b\w/g, (c) => c.toUpperCase())
     .trim();
 }
