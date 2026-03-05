@@ -150,6 +150,7 @@ function SearchResults() {
           checkin={checkin}
           checkout={checkout}
           adults={adults}
+          rooms={rooms}
         />
       )}
 

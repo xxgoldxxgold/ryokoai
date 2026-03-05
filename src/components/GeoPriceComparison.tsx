@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import Link from 'next/link';
+import { generateAgodaLinks, generateBookingLinks } from '@/lib/generateLinks';
 
 interface GeoPrice {
+  ota: string;
+  otaName: string;
   country: string;
-  name: string;
+  countryName: string;
   flag: string;
   price: number;
   currency: string;
@@ -16,12 +18,7 @@ interface GeoData {
   completed: number;
   total: number;
   prices: GeoPrice[];
-  savings: {
-    cheapest: { country: string; name: string; price: number };
-    mostExpensive: { country: string; name: string; price: number };
-    difference: number;
-    percentOff: number;
-  } | null;
+  best: GeoPrice | null;
 }
 
 interface Props {
@@ -29,6 +26,7 @@ interface Props {
   checkin: string;
   checkout: string;
   adults: number;
+  rooms: number;
 }
 
 const FLAG_EMOJI: Record<string, string> = {
@@ -42,7 +40,26 @@ const FLAG_EMOJI: Record<string, string> = {
   GB: '\u{1F1EC}\u{1F1E7}',
 };
 
-export default function GeoPriceComparison({ hotelName, checkin, checkout, adults }: Props) {
+function buildLink(ota: string, countryCode: string, hotel: string, checkin: string, checkout: string, adults: number, rooms: number): string {
+  const params = { hotel, checkin, checkout, adults, rooms };
+
+  if (ota === 'booking') {
+    const links = generateBookingLinks(params);
+    const match = links.find((l) => l.country.code === countryCode);
+    return match?.url || '#';
+  }
+  if (ota === 'agoda') {
+    const links = generateAgodaLinks(params);
+    const match = links.find((l) => l.country.code === countryCode);
+    return match?.url || '#';
+  }
+  if (ota === 'trip') {
+    return 'https://www.trip.com/hotels/list?keyword=' + encodeURIComponent(hotel) + '&checkin=' + checkin.replace(/-/g, '/') + '&checkout=' + checkout.replace(/-/g, '/') + '&adult=' + adults + '&curr=USD';
+  }
+  return '#';
+}
+
+export default function GeoPriceComparison({ hotelName, checkin, checkout, adults, rooms }: Props) {
   const [data, setData] = useState<GeoData | null>(null);
   const [phase, setPhase] = useState<'idle' | 'starting' | 'polling' | 'done' | 'error'>('idle');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -123,55 +140,66 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
   if (phase === 'idle') return null;
 
   const isLoading = phase === 'starting' || phase === 'polling';
-  const prices = data?.prices || [];
-  const savings = data?.savings;
-  const total = data?.total || 3;
-  const baselinePrice = prices.length > 0 ? prices[prices.length - 1].price : 0;
+  const prices = (data?.prices || []).slice().sort((a, b) => a.price - b.price);
+  const total = data?.total || 0;
+  const best = prices.length > 0 ? prices[0] : null;
+  const worst = prices.length > 0 ? prices[prices.length - 1] : null;
 
   return (
     <div className="bg-[#1E293B] border border-white/5 rounded-xl p-5 space-y-4">
       <div>
         <h3 className="text-white font-bold text-sm flex items-center gap-2">
           <span className="text-base">{'\u{1F30D}'}</span>
-          国別価格比較
+          OTA × 国別 最安ランキング
         </h3>
         <p className="text-white/30 text-xs mt-1">
-          同じホテルでも、アクセスする国によって料金が異なります
+          各OTAを各国のIPから接続して実際の表示価格を比較
         </p>
       </div>
 
-      {/* Loading state */}
+      {/* Loading */}
       {isLoading && (
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 mb-3">
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
             <div className="w-3 h-3 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin" />
             <span className="text-white/40 text-xs">
               {data && data.completed > 0
-                ? `${data.completed}/${total} カ国取得完了`
-                : '各国の価格を取得中...（1-2分）'}
+                ? `${data.completed}/${total} 取得完了`
+                : '各OTA × 各国の価格を取得中...'}
             </span>
           </div>
-          {prices.map((p) => {
-            const flag = FLAG_EMOJI[p.flag] || p.flag;
-            return (
-              <div key={p.country} className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-white/[0.02] border border-white/5">
-                <div className="flex items-center gap-3">
-                  <span className="text-base w-6 text-center">{flag}</span>
-                  <span className="text-white/60 text-sm">{p.name}</span>
-                </div>
-                <span className="text-white/80 text-sm font-semibold">
-                  ${p.price.toLocaleString()}<span className="text-xs font-normal text-white/30">/泊</span>
-                </span>
-              </div>
-            );
-          })}
-          {Array.from({ length: Math.max(0, total - prices.length) }, (_, i) => (
-            <div key={`skel-${i}`} className="h-10 bg-white/5 rounded-lg animate-pulse" />
-          ))}
+
+          {/* Show partial results as they stream in */}
+          {prices.length > 0 && (
+            <div className="space-y-1.5">
+              {prices.slice(0, 5).map((p, i) => {
+                const flag = FLAG_EMOJI[p.flag] || p.flag;
+                return (
+                  <div key={p.ota + '-' + p.country} className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/[0.02] border border-white/5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-white/30 text-xs w-5">{i + 1}.</span>
+                      <span className="text-sm">{flag}</span>
+                      <span className="text-white/60 text-xs">{p.otaName}</span>
+                      <span className="text-white/30 text-[10px]">{p.countryName}</span>
+                    </div>
+                    <span className="text-white/80 text-sm font-semibold">${p.price.toLocaleString()}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {prices.length === 0 && (
+            <div className="space-y-1.5">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-9 bg-white/5 rounded-lg animate-pulse" />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Error state */}
+      {/* Error */}
       {phase === 'error' && (
         <div className="text-white/30 text-xs text-center py-4">
           価格の取得に失敗しました。しばらくしてからお試しください。
@@ -188,78 +216,79 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
       {/* Results */}
       {!isLoading && prices.length > 0 && (
         <>
-          <div className="space-y-2">
-            {prices.map((p, i) => {
-              const isCheapest = i === 0;
-              const isMostExpensive = i === prices.length - 1 && prices.length > 1;
-              const diffPercent = baselinePrice
-                ? Math.round(((p.price - baselinePrice) / baselinePrice) * 100)
-                : 0;
-              const flag = FLAG_EMOJI[p.flag] || p.flag;
-
-              return (
-                <div
-                  key={p.country}
-                  className={`flex items-center justify-between px-4 py-2.5 rounded-lg ${
-                    isCheapest
-                      ? 'bg-emerald-500/10 border border-emerald-500/20'
-                      : 'bg-white/[0.02] border border-white/5'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-base w-6 text-center">{flag}</span>
-                    <span className={`text-sm ${isCheapest ? 'text-white font-medium' : 'text-white/60'}`}>
-                      {p.name}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-sm font-semibold ${isCheapest ? 'text-emerald-400' : 'text-white/80'}`}>
-                      ${p.price.toLocaleString()}
-                      <span className="text-xs font-normal text-white/30">/泊</span>
-                    </span>
-                    {isCheapest && prices.length > 1 && (
-                      <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded font-medium">
-                        最安
-                      </span>
-                    )}
-                    {isMostExpensive && !isCheapest && (
-                      <span className="text-[10px] text-white/30 w-14 text-right">基準</span>
-                    )}
-                    {!isCheapest && !isMostExpensive && diffPercent !== 0 && (
-                      <span className={`text-[10px] w-14 text-right ${diffPercent < 0 ? 'text-emerald-400' : 'text-red-400/60'}`}>
-                        {diffPercent > 0 ? '+' : ''}{diffPercent}%
-                      </span>
-                    )}
-                  </div>
+          {/* Best deal highlight */}
+          {best && worst && best.price < worst.price && (
+            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-4 py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">{'\u{1F3C6}'}</span>
+                  <span className="text-emerald-400 text-sm font-bold">
+                    {best.otaName} × {best.countryName}
+                  </span>
                 </div>
-              );
-            })}
-          </div>
-
-          {savings && savings.difference > 0 && (
-            <div className="flex items-center justify-center gap-2 pt-1">
-              <span className="text-xs text-emerald-400 font-medium">
-                {'\u{1F4B0}'} 最大${savings.difference.toLocaleString()}お得！（{savings.cheapest.name}設定）
-              </span>
+                <span className="text-emerald-400 text-lg font-bold">
+                  ${best.price.toLocaleString()}<span className="text-xs font-normal text-emerald-400/50">/泊</span>
+                </span>
+              </div>
+              <p className="text-emerald-400/60 text-xs mt-1">
+                最高値より ${(worst.price - best.price).toLocaleString()}お得
+                （{Math.round(((worst.price - best.price) / worst.price) * 100)}%OFF）
+              </p>
+              <a
+                href={buildLink(best.ota, best.flag, hotelName, checkin, checkout, adults, rooms)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-2 bg-emerald-500/20 text-emerald-400 text-xs font-medium px-3 py-1.5 rounded hover:bg-emerald-500/30 transition-colors"
+              >
+                {best.otaName}で予約する →
+              </a>
             </div>
           )}
 
-          <Link
-            href="/guide"
-            className="block bg-indigo-500/10 border border-indigo-500/20 rounded-lg px-4 py-3 hover:bg-indigo-500/15 transition-colors"
-          >
-            <p className="text-indigo-300 text-xs font-medium">
-              {'\u{1F4A1}'} 最安国の価格で予約するにはVPNでその国に接続してからリンクをクリック
-            </p>
-            <p className="text-indigo-300/40 text-[10px] mt-0.5">
-              VPNガイドを見る →
-            </p>
-          </Link>
+          {/* Ranking list */}
+          <div className="space-y-1.5">
+            {prices.map((p, i) => {
+              const flag = FLAG_EMOJI[p.flag] || p.flag;
+              const isBest = i === 0;
+              const link = buildLink(p.ota, p.flag, hotelName, checkin, checkout, adults, rooms);
+
+              return (
+                <a
+                  key={p.ota + '-' + p.country}
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${
+                    isBest
+                      ? 'bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/15'
+                      : 'bg-white/[0.02] border border-white/5 hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs w-5 text-right ${isBest ? 'text-emerald-400 font-bold' : 'text-white/30'}`}>
+                      {i + 1}.
+                    </span>
+                    <span className="text-sm">{flag}</span>
+                    <span className={`text-xs ${isBest ? 'text-white font-medium' : 'text-white/60'}`}>
+                      {p.otaName}
+                    </span>
+                    <span className="text-white/25 text-[10px]">{p.countryName}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm font-semibold ${isBest ? 'text-emerald-400' : 'text-white/80'}`}>
+                      ${p.price.toLocaleString()}
+                    </span>
+                    <span className="text-white/20 text-[10px]">→</span>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
         </>
       )}
 
       <p className="text-white/20 text-[10px] text-center">
-        ※ Booking.comの1泊あたり表示価格（USD）。各国IPからリアルタイム取得。
+        ※ 各OTAを各国IPからリアルタイム取得（USD）。VPNでその国に接続して予約可能。
       </p>
     </div>
   );
