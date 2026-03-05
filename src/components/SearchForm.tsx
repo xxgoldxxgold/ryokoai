@@ -98,7 +98,7 @@ export default function SearchForm() {
         価格を比較する
       </button>
       <p className="text-white/20 text-[10px] text-center">
-        TripAdvisorのURLを貼ると、リアルタイムのOTA価格比較も表示されます
+        ホテル名を入力するだけでOTA価格比較が表示されます
       </p>
     </form>
   );
