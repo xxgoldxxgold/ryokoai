@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
-import { SYSTEM_PROMPT } from '@/lib/ai/systemPrompt';
+import { getSystemPrompt } from '@/lib/ai/systemPrompt';
 import { AI_TOOLS } from '@/lib/ai/tools';
 
 const anthropic = new Anthropic({
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
           const response = await anthropic.messages.create({
             model: 'claude-sonnet-4-5-20250929',
             max_tokens: 4096,
-            system: SYSTEM_PROMPT,
+            system: getSystemPrompt(),
             tools: AI_TOOLS as Anthropic.Tool[],
             messages: formattedMessages,
           });

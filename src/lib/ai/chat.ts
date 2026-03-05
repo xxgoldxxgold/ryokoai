@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { SYSTEM_PROMPT } from './systemPrompt';
+import { getSystemPrompt } from './systemPrompt';
 import { AI_TOOLS } from './tools';
 
 const anthropic = new Anthropic({
@@ -29,7 +29,7 @@ export async function chatWithClaude(
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-5-20250929',
       max_tokens: 4096,
-      system: SYSTEM_PROMPT,
+      system: getSystemPrompt(),
       tools: AI_TOOLS as Anthropic.Tool[],
       messages: formattedMessages,
     });

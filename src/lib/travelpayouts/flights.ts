@@ -7,6 +7,7 @@ interface CheapFlightData {
   departure_at: string;
   return_at?: string;
   expires_at?: string;
+  actual_destination?: string;
 }
 
 const AIRLINE_NAMES: Record<string, string> = {
@@ -14,8 +15,8 @@ const AIRLINE_NAMES: Record<string, string> = {
   'UA': 'United Airlines',
   'AA': 'American Airlines',
   'DL': 'Delta Air Lines',
-  'NH': 'ANA (All Nippon Airways)',
-  'JL': 'Japan Airlines',
+  'NH': 'ANA',
+  'JL': 'JAL',
   'SQ': 'Singapore Airlines',
   'CX': 'Cathay Pacific',
   'QF': 'Qantas',
@@ -36,7 +37,10 @@ const AIRLINE_NAMES: Record<string, string> = {
   'MM': 'Peach Aviation',
   'GK': 'Jetstar Japan',
   '7C': 'Jeju Air',
-  'TW': 'T\'way Air',
+  'TW': "T'way Air",
+  'ZG': 'ZIPAIR',
+  'BC': 'Skymark Airlines',
+  'IJ': 'Spring Airlines Japan',
 };
 
 export async function searchCheapFlights(
@@ -59,10 +63,20 @@ export async function searchCheapFlights(
   if (!res.ok) return [];
 
   const data = await res.json();
-  if (!data?.success || !data?.data?.[destination]) return [];
+  if (!data?.success || !data?.data) return [];
 
-  const flights = data.data[destination];
-  return Object.values(flights) as CheapFlightData[];
+  // API may return results under a different IATA code (e.g., KIX -> OSA)
+  // So we collect all results from all destination keys
+  const allFlights: CheapFlightData[] = [];
+  for (const [destKey, stops] of Object.entries(data.data)) {
+    if (typeof stops === 'object' && stops !== null) {
+      for (const flight of Object.values(stops as Record<string, CheapFlightData>)) {
+        allFlights.push({ ...flight, actual_destination: destKey });
+      }
+    }
+  }
+
+  return allFlights;
 }
 
 export function getAirlineName(code: string): string {
