@@ -6,6 +6,7 @@ import { generateAgodaLinks, generateBookingLinks } from '@/lib/generateLinks';
 import { daysBetween } from '@/lib/utils';
 import OtaSection from '@/components/OtaSection';
 import OtaPriceComparison from '@/components/OtaPriceComparison';
+import GeoPriceComparison from '@/components/GeoPriceComparison';
 import SearchForm from '@/components/SearchForm';
 import Link from 'next/link';
 
@@ -140,6 +141,16 @@ function SearchResults() {
             ホテルが見つかりませんでした。TripAdvisorのURLを直接入力してみてください。
           </p>
         </div>
+      )}
+
+      {/* Geo Price Comparison - country-based pricing */}
+      {hotel && checkin && checkout && (
+        <GeoPriceComparison
+          hotelName={selectedName || hotel}
+          checkin={checkin}
+          checkout={checkout}
+          adults={adults}
+        />
       )}
 
       {/* OTA Price Comparison - only shown after hotel is selected */}
