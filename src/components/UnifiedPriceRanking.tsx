@@ -153,7 +153,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
       .then((r) => r.json())
       .then((data) => {
         const rates = (data.rates || []) as XoteloRate[];
-        rates.sort((a: XoteloRate, b: XoteloRate) => (a.rate + a.tax) - (b.rate + b.tax));
+        rates.sort((a: XoteloRate, b: XoteloRate) => a.rate - b.rate);
         setXoteloRates(rates);
       })
       .catch(() => {})
@@ -166,7 +166,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
   const geoBest = sortedGeo.length > 0 ? sortedGeo[0] : null;
   const geoWorst = sortedGeo.length > 1 ? sortedGeo[sortedGeo.length - 1] : null;
 
-  const xoteloValid = xoteloRates.filter(r => (r.rate + r.tax) > 0);
+  const xoteloValid = xoteloRates.filter(r => r.rate > 0);
   const xoteloBest = xoteloValid.length > 0 ? xoteloValid[0] : null;
   const xoteloWorst = xoteloValid.length > 1 ? xoteloValid[xoteloValid.length - 1] : null;
 
@@ -185,7 +185,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
               OTA価格比較
             </h3>
             <p className="text-white/30 text-xs mt-1">
-              各OTAの現在価格（税込/1泊・USD）
+              各OTAの現在価格（1泊・USD）
             </p>
           </div>
 
@@ -199,19 +199,24 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
           {xoteloValid.length > 0 && (
             <>
               {/* Best deal */}
-              {xoteloBest && xoteloWorst && xoteloBest.rate + xoteloBest.tax < xoteloWorst.rate + xoteloWorst.tax && (
+              {xoteloBest && xoteloWorst && xoteloBest.rate < xoteloWorst.rate && (
                 <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-4 py-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-base">🏆</span>
                       <span className="text-emerald-400 text-sm font-bold">{xoteloBest.name}</span>
                     </div>
-                    <span className="text-emerald-400 text-lg font-bold">
-                      ${(xoteloBest.rate + xoteloBest.tax).toLocaleString()}<span className="text-xs font-normal text-emerald-400/50">/泊</span>
-                    </span>
+                    <div className="text-right">
+                      <span className="text-emerald-400 text-lg font-bold">
+                        ${xoteloBest.rate.toLocaleString()}<span className="text-xs font-normal text-emerald-400/50">/泊</span>
+                      </span>
+                      {xoteloBest.tax > 0 && (
+                        <p className="text-emerald-400/30 text-[10px]">税込 ${(xoteloBest.rate + xoteloBest.tax).toLocaleString()}</p>
+                      )}
+                    </div>
                   </div>
                   <p className="text-emerald-400/60 text-xs mt-1">
-                    最高値より ${((xoteloWorst.rate + xoteloWorst.tax) - (xoteloBest.rate + xoteloBest.tax)).toLocaleString()}お得
+                    最高値より ${(xoteloWorst.rate - xoteloBest.rate).toLocaleString()}お得
                   </p>
                   <a
                     href={getOtaLink(xoteloBest.name, hotelName, checkin, checkout, adults)}
@@ -227,7 +232,6 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
               {/* OTA list */}
               <div className="space-y-1.5">
                 {xoteloValid.map((rate, i) => {
-                  const total = rate.rate + rate.tax;
                   const isBest = i === 0;
                   const link = getOtaLink(rate.name, hotelName, checkin, checkout, adults);
                   return (
@@ -250,10 +254,15 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
                           {rate.name}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-sm font-semibold ${isBest ? 'text-emerald-400' : 'text-white/80'}`}>
-                          ${total.toLocaleString()}
-                        </span>
+                      <div className="flex items-center gap-1.5">
+                        <div className="text-right">
+                          <span className={`text-sm font-semibold ${isBest ? 'text-emerald-400' : 'text-white/80'}`}>
+                            ${rate.rate.toLocaleString()}
+                          </span>
+                          {rate.tax > 0 && (
+                            <span className="text-white/20 text-[10px] ml-1">税込${(rate.rate + rate.tax).toLocaleString()}</span>
+                          )}
+                        </div>
                         <span className="text-white/20 text-xs">→</span>
                       </div>
                     </a>
@@ -262,7 +271,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
               </div>
 
               <p className="text-white/20 text-[10px] text-center">
-                ※ Xotelo API経由。税込み1泊あたり（USD）
+                ※ Xotelo API経由。税抜1泊あたり（USD）／税込価格は各行右側に表示
               </p>
             </>
           )}
