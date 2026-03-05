@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 
 interface GeoPrice {
@@ -44,43 +44,71 @@ const FLAG_EMOJI: Record<string, string> = {
 
 export default function GeoPriceComparison({ hotelName, checkin, checkout, adults }: Props) {
   const [data, setData] = useState<GeoData | null>(null);
-  const [started, setStarted] = useState(false);
-  const [error, setError] = useState(false);
+  const [phase, setPhase] = useState<'idle' | 'starting' | 'polling' | 'done' | 'error'>('idle');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const retryRef = useRef(0);
 
-  useEffect(() => {
-    if (!hotelName || !checkin || !checkout) return;
-
-    const params = new URLSearchParams({
+  const buildParams = useCallback(() => {
+    return new URLSearchParams({
       hotel: hotelName,
       checkin,
       checkout,
       adults: adults.toString(),
-    });
+    }).toString();
+  }, [hotelName, checkin, checkout, adults]);
 
-    // Start the job
-    fetch(`/api/geo-prices?action=start&${params}`)
-      .then((r) => r.json())
-      .then((d) => {
-        setStarted(true);
-        if (d.status === 'done') {
-          // Cached - fetch full results
-          return fetch(`/api/geo-prices?action=status&${params}`)
-            .then((r) => r.json())
-            .then((full) => setData(full));
-        }
-        setData(d);
-      })
-      .catch(() => setError(true));
+  useEffect(() => {
+    if (!hotelName || !checkin || !checkout) return;
 
-    // Poll for updates every 5 seconds
+    const params = buildParams();
+    setPhase('starting');
+    setData(null);
+    retryRef.current = 0;
+
+    const startJob = () => {
+      fetch(`/api/geo-prices?action=start&${params}`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.error === 'Server busy') {
+            // Retry after 10s, up to 3 times
+            if (retryRef.current < 3) {
+              retryRef.current++;
+              setTimeout(startJob, 10000);
+              return;
+            }
+            setPhase('error');
+            return;
+          }
+
+          setPhase('polling');
+
+          if (d.status === 'done' && d.cached) {
+            // Fetch full results
+            fetch(`/api/geo-prices?action=status&${params}`)
+              .then((r) => r.json())
+              .then((full) => {
+                setData(full);
+                setPhase('done');
+              });
+            return;
+          }
+
+          setData(d);
+        })
+        .catch(() => setPhase('error'));
+    };
+
+    startJob();
+
+    // Poll every 5s
     intervalRef.current = setInterval(() => {
       fetch(`/api/geo-prices?action=status&${params}`)
         .then((r) => r.json())
         .then((d) => {
-          if (d.status === 'not_found') return;
+          if (d.status === 'not_found' || d.error) return;
           setData(d);
           if (d.status === 'done' || d.status === 'error') {
+            setPhase('done');
             if (intervalRef.current) clearInterval(intervalRef.current);
           }
         })
@@ -90,16 +118,16 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [hotelName, checkin, checkout, adults]);
+  }, [hotelName, checkin, checkout, adults, buildParams]);
 
-  if (error) return null;
-  if (!started) return null;
+  if (phase === 'idle' || phase === 'error') return null;
 
-  const isLoading = !data || data.status === 'running';
+  const isLoading = phase === 'starting' || phase === 'polling';
   const prices = data?.prices || [];
   const savings = data?.savings;
+  const total = data?.total || 3;
 
-  if (data?.status === 'done' && prices.length === 0) return null;
+  if (phase === 'done' && prices.length === 0) return null;
 
   const jpPrice = prices.find((p) => p.country === 'jp');
   const baselinePrice = jpPrice?.price || (prices.length > 0 ? prices[prices.length - 1].price : 0);
@@ -121,10 +149,11 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
           <div className="flex items-center gap-2 mb-3">
             <div className="w-3 h-3 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin" />
             <span className="text-white/40 text-xs">
-              {data ? `${data.completed}/${data.total} カ国取得中...` : '開始中...'}
+              {data && data.completed > 0
+                ? `${data.completed}/${total} カ国取得完了`
+                : '各国の価格を取得中...（1-2分）'}
             </span>
           </div>
-          {/* Show already-fetched results while loading */}
           {prices.map((p) => {
             const flag = FLAG_EMOJI[p.flag] || p.flag;
             return (
@@ -139,8 +168,7 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
               </div>
             );
           })}
-          {/* Skeleton for remaining */}
-          {data && Array.from({ length: data.total - data.completed }, (_, i) => (
+          {Array.from({ length: Math.max(0, total - prices.length) }, (_, i) => (
             <div key={`skel-${i}`} className="h-10 bg-white/5 rounded-lg animate-pulse" />
           ))}
         </div>
