@@ -36,7 +36,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <Script
-          src="https://emrld.ltd/NTA0NTU1.js?t=504555"
+          src="https://emrld.ltd/NTA0NTU2.js?t=504556"
           strategy="afterInteractive"
           data-noptimize="1"
           data-cfasync="false"
