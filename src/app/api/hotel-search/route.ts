@@ -41,9 +41,7 @@ async function searchViaBrave(query: string): Promise<Candidate[]> {
       const key = match[1];
       const nameSlug = match[2];
       if (!found.has(key)) {
-        // Clean up the name: remove location suffix like "-Honolulu_Oahu_Hawaii"
-        const cleanSlug = nameSlug.split(/[-_](?:Honolulu|Oahu|Hawaii|Tokyo|Japan|Waikiki|New_York|Paris|London|Kyoto|Osaka)/i)[0];
-        found.set(key, slugToName(cleanSlug));
+        found.set(key, slugToName(nameSlug));
       }
     }
 
