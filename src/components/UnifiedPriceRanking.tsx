@@ -169,10 +169,8 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
       .finally(() => setXoteloLoading(false));
   }, [hotelKey, checkin, checkout, adults]);
 
-  // Debug logging
-  console.log('[UnifiedPriceRanking] geoPhase:', geoPhase, 'geoPrices:', geoPrices.length, 'xoteloRates:', xoteloRates.length, 'xoteloLoading:', xoteloLoading, 'hotelName:', hotelName, 'hotelKey:', hotelKey);
-
-  if (geoPhase === 'idle' && !xoteloLoading && xoteloRates.length === 0) return null;
+  // Always show something when mounted (don't return null)
+  const isIdle = geoPhase === 'idle' && !xoteloLoading && xoteloRates.length === 0;
 
   // Build unified list
   const unified: UnifiedPrice[] = [];
@@ -216,15 +214,17 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
   const geoTotal = geoPhase !== 'idle' ? 8 : 0;
   const geoCompleted = geoPrices.length;
 
+  if (isIdle) return null;
+
   return (
     <div className="bg-[#1E293B] border border-white/5 rounded-xl p-5 space-y-4">
       <div>
         <h3 className="text-white font-bold text-sm flex items-center gap-2">
           <span className="text-base">{'\u{1F30D}'}</span>
-          OTA × {'\u56FD\u5225'} {'\u7DCF\u5408\u6700\u5B89\u30E9\u30F3\u30AD\u30F3\u30B0'}
+          OTA × 国別 総合最安ランキング
         </h3>
         <p className="text-white/30 text-xs mt-1">
-          Booking.com{'\u3092'}8{'\u304B\u56FD\u306E'}IP{'\u3067\u63A5\u7D9A'} + {'\u4ED6'}OTA{'\u306E\u4FA1\u683C\u3092\u7D71\u5408\u6BD4\u8F03'}
+          Booking.comを8か国のIPで接続 + 他OTAの価格を統合比較
         </p>
       </div>
 
@@ -235,8 +235,8 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
             <div className="w-3 h-3 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin" />
             <span className="text-white/40 text-xs">
               {geoCompleted > 0
-                ? `Booking.com: ${geoCompleted}/${geoTotal} \u56FD\u53D6\u5F97\u5B8C\u4E86${xoteloLoading ? ' / OTA\u4FA1\u683C\u53D6\u5F97\u4E2D...' : ''}`
-                : '\u5404OTA\u306E\u4FA1\u683C\u3092\u53D6\u5F97\u4E2D...'}
+                ? `Booking.com: ${geoCompleted}/${geoTotal} 国取得完了${xoteloLoading ? ' / OTA価格取得中...' : ''}`
+                : '各OTAの価格を取得中...'}
             </span>
           </div>
 
@@ -274,7 +274,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
       {/* Error */}
       {geoPhase === 'error' && !xoteloLoading && unified.length === 0 && (
         <div className="text-white/30 text-xs text-center py-4">
-          {'\u4FA1\u683C\u306E\u53D6\u5F97\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002\u3057\u3070\u3089\u304F\u3057\u3066\u304B\u3089\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002'}
+          価格の取得に失敗しました。しばらくしてからお試しください。
         </div>
       )}
 
@@ -288,7 +288,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
                 <div className="flex items-center gap-2">
                   <span className="text-base">{'\u{1F3C6}'}</span>
                   <span className="text-emerald-400 text-sm font-bold">
-                    {best.otaName}{best.countryName ? ` \u00D7 ${best.countryName}` : ''}
+                    {best.otaName}{best.countryName ? ` × ${best.countryName}` : ''}
                   </span>
                 </div>
                 <span className="text-emerald-400 text-lg font-bold">
@@ -296,8 +296,8 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
                 </span>
               </div>
               <p className="text-emerald-400/60 text-xs mt-1">
-                {'\u6700\u9AD8\u5024\u3088\u308A'} ${(worst.price - best.price).toLocaleString()}{'\u304A\u5F97'}
-                {'\uFF08'}{Math.round(((worst.price - best.price) / worst.price) * 100)}%OFF{'\uFF09'}
+                最高値より ${(worst.price - best.price).toLocaleString()}お得
+                （{Math.round(((worst.price - best.price) / worst.price) * 100)}%OFF）
               </p>
               <a
                 href={best.link}
@@ -305,7 +305,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
                 rel="noopener noreferrer"
                 className="inline-block mt-2 bg-emerald-500/20 text-emerald-400 text-xs font-medium px-3 py-1.5 rounded hover:bg-emerald-500/30 transition-colors"
               >
-                {best.otaName}{'\u3067\u4E88\u7D04\u3059\u308B'} →
+                {best.otaName}で予約する →
               </a>
             </div>
           )}
@@ -357,12 +357,12 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
       {/* Done with no results */}
       {!isLoading && unified.length === 0 && geoPhase === 'done' && (
         <div className="text-white/30 text-xs text-center py-4">
-          {'\u4FA1\u683C\u30C7\u30FC\u30BF\u3092\u53D6\u5F97\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F\u3002'}
+          価格データを取得できませんでした。
         </div>
       )}
 
       <p className="text-white/20 text-[10px] text-center">
-        {'\u203B'} Booking.com: {'\u5404\u56FD'}IP{'\u304B\u3089\u30EA\u30A2\u30EB\u30BF\u30A4\u30E0\u53D6\u5F97\uFF08'}USD{'\uFF09\u3002\u4ED6'}OTA: Xotelo API{'\u7D4C\u7531\u3002'}VPN{'\u3067\u305D\u306E\u56FD\u306B\u63A5\u7D9A\u3057\u3066\u4E88\u7D04\u53EF\u80FD\u3002'}
+        ※ Booking.com: 各国IPからリアルタイム取得（USD）。他OTA: Xotelo API経由。VPNでその国に接続して予約可能。
       </p>
     </div>
   );
