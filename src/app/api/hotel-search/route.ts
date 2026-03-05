@@ -101,9 +101,9 @@ function dedup(candidates: Candidate[]): Candidate[] {
 }
 
 /** Filter and sort candidates based on location keywords from query */
-function filterAndSort(candidates: Candidate[], locations: string[]): { filtered: Candidate[]; autoSelect: boolean } {
+function filterAndSort(candidates: Candidate[], locations: string[], query: string): { filtered: Candidate[]; autoSelect: boolean } {
   if (locations.length === 0) {
-    return { filtered: candidates, autoSelect: candidates.length === 1 };
+    return { filtered: candidates, autoSelect: candidates.length <= 2 };
   }
 
   // Score each candidate: how many location keywords match
@@ -115,19 +115,18 @@ function filterAndSort(candidates: Candidate[], locations: string[]): { filtered
 
   // Separate matching vs non-matching
   const matching = scored.filter((s) => s.matchCount > 0);
-  const nonMatching = scored.filter((s) => s.matchCount === 0);
 
   // If we have location-matching candidates, filter out non-matching ones
   if (matching.length > 0) {
     // Sort by match count descending
     matching.sort((a, b) => b.matchCount - a.matchCount);
     const filtered = matching.map((s) => s.candidate);
-    // Auto-select if only 1 location match
-    return { filtered, autoSelect: filtered.length === 1 };
+    // Auto-select: always pick first result if 3 or fewer candidates
+    return { filtered, autoSelect: filtered.length <= 3 };
   }
 
-  // No location matches at all — return all but don't auto-select
-  return { filtered: candidates, autoSelect: false };
+  // No location matches at all — auto-select first if few candidates
+  return { filtered: candidates, autoSelect: candidates.length <= 2 };
 }
 
 async function searchViaBrave(query: string): Promise<Candidate[]> {
@@ -233,7 +232,7 @@ export async function GET(req: NextRequest) {
   const taCandidates = await searchViaTripAdvisor(query);
   if (taCandidates.length > 0) {
     const deduped = dedup(taCandidates);
-    const { filtered, autoSelect } = filterAndSort(deduped, locations);
+    const { filtered, autoSelect } = filterAndSort(deduped, locations, query);
     return NextResponse.json({
       hotel_key: filtered[0]?.hotel_key || null,
       hotel_name: filtered[0]?.name || null,
@@ -247,7 +246,7 @@ export async function GET(req: NextRequest) {
   const braveCandidates = await searchViaBrave(query);
   if (braveCandidates.length > 0) {
     const deduped = dedup(braveCandidates);
-    const { filtered, autoSelect } = filterAndSort(deduped, locations);
+    const { filtered, autoSelect } = filterAndSort(deduped, locations, query);
     return NextResponse.json({
       hotel_key: filtered[0]?.hotel_key || null,
       hotel_name: filtered[0]?.name || null,
