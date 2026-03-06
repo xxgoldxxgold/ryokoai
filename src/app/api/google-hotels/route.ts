@@ -5,6 +5,8 @@ const SERPAPI_KEY = process.env.SERPAPI_KEY || 'cb66256e697b8d0950261d58b8914417
 interface SerpPrice {
   source: string;
   logo?: string;
+  link?: string;
+  official?: boolean;
   rate_per_night?: {
     lowest?: string;
     extracted_lowest?: number;
@@ -25,6 +27,7 @@ interface SerpProperty {
     extracted_before_taxes_fees?: number;
   };
   prices?: SerpPrice[];
+  featured_prices?: SerpPrice[];
   link?: string;
 }
 
@@ -65,31 +68,45 @@ export async function GET(req: NextRequest) {
     }
 
     const properties = (data.properties || []) as SerpProperty[];
-
-    // Find the best matching property (first result is usually the best match)
     const topProperty = properties[0];
     if (!topProperty) {
       return NextResponse.json({ prices: [], hotel_name: null });
     }
 
-    // Extract prices from the top property
-    const prices = (topProperty.prices || []).map((p: SerpPrice) => ({
+    // Merge prices and featured_prices, dedup by source name
+    const allPrices: SerpPrice[] = [];
+    const seenSources = new Set<string>();
+
+    // featured_prices first (often has more detail / rooms)
+    for (const p of (topProperty.featured_prices || [])) {
+      const src = (p.source || '').toLowerCase();
+      if (!seenSources.has(src)) {
+        seenSources.add(src);
+        allPrices.push(p);
+      }
+    }
+    // then regular prices
+    for (const p of (topProperty.prices || [])) {
+      const src = (p.source || '').toLowerCase();
+      if (!seenSources.has(src)) {
+        seenSources.add(src);
+        allPrices.push(p);
+      }
+    }
+
+    const prices = allPrices.map((p) => ({
       source: p.source || 'Unknown',
       logo: p.logo || null,
+      link: p.link || null,
+      official: p.official || false,
       rate: p.rate_per_night?.extracted_before_taxes_fees || p.rate_per_night?.extracted_lowest || 0,
       rateWithTax: p.rate_per_night?.extracted_lowest || 0,
-    })).filter((p: { rate: number }) => p.rate > 0);
-
-    // Also include the top-level rate if available
-    const topRate = topProperty.rate_per_night?.extracted_before_taxes_fees
-      || topProperty.rate_per_night?.extracted_lowest
-      || 0;
+    })).filter((p) => p.rate > 0);
 
     return NextResponse.json({
       hotel_name: topProperty.name || null,
       overall_rating: topProperty.overall_rating || null,
       reviews: topProperty.reviews || null,
-      top_rate: topRate,
       prices,
       property_count: properties.length,
     });

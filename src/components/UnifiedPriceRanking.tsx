@@ -12,6 +12,7 @@ interface XoteloRate {
 interface GooglePrice {
   source: string;
   logo: string | null;
+  link: string | null;
   rate: number;
   rateWithTax: number;
 }
@@ -20,8 +21,8 @@ interface UnifiedEntry {
   otaName: string;
   rate: number;
   rateWithTax: number;
+  link: string | null;
   source: 'xotelo' | 'google';
-  logo: string | null;
 }
 
 interface Props {
@@ -33,7 +34,7 @@ interface Props {
   rooms: number;
 }
 
-function getOtaLink(otaName: string, hotelName: string, checkin: string, checkout: string, adults: number): string {
+function fallbackOtaLink(otaName: string, hotelName: string, checkin: string, checkout: string, adults: number): string {
   const n = otaName.toLowerCase();
   if (n.includes('agoda')) return 'https://www.agoda.com/search?q=' + encodeURIComponent(hotelName) + '&checkIn=' + checkin + '&checkOut=' + checkout + '&rooms=1&adults=' + adults + '&currency=USD';
   if (n.includes('trip')) return 'https://www.trip.com/hotels/list?keyword=' + encodeURIComponent(hotelName) + '&checkin=' + checkin.replace(/-/g, '/') + '&checkout=' + checkout.replace(/-/g, '/') + '&adult=' + adults + '&curr=USD';
@@ -55,6 +56,8 @@ function normalizeOtaName(name: string): string {
   if (n.includes('vio')) return 'vio';
   if (n.includes('priceline')) return 'priceline';
   if (n.includes('ritzcarlton') || n.includes('marriott')) return 'marriott';
+  if (n.includes('hyatt')) return 'hyatt';
+  if (n.includes('hilton')) return 'hilton';
   return n;
 }
 
@@ -86,22 +89,46 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
       .finally(() => setGoogleLoading(false));
   }, [hotelName, checkin, checkout, adults]);
 
+  // Build a link lookup from Google Hotels data (normalized OTA name -> direct link)
+  const googleLinkMap = new Map<string, string>();
+  for (const p of googlePrices) {
+    const key = normalizeOtaName(p.source);
+    if (p.link && !googleLinkMap.has(key)) {
+      googleLinkMap.set(key, p.link);
+    }
+  }
+
+  // Merge results
   const merged: UnifiedEntry[] = [];
   const seen = new Set<string>();
 
+  // Xotelo rates first — attach Google Hotels link if available
   for (const r of xoteloRates) {
     if (r.rate <= 0) continue;
     const key = normalizeOtaName(r.name);
     if (seen.has(key)) continue;
     seen.add(key);
-    merged.push({ otaName: r.name, rate: r.rate, rateWithTax: r.rate + r.tax, source: 'xotelo', logo: null });
+    merged.push({
+      otaName: r.name,
+      rate: r.rate,
+      rateWithTax: r.rate + r.tax,
+      link: googleLinkMap.get(key) || null,
+      source: 'xotelo',
+    });
   }
 
+  // Google Hotels prices (only ones not already from Xotelo)
   for (const p of googlePrices) {
     const key = normalizeOtaName(p.source);
     if (seen.has(key)) continue;
     seen.add(key);
-    merged.push({ otaName: p.source, rate: p.rate, rateWithTax: p.rateWithTax, source: 'google', logo: p.logo });
+    merged.push({
+      otaName: p.source,
+      rate: p.rate,
+      rateWithTax: p.rateWithTax,
+      link: p.link,
+      source: 'google',
+    });
   }
 
   merged.sort((a, b) => a.rate - b.rate);
@@ -115,13 +142,11 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
 
   return (
     <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-      {/* Header */}
       <div className="px-5 py-4 border-b border-gray-100">
         <h3 className="text-gray-900 font-bold text-base">OTA最安ランキング</h3>
         <p className="text-gray-400 text-xs mt-0.5">複数の予約サイトの価格を比較（1泊・USD）</p>
       </div>
 
-      {/* Loading */}
       {loading && merged.length === 0 && (
         <div className="px-5 py-8 flex items-center justify-center gap-2">
           <div className="w-4 h-4 border-2 border-indigo-200 border-t-indigo-500 rounded-full animate-spin" />
@@ -129,18 +154,14 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
         </div>
       )}
 
-      {/* Results */}
       {merged.length > 0 && (
         <div>
-          {/* Best deal banner */}
           {best && savings > 0 && (
             <div className="bg-emerald-50 px-5 py-3 border-b border-emerald-100">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-emerald-600 text-sm font-bold">{best.otaName}</span>
-                  <span className="text-emerald-500 bg-emerald-100 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
-                    最安
-                  </span>
+                  <span className="text-emerald-500 bg-emerald-100 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">最安</span>
                 </div>
                 <div className="text-right">
                   <span className="text-emerald-700 text-xl font-bold">${best.rate.toLocaleString()}</span>
@@ -154,15 +175,14 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
             </div>
           )}
 
-          {/* OTA list */}
           <div className="divide-y divide-gray-50">
             {merged.map((entry, i) => {
               const isBest = i === 0 && merged.length > 1;
-              const link = getOtaLink(entry.otaName, hotelName, checkin, checkout, adults);
+              const href = entry.link || fallbackOtaLink(entry.otaName, hotelName, checkin, checkout, adults);
               return (
                 <a
                   key={entry.otaName + entry.source}
-                  href={link}
+                  href={href}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`flex items-center justify-between px-5 py-3.5 transition-colors hover:bg-gray-50 ${isBest ? 'bg-emerald-50/50' : ''}`}
@@ -195,7 +215,6 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
             })}
           </div>
 
-          {/* Still loading */}
           {loading && (
             <div className="px-5 py-2 border-t border-gray-50 flex items-center gap-2">
               <div className="w-2.5 h-2.5 border-2 border-indigo-200 border-t-indigo-500 rounded-full animate-spin" />
@@ -203,7 +222,6 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
             </div>
           )}
 
-          {/* Footer note */}
           <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50">
             <p className="text-gray-400 text-[10px] text-center">
               税抜1泊あたり（USD）/ 税込価格は各行右側に表示
@@ -212,7 +230,6 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
         </div>
       )}
 
-      {/* No results */}
       {!loading && merged.length === 0 && (
         <div className="px-5 py-8 text-center">
           <p className="text-gray-400 text-sm">価格データを取得できませんでした。</p>
