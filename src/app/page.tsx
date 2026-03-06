@@ -3,20 +3,16 @@ import HowItWorks from '@/components/HowItWorks';
 
 const FAQ = [
   {
-    q: 'なぜ国によって価格が違うのか？',
-    a: 'OTA（オンライン旅行代理店）は、アクセス元のIPアドレスに基づいて国を判別し、その国の市場に合わせた価格を表示します。これは「ジオプライシング」と呼ばれ、同じホテルの同じ部屋でも最大25%の価格差が生じることがあります。',
+    q: 'なぜOTAによって価格が違うのか？',
+    a: 'OTA（オンライン旅行代理店）はそれぞれホテルと異なる契約を結んでいるため、同じ部屋でもサイトごとに価格が異なります。差額は数十ドルに及ぶこともあります。',
   },
   {
-    q: '違う国設定で予約して大丈夫？',
-    a: 'はい、問題ありません。主要なOTA（Agoda, Booking.com等）はVPN利用を明示的に禁止していません。実際に多くの旅行者がこの方法で節約しています。ホテル予約は航空券と異なりキャンセルリスクも低いです。',
+    q: 'どのOTAが安い？',
+    a: 'ホテルや時期によって異なりますが、Agoda・Trip.comは比較的安い傾向があります。RyokoAIで複数OTAの価格を一括比較して最安値を見つけましょう。',
   },
   {
     q: 'VPNは必要？',
-    a: 'OTAの価格差はIPアドレスで決まるため、国別リンクだけでは完全な価格差は反映されません。VPNを使って対象国のサーバーに接続すると、その国向けの価格が確実に表示されます。無料のProton VPNでも試せます。',
-  },
-  {
-    q: 'どの国が安い？',
-    a: '一般的に、ポーランド、日本、インド、ブラジルなどが安くなりやすい傾向があります。ただし、ホテルや時期によって最安の国は変わるため、複数の国で確認することをおすすめします。',
+    a: '一部のOTAはアクセス元の国によって価格が変わります。VPNで別の国から接続すると、さらに安くなる場合があります。',
   },
 ];
 
@@ -25,22 +21,20 @@ export default function HomePage() {
     <div className="space-y-20 pb-8">
       {/* Hero */}
       <section className="pt-16 pb-4 px-4 text-center space-y-6">
-        <h1 className="text-3xl sm:text-4xl font-bold text-white leading-tight">
-          同じホテル、国が変わるだけで<br />
-          <span className="text-indigo-400">最大25%安くなる。</span>
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
+          同じホテル、予約サイトで<br />
+          <span className="text-indigo-500">これだけ違う。</span>
         </h1>
-        <p className="text-white/50 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
-          Agoda $220、Booking.com $250 ── 同じ部屋なのにOTAで$30の差。<br />
-          さらに、アクセスする国を変えるだけで追加割引も。<br />
+        <p className="text-gray-500 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
+          Agoda・Booking.com・Trip.com・Expedia...<br />
+          同じ部屋なのにOTAで数十ドルの差。<br />
           RyokoAIで最安を見つけよう。
         </p>
         <div className="px-4">
           <SearchForm />
         </div>
-        {/* Trust badges */}
-        <div className="flex flex-wrap justify-center gap-4 text-xs text-white/30">
-          <span>対応OTA: Agoda / Booking.com / Expedia / Hotels.com 他</span>
-          <span>18カ国の価格を比較</span>
+        <div className="flex flex-wrap justify-center gap-4 text-xs text-gray-400">
+          <span>対応OTA: Agoda / Booking.com / Trip.com / Expedia 他</span>
         </div>
       </section>
 
@@ -51,15 +45,15 @@ export default function HomePage() {
 
       {/* FAQ */}
       <section className="px-4 max-w-2xl mx-auto space-y-6">
-        <h2 className="text-white font-bold text-xl text-center">よくある質問</h2>
+        <h2 className="text-gray-900 font-bold text-xl text-center">よくある質問</h2>
         <div className="space-y-3">
           {FAQ.map((item) => (
-            <details key={item.q} className="group bg-[#1E293B] border border-white/5 rounded-xl">
-              <summary className="px-5 py-4 text-sm text-white font-medium cursor-pointer list-none flex items-center justify-between">
+            <details key={item.q} className="group bg-white border border-gray-200 rounded-xl shadow-sm">
+              <summary className="px-5 py-4 text-sm text-gray-900 font-medium cursor-pointer list-none flex items-center justify-between">
                 {item.q}
-                <span className="text-white/30 group-open:rotate-45 transition-transform text-lg">+</span>
+                <span className="text-gray-300 group-open:rotate-45 transition-transform text-lg">+</span>
               </summary>
-              <div className="px-5 pb-4 text-white/50 text-sm leading-relaxed">
+              <div className="px-5 pb-4 text-gray-500 text-sm leading-relaxed">
                 {item.a}
               </div>
             </details>

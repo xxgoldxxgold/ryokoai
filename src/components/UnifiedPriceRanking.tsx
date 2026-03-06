@@ -45,7 +45,6 @@ function getOtaLink(otaName: string, hotelName: string, checkin: string, checkou
   return 'https://www.google.com/travel/hotels?q=' + encodeURIComponent(hotelName);
 }
 
-/** Normalize OTA names for dedup */
 function normalizeOtaName(name: string): string {
   const n = name.toLowerCase().replace(/\.com$/, '').replace(/\s+/g, '');
   if (n.includes('booking')) return 'booking';
@@ -65,199 +64,160 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
   const [xoteloLoading, setXoteloLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  // Fetch Xotelo rates
   useEffect(() => {
     if (!hotelKey || !checkin || !checkout) return;
     setXoteloLoading(true);
     setXoteloRates([]);
-
     fetch(`/api/hotel-rates?hotel_key=${encodeURIComponent(hotelKey)}&checkin=${checkin}&checkout=${checkout}&currency=USD&adults=${adults}`)
       .then((r) => r.json())
-      .then((data) => {
-        setXoteloRates((data.rates || []) as XoteloRate[]);
-      })
+      .then((data) => setXoteloRates((data.rates || []) as XoteloRate[]))
       .catch(() => {})
       .finally(() => setXoteloLoading(false));
   }, [hotelKey, checkin, checkout, adults]);
 
-  // Fetch Google Hotels prices via SerpAPI
   useEffect(() => {
     if (!hotelName || !checkin || !checkout) return;
     setGoogleLoading(true);
     setGooglePrices([]);
-
     fetch(`/api/google-hotels?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}&currency=USD`)
       .then((r) => r.json())
-      .then((data) => {
-        setGooglePrices((data.prices || []) as GooglePrice[]);
-      })
+      .then((data) => setGooglePrices((data.prices || []) as GooglePrice[]))
       .catch(() => {})
       .finally(() => setGoogleLoading(false));
   }, [hotelName, checkin, checkout, adults]);
 
-  // Merge and deduplicate
   const merged: UnifiedEntry[] = [];
   const seen = new Set<string>();
 
-  // Add Xotelo rates first (generally more reliable for tax breakdown)
   for (const r of xoteloRates) {
     if (r.rate <= 0) continue;
     const key = normalizeOtaName(r.name);
     if (seen.has(key)) continue;
     seen.add(key);
-    merged.push({
-      otaName: r.name,
-      rate: r.rate,
-      rateWithTax: r.rate + r.tax,
-      source: 'xotelo',
-      logo: null,
-    });
+    merged.push({ otaName: r.name, rate: r.rate, rateWithTax: r.rate + r.tax, source: 'xotelo', logo: null });
   }
 
-  // Add Google Hotels prices (only if not already from Xotelo)
   for (const p of googlePrices) {
     const key = normalizeOtaName(p.source);
     if (seen.has(key)) continue;
     seen.add(key);
-    merged.push({
-      otaName: p.source,
-      rate: p.rate,
-      rateWithTax: p.rateWithTax,
-      source: 'google',
-      logo: p.logo,
-    });
+    merged.push({ otaName: p.source, rate: p.rate, rateWithTax: p.rateWithTax, source: 'google', logo: p.logo });
   }
 
-  // Sort by rate ascending
   merged.sort((a, b) => a.rate - b.rate);
 
   const loading = xoteloLoading || googleLoading;
   const best = merged.length > 0 ? merged[0] : null;
   const worst = merged.length > 1 ? merged[merged.length - 1] : null;
+  const savings = best && worst && worst.rate > best.rate ? worst.rate - best.rate : 0;
 
   if (!loading && merged.length === 0 && !hotelKey && !hotelName) return null;
 
   return (
-    <div className="space-y-6">
-      <div className="bg-[#1E293B] border border-white/5 rounded-xl p-5 space-y-4">
-        <div>
-          <h3 className="text-white font-bold text-sm flex items-center gap-2">
-            <span className="text-base">&#x1F4B0;</span>
-            OTA最安ランキング
-          </h3>
-          <p className="text-white/30 text-xs mt-1">
-            複数の予約サイトの価格を比較（1泊・USD）
-          </p>
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="px-5 py-4 border-b border-gray-100">
+        <h3 className="text-gray-900 font-bold text-base">OTA最安ランキング</h3>
+        <p className="text-gray-400 text-xs mt-0.5">複数の予約サイトの価格を比較（1泊・USD）</p>
+      </div>
+
+      {/* Loading */}
+      {loading && merged.length === 0 && (
+        <div className="px-5 py-8 flex items-center justify-center gap-2">
+          <div className="w-4 h-4 border-2 border-indigo-200 border-t-indigo-500 rounded-full animate-spin" />
+          <span className="text-gray-400 text-sm">価格を取得中...</span>
         </div>
+      )}
 
-        {/* Loading */}
-        {loading && merged.length === 0 && (
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin" />
-            <span className="text-white/40 text-xs">OTA価格を取得中...</span>
-          </div>
-        )}
-
-        {/* Results */}
-        {merged.length > 0 && (
-          <>
-            {/* Best deal highlight */}
-            {best && worst && best.rate < worst.rate && (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-4 py-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">&#x1F3C6;</span>
-                    <span className="text-emerald-400 text-sm font-bold">{best.otaName}</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-emerald-400 text-lg font-bold">
-                      ${best.rate.toLocaleString()}<span className="text-xs font-normal text-emerald-400/50">/泊</span>
-                    </span>
-                    {best.rateWithTax > best.rate && (
-                      <p className="text-emerald-400/30 text-[10px]">税込 ${best.rateWithTax.toLocaleString()}</p>
-                    )}
-                  </div>
+      {/* Results */}
+      {merged.length > 0 && (
+        <div>
+          {/* Best deal banner */}
+          {best && savings > 0 && (
+            <div className="bg-emerald-50 px-5 py-3 border-b border-emerald-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-emerald-600 text-sm font-bold">{best.otaName}</span>
+                  <span className="text-emerald-500 bg-emerald-100 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+                    最安
+                  </span>
                 </div>
-                <p className="text-emerald-400/60 text-xs mt-1">
-                  最高値より ${(worst.rate - best.rate).toLocaleString()}お得
-                  （{Math.round(((worst.rate - best.rate) / worst.rate) * 100)}%OFF）
-                </p>
+                <div className="text-right">
+                  <span className="text-emerald-700 text-xl font-bold">${best.rate.toLocaleString()}</span>
+                  <span className="text-emerald-500 text-xs font-normal">/泊</span>
+                </div>
+              </div>
+              <p className="text-emerald-500 text-xs mt-1">
+                最高値より <span className="font-semibold">${savings.toLocaleString()}</span> お得
+                （{Math.round((savings / worst!.rate) * 100)}%OFF）
+              </p>
+            </div>
+          )}
+
+          {/* OTA list */}
+          <div className="divide-y divide-gray-50">
+            {merged.map((entry, i) => {
+              const isBest = i === 0 && merged.length > 1;
+              const link = getOtaLink(entry.otaName, hotelName, checkin, checkout, adults);
+              return (
                 <a
-                  href={getOtaLink(best.otaName, hotelName, checkin, checkout, adults)}
+                  key={entry.otaName + entry.source}
+                  href={link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block mt-2 bg-emerald-500/20 text-emerald-400 text-xs font-medium px-3 py-1.5 rounded hover:bg-emerald-500/30 transition-colors"
+                  className={`flex items-center justify-between px-5 py-3.5 transition-colors hover:bg-gray-50 ${isBest ? 'bg-emerald-50/50' : ''}`}
                 >
-                  {best.otaName}で検索する &#x2192;
-                </a>
-              </div>
-            )}
-
-            {/* OTA list */}
-            <div className="space-y-1.5">
-              {merged.map((entry, i) => {
-                const isBest = i === 0 && merged.length > 1;
-                const link = getOtaLink(entry.otaName, hotelName, checkin, checkout, adults);
-                return (
-                  <a
-                    key={entry.otaName + entry.source}
-                    href={link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${
-                      isBest
-                        ? 'bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/15'
-                        : 'bg-white/[0.02] border border-white/5 hover:bg-white/[0.04]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className={`text-xs w-5 text-right ${isBest ? 'text-emerald-400 font-bold' : 'text-white/30'}`}>
-                        {i + 1}.
+                  <div className="flex items-center gap-3">
+                    <span className={`text-xs w-5 text-center font-semibold rounded-full py-0.5 ${
+                      isBest ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-400'
+                    }`}>
+                      {i + 1}
+                    </span>
+                    <span className={`text-sm ${isBest ? 'text-gray-900 font-semibold' : 'text-gray-700'}`}>
+                      {entry.otaName}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="text-right">
+                      <span className={`text-sm font-bold ${isBest ? 'text-emerald-600' : 'text-gray-900'}`}>
+                        ${entry.rate.toLocaleString()}
                       </span>
-                      <span className={`text-sm ${isBest ? 'text-white font-medium' : 'text-white/60'}`}>
-                        {entry.otaName}
-                      </span>
-                      {entry.source === 'google' && (
-                        <span className="text-[9px] text-white/15 bg-white/5 px-1 rounded">G</span>
+                      {entry.rateWithTax > entry.rate && (
+                        <span className="text-gray-300 text-[10px] ml-1.5">税込${entry.rateWithTax.toLocaleString()}</span>
                       )}
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="text-right">
-                        <span className={`text-sm font-semibold ${isBest ? 'text-emerald-400' : 'text-white/80'}`}>
-                          ${entry.rate.toLocaleString()}
-                        </span>
-                        {entry.rateWithTax > entry.rate && (
-                          <span className="text-white/20 text-[10px] ml-1">税込${entry.rateWithTax.toLocaleString()}</span>
-                        )}
-                      </div>
-                      <span className="text-white/20 text-xs">&#x2192;</span>
-                    </div>
-                  </a>
-                );
-              })}
-            </div>
-
-            {/* Still loading one source */}
-            {loading && (
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 border border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin" />
-                <span className="text-white/30 text-[10px]">追加データを取得中...</span>
-              </div>
-            )}
-
-            <p className="text-white/20 text-[10px] text-center">
-              ※ 税抜1泊あたり（USD）／税込価格は各行右側に表示
-            </p>
-          </>
-        )}
-
-        {/* No results */}
-        {!loading && merged.length === 0 && (
-          <div className="text-white/30 text-xs text-center py-3">
-            価格データを取得できませんでした。
+                    <svg className="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </a>
+              );
+            })}
           </div>
-        )}
-      </div>
+
+          {/* Still loading */}
+          {loading && (
+            <div className="px-5 py-2 border-t border-gray-50 flex items-center gap-2">
+              <div className="w-2.5 h-2.5 border-2 border-indigo-200 border-t-indigo-500 rounded-full animate-spin" />
+              <span className="text-gray-400 text-[11px]">追加データを取得中...</span>
+            </div>
+          )}
+
+          {/* Footer note */}
+          <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50">
+            <p className="text-gray-400 text-[10px] text-center">
+              税抜1泊あたり（USD）/ 税込価格は各行右側に表示
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* No results */}
+      {!loading && merged.length === 0 && (
+        <div className="px-5 py-8 text-center">
+          <p className="text-gray-400 text-sm">価格データを取得できませんでした。</p>
+        </div>
+      )}
     </div>
   );
 }

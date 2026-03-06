@@ -2,12 +2,9 @@
 
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState, useMemo } from 'react';
-import { generateAgodaLinks, generateBookingLinks } from '@/lib/generateLinks';
 import { daysBetween } from '@/lib/utils';
-import OtaSection from '@/components/OtaSection';
 import UnifiedPriceRanking from '@/components/UnifiedPriceRanking';
 import SearchForm from '@/components/SearchForm';
-import Link from 'next/link';
 
 interface Candidate {
   hotel_key: string;
@@ -38,7 +35,6 @@ function SearchResults() {
 
   useEffect(() => {
     if (directKey || !hotel) return;
-
     setSearching(true);
     setCandidates([]);
     setSelectedKey(null);
@@ -49,8 +45,6 @@ function SearchResults() {
       .then((data) => {
         const cands: Candidate[] = data.candidates || [];
         setCandidates(cands);
-
-        // サーバーが auto_select=true を返した場合、または候補1件のみの場合に自動選択
         if (cands.length > 0 && (data.auto_select || cands.length === 1)) {
           setSelectedKey(cands[0].hotel_key);
           setSelectedName(cands[0].name);
@@ -63,18 +57,14 @@ function SearchResults() {
   if (!hotel || !checkin || !checkout) {
     return (
       <div className="px-4 py-16 text-center space-y-6">
-        <p className="text-white/50 text-sm">検索条件を入力してください。</p>
+        <p className="text-gray-400 text-sm">検索条件を入力してください。</p>
         <SearchForm />
       </div>
     );
   }
 
   const nights = daysBetween(checkin, checkout);
-  const params = { hotel, checkin, checkout, adults, rooms };
-  const agodaLinks = generateAgodaLinks(params);
-  const bookingLinks = generateBookingLinks(params);
-
-  const displayName = selectedName || (directKey ? hotel : hotel);
+  const displayName = selectedName || hotel;
 
   function handleSelectCandidate(c: Candidate) {
     setSelectedKey(c.hotel_key);
@@ -82,27 +72,27 @@ function SearchResults() {
   }
 
   return (
-    <div className="px-4 py-8 max-w-3xl mx-auto space-y-8">
+    <div className="px-4 py-8 max-w-2xl mx-auto space-y-6">
       {/* Search summary */}
-      <div className="bg-[#1E293B] border border-white/5 rounded-xl px-5 py-4 space-y-1">
-        <h1 className="text-white font-bold text-lg">{displayName}</h1>
-        <p className="text-white/40 text-sm">
+      <div className="bg-white border border-gray-200 rounded-2xl px-5 py-4 shadow-sm">
+        <h1 className="text-gray-900 font-bold text-lg">{displayName}</h1>
+        <p className="text-gray-400 text-sm mt-0.5">
           {checkin} ~ {checkout}（{nights}泊）/ {adults}名 / {rooms}室
         </p>
       </div>
 
       {/* Hotel search status */}
       {searching && (
-        <div className="flex items-center gap-2 text-white/40 text-sm">
-          <div className="w-3 h-3 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin" />
+        <div className="flex items-center gap-2 text-gray-400 text-sm">
+          <div className="w-3 h-3 border-2 border-indigo-200 border-t-indigo-500 rounded-full animate-spin" />
           ホテルを検索中...
         </div>
       )}
 
-      {/* Candidate selection UI - shown when multiple candidates and none selected */}
+      {/* Candidate selection */}
       {!searching && candidates.length > 1 && !selectedKey && (
-        <div className="bg-[#1E293B] border border-white/5 rounded-xl p-5 space-y-3">
-          <h3 className="text-white font-bold text-sm">
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-3">
+          <h3 className="text-gray-900 font-bold text-sm">
             該当するホテルを選択してください（{candidates.length}件）
           </h3>
           <div className="space-y-2">
@@ -110,23 +100,23 @@ function SearchResults() {
               <button
                 key={c.hotel_key}
                 onClick={() => handleSelectCandidate(c)}
-                className="w-full text-left px-4 py-3 rounded-lg bg-white/[0.03] border border-white/10 hover:bg-indigo-500/10 hover:border-indigo-500/30 transition-colors"
+                className="w-full text-left px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 hover:bg-indigo-50 hover:border-indigo-200 transition-colors"
               >
-                <span className="text-white text-sm">{c.name}</span>
-                <span className="text-white/20 text-xs ml-2">({c.hotel_key})</span>
+                <span className="text-gray-900 text-sm">{c.name}</span>
+                <span className="text-gray-300 text-xs ml-2">({c.hotel_key})</span>
               </button>
             ))}
           </div>
         </div>
       )}
 
-      {/* Selected candidate indicator (when user chose from multiple) */}
+      {/* Selected candidate */}
       {!searching && candidates.length > 1 && selectedKey && (
-        <div className="flex items-center justify-between bg-indigo-500/10 border border-indigo-500/20 rounded-xl px-5 py-3">
-          <span className="text-indigo-300 text-sm font-medium">{selectedName}</span>
+        <div className="flex items-center justify-between bg-indigo-50 border border-indigo-200 rounded-2xl px-5 py-3">
+          <span className="text-indigo-700 text-sm font-medium">{selectedName}</span>
           <button
             onClick={() => { setSelectedKey(null); setSelectedName(null); }}
-            className="text-xs text-white/40 hover:text-white/60 transition-colors"
+            className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
           >
             変更する
           </button>
@@ -135,14 +125,14 @@ function SearchResults() {
 
       {/* No results */}
       {!searching && !directKey && candidates.length === 0 && (
-        <div className="bg-[#1E293B] border border-white/5 rounded-xl px-5 py-4">
-          <p className="text-white/40 text-sm">
+        <div className="bg-white border border-gray-200 rounded-2xl px-5 py-4 shadow-sm">
+          <p className="text-gray-400 text-sm">
             ホテルが見つかりませんでした。TripAdvisorのURLを直接入力してみてください。
           </p>
         </div>
       )}
 
-      {/* Unified Price Ranking - Booking.com geo prices + Xotelo OTA prices */}
+      {/* Price ranking */}
       {hotel && checkin && checkout && (
         <UnifiedPriceRanking
           hotelName={selectedName || hotel}
@@ -154,26 +144,9 @@ function SearchResults() {
         />
       )}
 
-      {/* Country link sections */}
-      <OtaSection name="Agoda" color="bg-red-500/30" links={agodaLinks} />
-      <OtaSection name="Booking.com" color="bg-blue-500/30" links={bookingLinks} />
-
-      {/* VPN banner */}
-      <Link
-        href="/guide"
-        className="block bg-amber-500/10 border border-amber-500/20 rounded-xl px-5 py-4 hover:bg-amber-500/15 transition-colors"
-      >
-        <p className="text-amber-400 text-sm font-medium">
-          💡 VPNを使うとリンク先の価格がそのまま適用されます
-        </p>
-        <p className="text-amber-400/50 text-xs mt-1">
-          ガイドを見る →
-        </p>
-      </Link>
-
       {/* Disclaimer */}
-      <p className="text-white/20 text-xs text-center">
-        ⚠️ 表示される価格はOTAサイト上の価格です。RyokoAIは価格を保証するものではありません。
+      <p className="text-gray-400 text-xs text-center">
+        表示される価格はOTAサイト上の価格です。RyokoAIは価格を保証するものではありません。
       </p>
     </div>
   );
@@ -181,7 +154,7 @@ function SearchResults() {
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="px-4 py-16 text-center text-white/30 text-sm">読み込み中...</div>}>
+    <Suspense fallback={<div className="px-4 py-16 text-center text-gray-400 text-sm">読み込み中...</div>}>
       <SearchResults />
     </Suspense>
   );
