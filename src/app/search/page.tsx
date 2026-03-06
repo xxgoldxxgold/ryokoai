@@ -11,6 +11,33 @@ interface Candidate {
   name: string;
 }
 
+const CITY_CODES: Record<string, string> = {
+  seoul: 'SEL', tokyo: 'TYO', osaka: 'OSA', kyoto: 'UKY', bangkok: 'BKK',
+  singapore: 'SIN', hongkong: 'HKG', taipei: 'TPE', hanoi: 'HAN',
+  saigon: 'SGN', bali: 'DPS', jakarta: 'JKT', manila: 'MNL',
+  paris: 'PAR', london: 'LON', york: 'NYC', angeles: 'LAX',
+  hawaii: 'HNL', waikiki: 'HNL', honolulu: 'HNL', guam: 'GUM',
+  sydney: 'SYD', dubai: 'DXB', rome: 'ROM', barcelona: 'BCN',
+  amsterdam: 'AMS', berlin: 'BER', munich: 'MUC', vienna: 'VIE',
+  prague: 'PRG', istanbul: 'IST', lumpur: 'KUL', beijing: 'BJS',
+  shanghai: 'SHA', busan: 'PUS', fukuoka: 'FUK', sapporo: 'SPK',
+  okinawa: 'OKA', naha: 'OKA', nagoya: 'NGO',
+};
+
+function detectCityCode(hotelName: string): string | undefined {
+  const lower = hotelName.toLowerCase();
+  // Multi-word city names
+  if (lower.includes('hong kong')) return 'HKG';
+  if (lower.includes('ho chi minh')) return 'SGN';
+  if (lower.includes('new york')) return 'NYC';
+  if (lower.includes('los angeles')) return 'LAX';
+  if (lower.includes('kuala lumpur')) return 'KUL';
+  for (const [city, code] of Object.entries(CITY_CODES)) {
+    if (lower.includes(city)) return code;
+  }
+  return undefined;
+}
+
 function extractDirectKey(input: string): string | null {
   const taMatch = input.match(/Hotel_Review-(g\d+-d\d+)/);
   if (taMatch) return taMatch[1];

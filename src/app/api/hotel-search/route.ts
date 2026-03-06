@@ -100,6 +100,49 @@ function dedup(candidates: Candidate[]): Candidate[] {
   return result;
 }
 
+/** Common katakana-to-English hotel word mappings */
+const KATA_MAP: Record<string, string> = {
+  'アヤナ': 'ayana', 'リゾート': 'resort', 'ヴィラ': 'villa', 'ヴィラズ': 'villas',
+  'リンバ': 'rimba', 'セガラ': 'segara', 'レジデンス': 'residences',
+  'パレス': 'palace', 'グランド': 'grand', 'ロイヤル': 'royal',
+  'インターコンチネンタル': 'intercontinental', 'マリオット': 'marriott',
+  'ヒルトン': 'hilton', 'シェラトン': 'sheraton', 'ハイアット': 'hyatt',
+  'リッツ': 'ritz', 'カールトン': 'carlton', 'フォーシーズンズ': 'four seasons',
+  'マンダリン': 'mandarin', 'オリエンタル': 'oriental', 'ペニンシュラ': 'peninsula',
+  'シャングリラ': 'shangri-la', 'バンヤン': 'banyan', 'ツリー': 'tree',
+  'コンラッド': 'conrad', 'ウェスティン': 'westin', 'セント': 'st',
+  'レジス': 'regis', 'アマン': 'aman', 'ブルガリ': 'bulgari',
+  'ホテル': 'hotel', 'イン': 'inn', 'スイート': 'suite',
+};
+
+/** Normalize query for matching: convert katakana, remove common words, lowercase */
+function normalizeForMatch(s: string): string {
+  let result = s;
+  for (const [kata, en] of Object.entries(KATA_MAP)) {
+    result = result.replace(new RegExp(kata, 'g'), en);
+  }
+  // Also apply location map
+  for (const [jp, enList] of Object.entries(LOCATION_MAP)) {
+    result = result.replace(new RegExp(jp, 'g'), enList[0]);
+  }
+  return result.toLowerCase()
+    .replace(/[&,.\-()（）]/g, ' ')
+    .replace(/\b(hotel|resort|the|and|by|at|in)\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/** Check if the first candidate is a strong match for the query */
+function isStrongMatch(query: string, candidateName: string): boolean {
+  const normQ = normalizeForMatch(query);
+  const normC = normalizeForMatch(candidateName);
+  // Query words that appear in candidate name
+  const qWords = normQ.split(' ').filter(w => w.length > 1);
+  if (qWords.length === 0) return false;
+  const matched = qWords.filter(w => normC.includes(w));
+  return matched.length >= qWords.length * 0.7;
+}
+
 /** Filter and sort candidates based on location keywords from query */
 function filterAndSort(candidates: Candidate[], locations: string[], query: string): { filtered: Candidate[]; autoSelect: boolean } {
   if (locations.length === 0) {
@@ -121,8 +164,9 @@ function filterAndSort(candidates: Candidate[], locations: string[], query: stri
     // Sort by match count descending
     matching.sort((a, b) => b.matchCount - a.matchCount);
     const filtered = matching.map((s) => s.candidate);
-    // Auto-select: always pick first result if 3 or fewer candidates
-    return { filtered, autoSelect: filtered.length <= 3 };
+    // Auto-select if first candidate strongly matches the query, or few candidates
+    const autoSelect = filtered.length <= 3 || isStrongMatch(query, filtered[0].name);
+    return { filtered, autoSelect };
   }
 
   // No location matches at all — auto-select first if few candidates

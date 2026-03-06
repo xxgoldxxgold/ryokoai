@@ -4,6 +4,9 @@ import Footer from '@/components/Footer';
 import './globals.css';
 
 export const metadata: Metadata = {
+  other: {
+    'agd-partner-manual-verification': '',
+  },
   title: 'RyokoAI - ホテル最安値を国別・OTA別に比較 | 同じホテルを最大25%安く',
   description: '同じホテルでもOTAや国によって価格が最大25%違います。RyokoAIで18カ国×複数OTAの価格を一括比較。Agoda, Booking.com, Expedia, Hotels.comの最安値を見つけよう。',
   openGraph: {
