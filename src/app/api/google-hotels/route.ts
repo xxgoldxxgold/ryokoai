@@ -15,22 +15,6 @@ interface SerpPrice {
   };
 }
 
-interface SerpProperty {
-  name?: string;
-  type?: string;
-  overall_rating?: number;
-  reviews?: number;
-  rate_per_night?: {
-    lowest?: string;
-    extracted_lowest?: number;
-    before_taxes_fees?: string;
-    extracted_before_taxes_fees?: number;
-  };
-  prices?: SerpPrice[];
-  featured_prices?: SerpPrice[];
-  link?: string;
-}
-
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const query = searchParams.get('q') || '';
@@ -61,32 +45,46 @@ export async function GET(req: NextRequest) {
     const res = await fetch(url.toString(), { signal: controller.signal });
     clearTimeout(timeout);
 
-    const data = await res.json();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data = await res.json() as any;
 
     if (data.error) {
       return NextResponse.json({ error: data.error, prices: [] }, { status: 200 });
     }
 
-    const properties = (data.properties || []) as SerpProperty[];
-    const topProperty = properties[0];
-    if (!topProperty) {
-      return NextResponse.json({ prices: [], hotel_name: null });
+    // SerpAPI has two response modes:
+    // 1. "properties" mode: multiple hotels, prices inside properties[0]
+    // 2. "property details" mode: single hotel, prices/featured_prices at top level
+    let featuredPrices: SerpPrice[] = [];
+    let regularPrices: SerpPrice[] = [];
+    let hotelName: string | null = null;
+
+    const properties = data.properties || [];
+    if (properties.length > 0) {
+      // Mode 1: properties array
+      const top = properties[0];
+      hotelName = top.name || null;
+      featuredPrices = top.featured_prices || [];
+      regularPrices = top.prices || [];
+    } else if (data.name) {
+      // Mode 2: property details at top level
+      hotelName = data.name || null;
+      featuredPrices = data.featured_prices || [];
+      regularPrices = data.prices || [];
     }
 
-    // Merge prices and featured_prices, dedup by source name
+    // Merge featured + regular, dedup by source name
     const allPrices: SerpPrice[] = [];
     const seenSources = new Set<string>();
 
-    // featured_prices first (often has more detail / rooms)
-    for (const p of (topProperty.featured_prices || [])) {
+    for (const p of featuredPrices) {
       const src = (p.source || '').toLowerCase();
       if (!seenSources.has(src)) {
         seenSources.add(src);
         allPrices.push(p);
       }
     }
-    // then regular prices
-    for (const p of (topProperty.prices || [])) {
+    for (const p of regularPrices) {
       const src = (p.source || '').toLowerCase();
       if (!seenSources.has(src)) {
         seenSources.add(src);
@@ -104,11 +102,8 @@ export async function GET(req: NextRequest) {
     })).filter((p) => p.rate > 0);
 
     return NextResponse.json({
-      hotel_name: topProperty.name || null,
-      overall_rating: topProperty.overall_rating || null,
-      reviews: topProperty.reviews || null,
+      hotel_name: hotelName,
       prices,
-      property_count: properties.length,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
