@@ -112,9 +112,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
     } else if (gp) {
       merged.push({ otaName: gp.source, rate: gp.rate, rateWithTax: gp.rateWithTax, link: gp.link });
     } else if (xr) {
-      // Xotelo only - link to TripAdvisor hotel page (has OTA booking links)
-      const taLink = hotelKey ? `https://www.tripadvisor.com/Hotel_Review-${hotelKey}` : null;
-      merged.push({ otaName: xr.name, rate: xr.rate, rateWithTax: xr.rate + xr.tax, link: taLink });
+      // Xotelo only - skip (no reliable link available)
     }
   }
 
