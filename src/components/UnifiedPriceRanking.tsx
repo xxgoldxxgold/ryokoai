@@ -112,8 +112,9 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
     } else if (gp) {
       merged.push({ otaName: gp.source, rate: gp.rate, rateWithTax: gp.rateWithTax, link: gp.link });
     } else if (xr) {
-      // Xotelo only - no direct link available
-      merged.push({ otaName: xr.name, rate: xr.rate, rateWithTax: xr.rate + xr.tax, link: null });
+      // Xotelo only - link to TripAdvisor hotel page (has OTA booking links)
+      const taLink = hotelKey ? `https://www.tripadvisor.com/Hotel_Review-${hotelKey}` : null;
+      merged.push({ otaName: xr.name, rate: xr.rate, rateWithTax: xr.rate + xr.tax, link: taLink });
     }
   }
 
@@ -164,9 +165,14 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
           <div className="divide-y divide-gray-50">
             {merged.map((entry, i) => {
               const isBest = i === 0 && merged.length > 1;
-              const href = entry.link;
-              const inner = (
-                <div className={`flex items-center justify-between px-5 py-3.5 transition-colors hover:bg-gray-50 ${isBest ? 'bg-emerald-50/50' : ''}`}>
+              return (
+                <a
+                  key={entry.otaName}
+                  href={entry.link || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`flex items-center justify-between px-5 py-3.5 transition-colors hover:bg-gray-50 ${isBest ? 'bg-emerald-50/50' : ''}`}
+                >
                   <div className="flex items-center gap-3">
                     <span className={`text-xs w-5 text-center font-semibold rounded-full py-0.5 ${
                       isBest ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-400'
@@ -176,9 +182,6 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
                     <span className={`text-sm ${isBest ? 'text-gray-900 font-semibold' : 'text-gray-700'}`}>
                       {entry.otaName}
                     </span>
-                    {!entry.link && (
-                      <span className="text-gray-300 text-[9px]">リンクなし</span>
-                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="text-right">
@@ -189,23 +192,12 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
                         <span className="text-gray-300 text-[10px] ml-1.5">税込${entry.rateWithTax.toLocaleString()}</span>
                       )}
                     </div>
-                    {entry.link && (
-                      <svg className="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    )}
+                    <svg className="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
-                </div>
+                </a>
               );
-
-              if (href) {
-                return (
-                  <a key={entry.otaName} href={href} target="_blank" rel="noopener noreferrer">
-                    {inner}
-                  </a>
-                );
-              }
-              return <div key={entry.otaName}>{inner}</div>;
             })}
           </div>
 
