@@ -89,36 +89,13 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
       .finally(() => setGoogleLoading(false));
   }, [hotelName, checkin, checkout, adults]);
 
-  // Build a link lookup from Google Hotels data (normalized OTA name -> direct link)
-  const googleLinkMap = new Map<string, string>();
-  for (const p of googlePrices) {
-    const key = normalizeOtaName(p.source);
-    if (p.link && !googleLinkMap.has(key)) {
-      googleLinkMap.set(key, p.link);
-    }
-  }
-
-  // Merge results
+  // Merge results: Google Hotels first (real-time, has direct links), then Xotelo as supplement
   const merged: UnifiedEntry[] = [];
   const seen = new Set<string>();
 
-  // Xotelo rates first — attach Google Hotels link if available
-  for (const r of xoteloRates) {
-    if (r.rate <= 0) continue;
-    const key = normalizeOtaName(r.name);
-    if (seen.has(key)) continue;
-    seen.add(key);
-    merged.push({
-      otaName: r.name,
-      rate: r.rate,
-      rateWithTax: r.rate + r.tax,
-      link: googleLinkMap.get(key) || null,
-      source: 'xotelo',
-    });
-  }
-
-  // Google Hotels prices (only ones not already from Xotelo)
+  // Google Hotels prices first (more accurate, has direct booking links)
   for (const p of googlePrices) {
+    if (p.rate <= 0) continue;
     const key = normalizeOtaName(p.source);
     if (seen.has(key)) continue;
     seen.add(key);
@@ -128,6 +105,21 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
       rateWithTax: p.rateWithTax,
       link: p.link,
       source: 'google',
+    });
+  }
+
+  // Xotelo rates as supplement (only OTAs not already from Google Hotels)
+  for (const r of xoteloRates) {
+    if (r.rate <= 0) continue;
+    const key = normalizeOtaName(r.name);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push({
+      otaName: r.name,
+      rate: r.rate,
+      rateWithTax: r.rate + r.tax,
+      link: null,
+      source: 'xotelo',
     });
   }
 
@@ -222,9 +214,12 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
             </div>
           )}
 
-          <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50">
+          <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50 space-y-1">
             <p className="text-gray-400 text-[10px] text-center">
               税抜1泊あたり（USD）/ 税込価格は各行右側に表示
+            </p>
+            <p className="text-amber-500 text-[10px] text-center">
+              ※ 価格は参考値です。在庫状況や最終価格はリンク先でご確認ください
             </p>
           </div>
         </div>
