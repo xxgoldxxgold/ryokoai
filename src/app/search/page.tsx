@@ -159,8 +159,8 @@ function SearchResults() {
         </div>
       )}
 
-      {/* Price ranking */}
-      {hotel && checkin && checkout && (
+      {/* Price ranking — wait for selectedKey so hotelName is stable */}
+      {selectedKey && checkin && checkout && (
         <UnifiedPriceRanking
           hotelName={selectedName || hotel}
           hotelKey={selectedKey}
