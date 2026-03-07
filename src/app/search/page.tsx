@@ -4,7 +4,10 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState, useMemo } from 'react';
 import { daysBetween } from '@/lib/utils';
 import UnifiedPriceRanking from '@/components/UnifiedPriceRanking';
+import DataForSeoPricePanel from '@/components/DataForSeoPricePanel';
 import SearchForm from '@/components/SearchForm';
+import { useAuth } from '@/lib/useAuth';
+import Link from 'next/link';
 
 interface Candidate {
   hotel_key: string;
@@ -26,7 +29,6 @@ const CITY_CODES: Record<string, string> = {
 
 function detectCityCode(hotelName: string): string | undefined {
   const lower = hotelName.toLowerCase();
-  // Multi-word city names
   if (lower.includes('hong kong')) return 'HKG';
   if (lower.includes('ho chi minh')) return 'SGN';
   if (lower.includes('new york')) return 'NYC';
@@ -46,6 +48,32 @@ function extractDirectKey(input: string): string | null {
   return null;
 }
 
+function SpeedPromoBanner() {
+  return (
+    <Link
+      href="/login"
+      className="block bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-2xl px-5 py-4 shadow-sm hover:shadow-md transition-shadow"
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex-shrink-0 w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+          <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-indigo-700 font-bold text-sm">ログインで高速検索</p>
+          <p className="text-indigo-500 text-xs mt-0.5">
+            無料ログインで3倍速く、より多くのOTA価格を比較できます
+          </p>
+        </div>
+        <svg className="w-5 h-5 text-indigo-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+    </Link>
+  );
+}
+
 function SearchResults() {
   const searchParams = useSearchParams();
   const hotel = searchParams.get('hotel');
@@ -53,6 +81,7 @@ function SearchResults() {
   const checkout = searchParams.get('checkout');
   const adults = Number(searchParams.get('adults')) || 2;
   const rooms = Number(searchParams.get('rooms')) || 1;
+  const { isLoggedIn, loading: authLoading } = useAuth();
 
   const directKey = useMemo(() => hotel ? extractDirectKey(hotel) : null, [hotel]);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -159,16 +188,28 @@ function SearchResults() {
         </div>
       )}
 
-      {/* Price ranking — wait for selectedKey so hotelName is stable */}
-      {selectedKey && checkin && checkout && (
-        <UnifiedPriceRanking
-          hotelName={selectedName || hotel}
-          hotelKey={selectedKey}
-          checkin={checkin}
-          checkout={checkout}
-          adults={adults}
-          rooms={rooms}
-        />
+      {/* Price ranking — branch by auth state */}
+      {!authLoading && selectedKey && checkin && checkout && (
+        isLoggedIn ? (
+          <UnifiedPriceRanking
+            hotelName={selectedName || hotel}
+            hotelKey={selectedKey}
+            checkin={checkin}
+            checkout={checkout}
+            adults={adults}
+            rooms={rooms}
+          />
+        ) : (
+          <>
+            <SpeedPromoBanner />
+            <DataForSeoPricePanel
+              hotelName={selectedName || hotel}
+              checkin={checkin}
+              checkout={checkout}
+              adults={adults}
+            />
+          </>
+        )
       )}
 
       {/* Disclaimer */}
