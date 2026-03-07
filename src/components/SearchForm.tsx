@@ -56,8 +56,8 @@ export default function SearchForm() {
               const val = e.target.value;
               setCheckin(val);
               if (val) {
-                const next = new Date(val);
-                next.setDate(next.getDate() + 1);
+                const [y, m, d] = val.split('-').map(Number);
+                const next = new Date(y, m - 1, d + 1);
                 setCheckout(toLocalDate(next));
               }
             }}
