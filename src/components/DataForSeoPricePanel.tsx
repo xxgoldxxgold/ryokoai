@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useUsdToJpy, toJpy } from '@/lib/useExchangeRate';
 
 interface DfsPrice {
@@ -21,24 +21,35 @@ interface Props {
 export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adults }: Props) {
   const [prices, setPrices] = useState<DfsPrice[]>([]);
   const [hotelTitle, setHotelTitle] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const prevParams = useRef('');
   const jpyRate = useUsdToJpy();
+
+  const paramsKey = `${hotelName}|${checkin}|${checkout}|${adults}`;
 
   useEffect(() => {
     if (!hotelName || !checkin || !checkout) return;
+    if (prevParams.current === paramsKey) return;
+    prevParams.current = paramsKey;
+
     setLoading(true);
     setPrices([]);
     setHotelTitle(null);
+    setError(null);
 
     fetch(`/api/dataforseo-hotels?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}`)
       .then(r => r.json())
       .then(data => {
+        if (data.error && (!data.prices || data.prices.length === 0)) {
+          setError(data.error);
+        }
         setPrices(data.prices || []);
         setHotelTitle(data.hotel_name || null);
       })
-      .catch(() => {})
+      .catch((e) => { setError(e.message || 'ネットワークエラー'); })
       .finally(() => setLoading(false));
-  }, [hotelName, checkin, checkout, adults]);
+  }, [paramsKey, hotelName, checkin, checkout, adults]);
 
   const best = prices.length > 0 ? prices[0] : null;
   const worst = prices.length > 1 ? prices[prices.length - 1] : null;
@@ -48,8 +59,7 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
     <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
       <div className="px-5 py-4 border-b border-gray-100">
         <div className="flex items-center gap-2">
-          <h3 className="text-gray-900 font-bold text-base">DataForSEO価格比較</h3>
-          <span className="text-[10px] font-medium px-1.5 py-0.5 bg-blue-100 text-blue-600 rounded-full">広範囲</span>
+          <h3 className="text-gray-900 font-bold text-base">OTA価格比較</h3>
         </div>
         <p className="text-gray-400 text-xs mt-0.5">
           {hotelTitle ? `${hotelTitle} — ` : ''}Google Hotels経由の全OTA価格（1泊・USD）
@@ -130,7 +140,7 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
 
           <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50">
             <p className="text-gray-400 text-[10px] text-center">
-              DataForSEO経由・1泊あたり（USD）{jpyRate && ` / 1USD≈¥${Math.round(jpyRate)}`}
+              Google Hotels経由・1泊あたり（USD）{jpyRate && ` / 1USD≈¥${Math.round(jpyRate)}`}
             </p>
           </div>
         </div>
@@ -138,7 +148,9 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
 
       {!loading && prices.length === 0 && (
         <div className="px-5 py-8 text-center">
-          <p className="text-gray-400 text-sm">価格データを取得できませんでした。</p>
+          <p className="text-gray-400 text-sm">
+            {error || '価格データを取得できませんでした。'}
+          </p>
         </div>
       )}
     </div>
