@@ -31,8 +31,6 @@ export default function AgodaPricePage() {
   const [error, setError] = useState('');
   const [elapsed, setElapsed] = useState(0);
   const [statusMsg, setStatusMsg] = useState('');
-  const [debugKeys, setDebugKeys] = useState<string[]>([]);
-  const [debugRaw, setDebugRaw] = useState<string>('');
 
   const handleSearch = async () => {
     if (!hotelName.trim()) { setError('ホテル名を入力してください'); return; }
@@ -63,8 +61,6 @@ export default function AgodaPricePage() {
       setStatusMsg('結果を取得中...');
       const resultData = await api({ action: 'results', datasetId });
       setResult(resultData.hotel || null);
-      setDebugKeys(resultData.debug_keys || []);
-      if (resultData.hotel) setDebugRaw(JSON.stringify(resultData.hotel, null, 2));
       if (!resultData.hotel) setError('該当するホテルが見つかりませんでした');
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : '通信エラー');
@@ -73,8 +69,14 @@ export default function AgodaPricePage() {
     }
   };
 
-  const price = result ? (() => {
-    const p = result.price || result.originalPrice;
+  const pricePerNight = result ? (() => {
+    const p = result.pricePerRoomPerNight;
+    if (!p) return null;
+    return typeof p === 'number' ? p : parseFloat(String(p).replace(/[^0-9.]/g, ''));
+  })() : null;
+
+  const priceTotal = result ? (() => {
+    const p = result.pricePerBook;
     if (!p) return null;
     return typeof p === 'number' ? p : parseFloat(String(p).replace(/[^0-9.]/g, ''));
   })() : null;
@@ -130,14 +132,6 @@ export default function AgodaPricePage() {
 
         {error && <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 mb-6">{error}</div>}
 
-        {debugKeys.length > 0 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6 text-xs">
-            <p className="font-bold mb-1">DEBUG - フィールド一覧:</p>
-            <p>{debugKeys.join(', ')}</p>
-            <details className="mt-2"><summary>生データ</summary><pre className="overflow-auto max-h-60 mt-1">{debugRaw}</pre></details>
-          </div>
-        )}
-
         {result && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             {str(result.image || result.thumbnail) && (
@@ -167,12 +161,19 @@ export default function AgodaPricePage() {
               )}
 
               <div className="bg-purple-50 border border-purple-200 rounded-xl p-5 text-center">
-                <p className="text-xs text-purple-600 font-medium mb-1">インドネシアからのAgoda価格</p>
-                {price ? (
-                  <p className="text-3xl font-bold text-red-600">
-                    {str(result.currency)} {price.toLocaleString()}
-                    <span className="text-sm text-gray-400 font-normal ml-1">/泊</span>
-                  </p>
+                <p className="text-xs text-purple-600 font-medium mb-2">インドネシアからのAgoda価格</p>
+                {pricePerNight ? (
+                  <>
+                    <p className="text-3xl font-bold text-red-600">
+                      {str(result.priceCurrency)} {pricePerNight.toLocaleString()}
+                      <span className="text-sm text-gray-400 font-normal ml-1">/泊</span>
+                    </p>
+                    {priceTotal && priceTotal !== pricePerNight && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        合計: {str(result.priceCurrency)} {priceTotal.toLocaleString()}
+                      </p>
+                    )}
+                  </>
                 ) : (
                   <p className="text-gray-400">価格情報を取得できませんでした</p>
                 )}

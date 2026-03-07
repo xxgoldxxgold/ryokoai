@@ -23,8 +23,7 @@ export async function POST(req: NextRequest) {
     if (action === 'results' && datasetId) {
       const res = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${APIFY_TOKEN}&limit=1`);
       const items = await res.json();
-      const hotel = Array.isArray(items) ? items[0] || null : null;
-      return NextResponse.json({ hotel, debug_keys: hotel ? Object.keys(hotel) : [] });
+      return NextResponse.json({ hotel: Array.isArray(items) ? items[0] || null : null });
     }
 
     // Default: start run
