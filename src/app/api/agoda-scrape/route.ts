@@ -56,10 +56,6 @@ If you see multiple hotels, extract the one that best matches "${hotelName}". If
           startUrl: agodaUrl,
           instructions: instructions,
           maxTotalChargeUsd: 0.1,
-          proxyConfiguration: {
-            useApifyProxy: false,
-            proxyUrls: [proxyUrl],
-          },
         }),
       }
     );
