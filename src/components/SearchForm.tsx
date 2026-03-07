@@ -40,9 +40,9 @@ export default function SearchForm() {
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <label className="block text-xs text-gray-500 mb-1">チェックイン</label>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="min-w-0">
+          <label className="block text-xs text-gray-500 mb-1">イン</label>
           <input
             type="date"
             value={checkin}
@@ -57,18 +57,18 @@ export default function SearchForm() {
             }}
             min={today}
             required
-            className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 shadow-sm"
+            className="w-full px-1.5 py-2.5 rounded-xl bg-white border border-gray-200 text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 shadow-sm"
           />
         </div>
-        <div>
-          <label className="block text-xs text-gray-500 mb-1">チェックアウト</label>
+        <div className="min-w-0">
+          <label className="block text-xs text-gray-500 mb-1">アウト</label>
           <input
             type="date"
             value={checkout}
             onChange={(e) => setCheckout(e.target.value)}
             min={checkin || today}
             required
-            className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 shadow-sm"
+            className="w-full px-1.5 py-2.5 rounded-xl bg-white border border-gray-200 text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 shadow-sm"
           />
         </div>
       </div>
