@@ -30,11 +30,10 @@ export default function AgodaPricePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [elapsed, setElapsed] = useState(0);
-  const [mbUsed, setMbUsed] = useState('');
 
   const handleSearch = async () => {
     if (!hotelName.trim()) { setError('ホテル名を入力してください'); return; }
-    setLoading(true); setError(''); setHotels([]); setElapsed(0); setMbUsed('');
+    setLoading(true); setError(''); setHotels([]); setElapsed(0);
     const start = Date.now();
     const timer = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 1000);
 
@@ -50,7 +49,6 @@ export default function AgodaPricePage() {
         setError(data.error);
       } else if (data.success && data.data?.hotels?.length > 0) {
         setHotels(data.data.hotels);
-        if (data.data.mbUsed) setMbUsed(data.data.mbUsed);
       } else {
         setError('ホテルが見つかりませんでした');
       }
@@ -114,7 +112,7 @@ export default function AgodaPricePage() {
 
         {hotels.length > 0 && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-500">{hotels.length}件のホテルが見つかりました {mbUsed && <span className="ml-2 text-gray-400">({mbUsed}MB通信)</span>}</p>
+            <p className="text-sm text-gray-500">{hotels.length}件のホテルが見つかりました</p>
             {hotels.map((h, i) => {
               const priceIDR = h.priceText ? parseInt(h.priceText.replace(/[^\d]/g, ''), 10) : 0;
               const priceJPY = priceIDR > 0 ? Math.round(priceIDR / 107) : 0;
