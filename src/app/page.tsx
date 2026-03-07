@@ -20,7 +20,7 @@ export default function HomePage() {
   return (
     <div className="space-y-20 pb-8">
       {/* Hero */}
-      <section className="pt-16 pb-4 px-6 text-center space-y-6">
+      <section className="pt-16 pb-4 px-4 text-center space-y-6">
         <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
           同じホテル、予約サイトで<br />
           <span className="text-indigo-500">これだけ違う。</span>

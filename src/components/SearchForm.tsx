@@ -24,8 +24,10 @@ export default function SearchForm() {
     router.push(`/search?${params.toString()}`);
   }
 
-  const now = new Date();
-  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  function toLocalDate(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+  const today = toLocalDate(new Date());
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto space-y-4">
@@ -52,7 +54,7 @@ export default function SearchForm() {
               if (val) {
                 const next = new Date(val);
                 next.setDate(next.getDate() + 1);
-                setCheckout(next.toISOString().split('T')[0]);
+                setCheckout(toLocalDate(next));
               }
             }}
             min={today}
