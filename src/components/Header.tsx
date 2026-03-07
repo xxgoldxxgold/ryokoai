@@ -198,7 +198,7 @@ export default function Header() {
       <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-0.5 text-lg font-bold text-gray-900 tracking-tight">
-            <img src="/logo.png" alt="RyokoAI" style={{ height: '24px', width: '24px' }} />
+            <img src="/logo.png" alt="RyokoAI" style={{ height: '36px', width: '36px' }} />
             Ryoko<span className="text-indigo-500">AI</span>
           </Link>
           <nav className="flex items-center gap-4 text-sm">
