@@ -1,7 +1,11 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+
+function toLocalDate(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
 export default function SearchForm() {
   const router = useRouter();
@@ -10,6 +14,11 @@ export default function SearchForm() {
   const [checkout, setCheckout] = useState('');
   const [adults, setAdults] = useState(2);
   const [rooms, setRooms] = useState(1);
+  const [today, setToday] = useState('');
+
+  useEffect(() => {
+    setToday(toLocalDate(new Date()));
+  }, []);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -23,11 +32,6 @@ export default function SearchForm() {
     });
     router.push(`/search?${params.toString()}`);
   }
-
-  function toLocalDate(d: Date): string {
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  }
-  const today = toLocalDate(new Date());
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto space-y-4">
@@ -57,7 +61,7 @@ export default function SearchForm() {
                 setCheckout(toLocalDate(next));
               }
             }}
-            min={today}
+            min={today || undefined}
             required
             className="w-full px-1 py-2.5 rounded-lg bg-white border border-gray-200 text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 shadow-sm"
           />
@@ -68,7 +72,7 @@ export default function SearchForm() {
             type="date"
             value={checkout}
             onChange={(e) => setCheckout(e.target.value)}
-            min={checkin || today}
+            min={checkin || today || undefined}
             required
             className="w-full px-1 py-2.5 rounded-lg bg-white border border-gray-200 text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 shadow-sm"
           />
