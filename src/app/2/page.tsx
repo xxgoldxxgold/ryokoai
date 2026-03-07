@@ -59,7 +59,7 @@ export default function AgodaPricePage() {
       }
 
       setStatusMsg('結果を取得中...');
-      const resultData = await api({ action: 'results', datasetId });
+      const resultData = await api({ action: 'results', datasetId, searchName: hotelName });
       setResult(resultData.hotel || null);
       if (!resultData.hotel) setError('該当するホテルが見つかりませんでした');
     } catch (e: unknown) {
