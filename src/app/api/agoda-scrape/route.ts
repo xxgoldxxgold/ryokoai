@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 IMPORTANT: Only extract data that is actually visible on the page. Do NOT make up or guess any values. If you cannot find a value, set it to null.`;
 
     const runRes = await fetch(
-      `https://api.apify.com/v2/acts/${ACTOR_ID}/runs?token=${APIFY_TOKEN}`,
+      `https://api.apify.com/v2/acts/${ACTOR_ID}/runs?token=${APIFY_TOKEN}&timeout=600`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
