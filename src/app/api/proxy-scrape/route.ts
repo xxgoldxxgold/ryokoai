@@ -6,7 +6,7 @@ export const maxDuration = 60;
 
 const IPROYAL_HOST = 'geo.iproyal.com';
 const IPROYAL_PORT = '12321';
-const CHROMIUM_URL = 'https://github.com/nichochar/chromium-build-standalone/releases/download/v133.0.0/chromium-v133.0.0-pack.tar';
+const CHROMIUM_URL = 'https://github.com/Sparticuz/chromium/releases/download/v143.0.4/chromium-v143.0.4-pack.x64.tar';
 
 export async function POST(req: NextRequest) {
   try {
