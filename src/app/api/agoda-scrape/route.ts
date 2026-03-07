@@ -31,20 +31,25 @@ export async function POST(req: NextRequest) {
 
     const ciDate = checkIn || '2026-05-10';
     const coDate = checkOut || '2026-05-11';
-    const agodaUrl = `https://www.agoda.com/search?city=0&checkIn=${ciDate}&checkOut=${coDate}&rooms=1&adults=2&children=0&searchText=${encodeURIComponent(hotelName)}`;
     const proxyUrl = `http://${IPROYAL_USER}:${IPROYAL_PASS}_country-id@geo.iproyal.com:12321`;
 
-    const instructions = `You are on Agoda hotel search results page. Find the hotel "${hotelName}" in the search results. Extract the following information as JSON and save it to the dataset:
-- hotelName: the exact hotel name shown
-- price: the price per night (number only, no currency symbol)
-- currency: the currency code (e.g. USD, IDR)
-- rating: the review score
-- reviewCount: number of reviews
-- address: the hotel address or location
-- imageUrl: the hotel thumbnail image URL
-- agodaUrl: the URL to the hotel's page on Agoda
+    const instructions = `Follow these steps carefully like a real human user:
 
-If you see multiple hotels, extract the one that best matches "${hotelName}". If the exact hotel is not found, extract the closest match. Click on the hotel to get more details if needed.`;
+1. You are on Agoda's top page. Find the search box and type "${hotelName}" into it.
+2. Wait for autocomplete suggestions to appear. Click the suggestion that best matches "${hotelName}".
+3. Set check-in date to ${ciDate} and check-out date to ${coDate}. Then click the search button.
+4. On the search results page, find the hotel that matches "${hotelName}".
+5. Extract the following information and save it to the dataset as JSON:
+   - hotelName: the exact hotel name displayed
+   - price: the price per night (number only, no currency symbol)
+   - currency: the currency code shown (e.g. USD, IDR)
+   - rating: the review score
+   - reviewCount: number of reviews
+   - address: the hotel location
+   - imageUrl: the hotel image URL from the page
+   - agodaUrl: the current page URL
+
+IMPORTANT: Only extract data that is actually visible on the page. Do NOT make up or guess any values. If you cannot find a value, set it to null.`;
 
     const runRes = await fetch(
       `https://api.apify.com/v2/acts/${ACTOR_ID}/runs?token=${APIFY_TOKEN}`,
@@ -53,9 +58,13 @@ If you see multiple hotels, extract the one that best matches "${hotelName}". If
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           openaiApiKey: OPENAI_API_KEY,
-          startUrl: agodaUrl,
+          startUrl: 'https://www.agoda.com/',
           instructions: instructions,
-          maxTotalChargeUsd: 0.1,
+          maxTotalChargeUsd: 0.15,
+          proxyConfiguration: {
+            useApifyProxy: false,
+            proxyUrls: [proxyUrl],
+          },
         }),
       }
     );
