@@ -39,9 +39,9 @@ export default function SearchForm() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-4">
         <div className="min-w-0">
-          <label className="block text-xs text-gray-500 mb-1">チェックイン</label>
+          <label className="block text-xs text-gray-500 mb-1"><span className="hidden sm:inline">チェック</span>イン</label>
           <input
             type="date"
             value={checkin}
@@ -60,7 +60,7 @@ export default function SearchForm() {
           />
         </div>
         <div className="min-w-0">
-          <label className="block text-xs text-gray-500 mb-1">チェックアウト</label>
+          <label className="block text-xs text-gray-500 mb-1"><span className="hidden sm:inline">チェック</span>アウト</label>
           <input
             type="date"
             value={checkout}
