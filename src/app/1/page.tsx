@@ -2,20 +2,16 @@
 
 import { useState } from 'react';
 
-interface PriceInfo {
-  provider: string;
-  price: number;
-  link: string;
-}
+interface PriceInfo { provider: string; price: number; link: string; }
+interface Hotel { title: string; thumbnail: string; address: string; rating: number; reviews: number; prices: PriceInfo[]; priceRange: string; }
 
-interface Hotel {
-  title: string;
-  thumbnail: string;
-  address: string;
-  rating: number;
-  reviews: number;
-  prices: PriceInfo[];
-  priceRange: string;
+async function api(body: Record<string, unknown>) {
+  const res = await fetch('/api/proxy-scrape', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  return res.json();
 }
 
 export default function HotelScrapePage() {
@@ -27,30 +23,47 @@ export default function HotelScrapePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [elapsed, setElapsed] = useState(0);
+  const [statusMsg, setStatusMsg] = useState('');
 
   const currencies = ['JPY', 'USD', 'IDR', 'THB', 'VND', 'KRW', 'EUR'];
-
   const sym = (c: string) => ({ JPY: '¥', USD: '$', IDR: 'Rp', THB: '฿', VND: '₫', KRW: '₩', EUR: '€' }[c] || c + ' ');
 
   const handleSearch = async () => {
     if (!hotelName.trim()) { setError('ホテル名を入力してください'); return; }
-    setLoading(true); setError(''); setHotels([]); setElapsed(0);
+    setLoading(true); setError(''); setHotels([]); setElapsed(0); setStatusMsg('起動中...');
     const start = Date.now();
     const timer = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 1000);
 
     try {
-      const res = await fetch('/api/proxy-scrape', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ hotelName, checkIn: checkin, checkOut: checkout, currency, adults: 2 }),
-      });
-      const data = await res.json();
-      if (data.error) setError(data.error);
-      else setHotels(data.hotels || []);
+      // 1. Start run
+      const startData = await api({ hotelName, checkIn: checkin, checkOut: checkout, currency, adults: 2 });
+      if (startData.error) { setError(startData.error); return; }
+      const { runId, datasetId } = startData;
+
+      // 2. Poll status from frontend
+      setStatusMsg('スクレイピング中...');
+      let status = 'RUNNING';
+      for (let i = 0; i < 60; i++) {
+        await new Promise(r => setTimeout(r, 5000));
+        const statusData = await api({ action: 'status', runId });
+        status = statusData.status;
+        if (statusData.statusMessage) setStatusMsg(statusData.statusMessage);
+        if (status === 'SUCCEEDED' || status === 'FAILED' || status === 'ABORTED') break;
+      }
+
+      if (status !== 'SUCCEEDED') {
+        setError(`スクレイピングが失敗しました (${status})`);
+        return;
+      }
+
+      // 3. Get results
+      setStatusMsg('結果を取得中...');
+      const resultData = await api({ action: 'results', datasetId });
+      setHotels(resultData.hotels || []);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : '通信エラー');
     } finally {
-      clearInterval(timer); setLoading(false);
+      clearInterval(timer); setLoading(false); setStatusMsg('');
     }
   };
 
@@ -103,7 +116,7 @@ export default function HotelScrapePage() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              価格取得中... {elapsed}秒
+              {statusMsg} ({elapsed}秒)
             </span>
           ) : '価格を検索'}
         </button>
@@ -134,13 +147,14 @@ export default function HotelScrapePage() {
                     </div>
                     {h.address && <p className="text-xs text-gray-500 mb-3">{h.address}</p>}
 
-                    {h.prices && h.prices.length > 0 && (
+                    {h.prices && h.prices.length > 0 ? (
                       <div className="space-y-2">
                         <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">予約サイト別 価格比較</p>
                         {h.prices.map((p, j) => (
-                          <div key={j} className={`flex items-center justify-between px-4 py-2.5 rounded-lg border ${
-                            j === 0 ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-100'
-                          }`}>
+                          <a key={j} href={p.link} target="_blank" rel="noopener noreferrer"
+                            className={`flex items-center justify-between px-4 py-2.5 rounded-lg border transition-all hover:shadow-md ${
+                              j === 0 ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-100'
+                            }`}>
                             <div className="flex items-center gap-2">
                               {j === 0 && <span className="bg-green-500 text-white text-[10px] px-1.5 py-0.5 rounded font-bold">最安</span>}
                               <span className="text-sm font-medium">{p.provider}</span>
@@ -148,9 +162,11 @@ export default function HotelScrapePage() {
                             <span className={`font-bold text-lg ${j === 0 ? 'text-red-600' : 'text-gray-700'}`}>
                               {sym(currency)}{p.price?.toLocaleString()}
                             </span>
-                          </div>
+                          </a>
                         ))}
                       </div>
+                    ) : (
+                      <p className="text-sm text-gray-400">価格情報なし</p>
                     )}
                   </div>
                 </div>

@@ -1,19 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export const maxDuration = 300;
-
 const APIFY_TOKEN = process.env.APIFY_TOKEN || '';
 const ACTOR_ID = 'martin.forejt~google-hotels-scraper';
 
+// POST: start a run
 export async function POST(req: NextRequest) {
   try {
-    const { hotelName, checkIn, checkOut, adults, currency } = await req.json();
+    const { action, runId, datasetId, hotelName, checkIn, checkOut, adults, currency } = await req.json();
 
+    // Action: check status
+    if (action === 'status' && runId) {
+      const res = await fetch(`https://api.apify.com/v2/acts/${ACTOR_ID}/runs/${runId}?token=${APIFY_TOKEN}`);
+      const data = await res.json();
+      return NextResponse.json({
+        status: data?.data?.status,
+        statusMessage: data?.data?.statusMessage,
+      });
+    }
+
+    // Action: get results
+    if (action === 'results' && datasetId) {
+      const res = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${APIFY_TOKEN}&limit=10`);
+      const items = await res.json();
+      return NextResponse.json({ hotels: items });
+    }
+
+    // Default: start run
     if (!hotelName) {
       return NextResponse.json({ error: 'ホテル名を入力してください' }, { status: 400 });
     }
 
-    // Start Apify actor run
     const runRes = await fetch(
       `https://api.apify.com/v2/acts/${ACTOR_ID}/runs?token=${APIFY_TOKEN}`,
       {
@@ -31,37 +47,15 @@ export async function POST(req: NextRequest) {
       }
     );
     const runData = await runRes.json();
-    const runId = runData?.data?.id;
-    const datasetId = runData?.data?.defaultDatasetId;
 
-    if (!runId) {
-      const errMsg = runData?.error?.message || 'Apify実行の開始に失敗しました';
-      return NextResponse.json({ error: errMsg }, { status: 500 });
+    if (!runData?.data?.id) {
+      return NextResponse.json({ error: runData?.error?.message || 'Apify実行の開始に失敗しました' }, { status: 500 });
     }
 
-    // Poll for completion (max ~4 minutes)
-    let status = 'RUNNING';
-    for (let i = 0; i < 50; i++) {
-      await new Promise(r => setTimeout(r, 5000));
-      const statusRes = await fetch(
-        `https://api.apify.com/v2/acts/${ACTOR_ID}/runs/${runId}?token=${APIFY_TOKEN}`
-      );
-      const statusData = await statusRes.json();
-      status = statusData?.data?.status;
-      if (status === 'SUCCEEDED' || status === 'FAILED' || status === 'ABORTED') break;
-    }
-
-    if (status !== 'SUCCEEDED') {
-      return NextResponse.json({ error: `スクレイピングが失敗しました (${status})` }, { status: 500 });
-    }
-
-    // Get results
-    const itemsRes = await fetch(
-      `https://api.apify.com/v2/datasets/${datasetId}/items?token=${APIFY_TOKEN}&limit=10`
-    );
-    const items = await itemsRes.json();
-
-    return NextResponse.json({ success: true, hotels: items });
+    return NextResponse.json({
+      runId: runData.data.id,
+      datasetId: runData.data.defaultDatasetId,
+    });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ error: message }, { status: 500 });
