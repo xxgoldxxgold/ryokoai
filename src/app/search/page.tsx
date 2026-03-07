@@ -79,6 +79,8 @@ function SearchResults() {
   const { isLoggedIn, loading: authLoading } = useAuth();
 
   const directKey = useMemo(() => hotel ? extractDirectKey(hotel) : null, [hotel]);
+  interface Candidate { hotel_key: string; name: string; }
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [selectedKey, setSelectedKey] = useState<string | null>(directKey);
   const [selectedName, setSelectedName] = useState<string | null>(null);
   const [searching, setSearching] = useState(false);
@@ -86,13 +88,20 @@ function SearchResults() {
   useEffect(() => {
     if (directKey || !hotel) return;
     setSearching(true);
+    setCandidates([]);
     setSelectedKey(null);
     setSelectedName(null);
 
     fetch(`/api/hotel-search?query=${encodeURIComponent(hotel)}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.hotel_key) {
+        const cands: Candidate[] = data.candidates || [];
+        setCandidates(cands);
+        // auto_select=true or only 1 candidate → pick first automatically
+        if (cands.length > 0 && (data.auto_select || cands.length === 1)) {
+          setSelectedKey(cands[0].hotel_key);
+          setSelectedName(cands[0].name);
+        } else if (cands.length === 0 && data.hotel_key) {
           setSelectedKey(data.hotel_key);
           setSelectedName(data.hotel_name || null);
         }
@@ -131,8 +140,28 @@ function SearchResults() {
         </div>
       )}
 
+      {/* Candidate selection — only when auto_select was false */}
+      {!searching && candidates.length > 1 && !selectedKey && (
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-3">
+          <h3 className="text-gray-900 font-bold text-sm">
+            該当するホテルを選択してください（{candidates.length}件）
+          </h3>
+          <div className="space-y-2">
+            {candidates.map((c) => (
+              <button
+                key={c.hotel_key}
+                onClick={() => { setSelectedKey(c.hotel_key); setSelectedName(c.name); }}
+                className="w-full text-left px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 hover:bg-indigo-50 hover:border-indigo-200 transition-colors"
+              >
+                <span className="text-gray-900 text-sm">{c.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* No results */}
-      {!searching && !directKey && !selectedKey && (
+      {!searching && !directKey && !selectedKey && candidates.length === 0 && (
         <div className="bg-white border border-gray-200 rounded-2xl px-5 py-4 shadow-sm">
           <p className="text-gray-400 text-sm">
             ホテルが見つかりませんでした。TripAdvisorのURLを直接入力してみてください。

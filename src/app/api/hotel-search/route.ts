@@ -136,17 +136,21 @@ function normalizeForMatch(s: string): string {
 function isStrongMatch(query: string, candidateName: string): boolean {
   const normQ = normalizeForMatch(query);
   const normC = normalizeForMatch(candidateName);
-  // Query words that appear in candidate name
   const qWords = normQ.split(' ').filter(w => w.length > 1);
   if (qWords.length === 0) return false;
   const matched = qWords.filter(w => normC.includes(w));
-  return matched.length >= qWords.length * 0.7;
+  // Also check reverse: candidate words in query
+  const cWords = normC.split(' ').filter(w => w.length > 1);
+  const reverseMatched = cWords.filter(w => normQ.includes(w));
+  // Strong match if most query words found in candidate OR most candidate words found in query
+  return matched.length >= qWords.length * 0.5 || reverseMatched.length >= cWords.length * 0.7;
 }
 
 /** Filter and sort candidates based on location keywords from query */
 function filterAndSort(candidates: Candidate[], locations: string[], query: string): { filtered: Candidate[]; autoSelect: boolean } {
   if (locations.length === 0) {
-    return { filtered: candidates, autoSelect: candidates.length <= 2 };
+    const autoSelect = candidates.length <= 2 || isStrongMatch(query, candidates[0]?.name || '');
+    return { filtered: candidates, autoSelect };
   }
 
   // Score each candidate: how many location keywords match
