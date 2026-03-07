@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     const proxyUrl = `http://${IPROYAL_USER}:${IPROYAL_PASS}_country-id@geo.iproyal.com:12321`;
 
     const runRes = await fetch(
-      `https://api.apify.com/v2/acts/${ACTOR_ID}/runs?token=${APIFY_TOKEN}&maxItems=${maxItems || 5}`,
+      `https://api.apify.com/v2/acts/${ACTOR_ID}/runs?token=${APIFY_TOKEN}&maxItems=${Math.max(maxItems || 10, 10)}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
           search: search,
           checkInDate: checkIn || '2026-05-10',
           checkOutDate: checkOut || '2026-05-11',
-          maxItems: maxItems || 5,
+          maxItems: Math.max(maxItems || 10, 10),
           maxTotalChargeUsd: 0.05,
           proxyConfiguration: {
             useApifyProxy: false,

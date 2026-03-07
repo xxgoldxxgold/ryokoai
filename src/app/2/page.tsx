@@ -35,7 +35,7 @@ export default function AgodaScrapePage() {
   const [search, setSearch] = useState('Bali');
   const [checkin, setCheckin] = useState('2026-05-10');
   const [checkout, setCheckout] = useState('2026-05-11');
-  const [maxItems, setMaxItems] = useState(5);
+  const [maxItems, setMaxItems] = useState(10);
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -127,7 +127,7 @@ export default function AgodaScrapePage() {
                 <label className="block text-sm font-medium text-gray-600 mb-1">最大件数</label>
                 <select value={maxItems} onChange={e => setMaxItems(Number(e.target.value))}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                  {[3, 5, 10].map(n => <option key={n} value={n}>{n}件</option>)}
+                  {[10, 15, 20].map(n => <option key={n} value={n}>{n}件</option>)}
                 </select>
               </div>
             </div>
