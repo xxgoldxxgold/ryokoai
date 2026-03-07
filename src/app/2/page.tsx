@@ -2,26 +2,6 @@
 
 import { useState } from 'react';
 
-interface Hotel {
-  name?: string;
-  hotelName?: string;
-  title?: string;
-  image?: string;
-  thumbnail?: string;
-  address?: string;
-  location?: string;
-  rating?: number;
-  reviewScore?: number;
-  reviews?: number;
-  reviewCount?: number;
-  price?: number | string;
-  originalPrice?: number | string;
-  currency?: string;
-  url?: string;
-  link?: string;
-  [key: string]: unknown;
-}
-
 async function api(body: Record<string, unknown>) {
   const res = await fetch('/api/agoda-scrape', {
     method: 'POST',
@@ -31,29 +11,39 @@ async function api(body: Record<string, unknown>) {
   return res.json();
 }
 
-export default function AgodaScrapePage() {
-  const [search, setSearch] = useState('Bali');
+function str(v: unknown): string {
+  if (!v) return '';
+  if (typeof v === 'string') return v;
+  if (typeof v === 'number') return String(v);
+  if (typeof v === 'object') {
+    const o = v as Record<string, unknown>;
+    return Object.values(o).filter(x => typeof x === 'string' && x).join(', ');
+  }
+  return String(v);
+}
+
+export default function AgodaPricePage() {
+  const [hotelName, setHotelName] = useState('AYANA Resort Bali');
   const [checkin, setCheckin] = useState('2026-05-10');
   const [checkout, setCheckout] = useState('2026-05-11');
-  const [maxItems, setMaxItems] = useState(10);
-  const [hotels, setHotels] = useState<Hotel[]>([]);
+  const [result, setResult] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [elapsed, setElapsed] = useState(0);
   const [statusMsg, setStatusMsg] = useState('');
 
   const handleSearch = async () => {
-    if (!search.trim()) { setError('検索キーワードを入力してください'); return; }
-    setLoading(true); setError(''); setHotels([]); setElapsed(0); setStatusMsg('起動中...');
+    if (!hotelName.trim()) { setError('ホテル名を入力してください'); return; }
+    setLoading(true); setError(''); setResult(null); setElapsed(0); setStatusMsg('起動中...');
     const start = Date.now();
     const timer = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 1000);
 
     try {
-      const startData = await api({ search, checkIn: checkin, checkOut: checkout, maxItems });
+      const startData = await api({ search: hotelName, checkIn: checkin, checkOut: checkout });
       if (startData.error) { setError(startData.error); return; }
       const { runId, datasetId } = startData;
 
-      setStatusMsg('Agodaスクレイピング中...');
+      setStatusMsg('Agodaからインドネシア価格を取得中...');
       let status = 'RUNNING';
       for (let i = 0; i < 120; i++) {
         await new Promise(r => setTimeout(r, 5000));
@@ -70,7 +60,8 @@ export default function AgodaScrapePage() {
 
       setStatusMsg('結果を取得中...');
       const resultData = await api({ action: 'results', datasetId });
-      setHotels(resultData.hotels || []);
+      setResult(resultData.hotel || null);
+      if (!resultData.hotel) setError('該当するホテルが見つかりませんでした');
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : '通信エラー');
     } finally {
@@ -78,52 +69,34 @@ export default function AgodaScrapePage() {
     }
   };
 
-  const getPrice = (h: Hotel) => {
-    const p = h.price || h.originalPrice;
+  const price = result ? (() => {
+    const p = result.price || result.originalPrice;
     if (!p) return null;
-    return typeof p === 'string' ? parseFloat(p.replace(/[^0-9.]/g, '')) : p;
-  };
-
-  const str = (v: unknown): string => {
-    if (!v) return '';
-    if (typeof v === 'string') return v;
-    if (typeof v === 'number') return String(v);
-    if (typeof v === 'object') {
-      const o = v as Record<string, unknown>;
-      return Object.values(o).filter(x => typeof x === 'string' && x).join(', ');
-    }
-    return String(v);
-  };
-
-  const getName = (h: Hotel) => str(h.name) || str(h.hotelName) || str(h.title) || '名称不明';
-  const getRating = (h: Hotel) => Number(h.rating || h.reviewScore || 0);
-  const getReviews = (h: Hotel) => Number(h.reviews || h.reviewCount || 0);
-  const getImage = (h: Hotel) => str(h.image) || str(h.thumbnail);
-  const getAddress = (h: Hotel) => str(h.address) || str(h.location);
-  const getUrl = (h: Hotel) => str(h.url) || str(h.link);
+    return typeof p === 'number' ? p : parseFloat(String(p).replace(/[^0-9.]/g, ''));
+  })() : null;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-gradient-to-r from-purple-700 to-indigo-900 p-4 text-white shadow-lg">
         <div className="container mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Agoda Price <span className="text-yellow-400">Scanner</span></h1>
+          <h1 className="text-2xl font-bold">Agoda <span className="text-yellow-400">ID価格</span></h1>
           <span className="text-xs bg-purple-800/50 px-3 py-1 rounded-full border border-purple-400/50">
-            インドネシアIP経由・現地価格取得
+            インドネシアIP経由
           </span>
         </div>
       </nav>
 
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main className="container mx-auto px-4 py-8 max-w-lg">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">検索キーワード（地域・ホテル名）</label>
-              <input type="text" value={search} onChange={e => setSearch(e.target.value)}
+              <label className="block text-sm font-medium text-gray-600 mb-1">ホテル名</label>
+              <input type="text" value={hotelName} onChange={e => setHotelName(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSearch()}
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base"
-                placeholder="例: Bali, Tokyo, Marina Bay Sands..." />
+                placeholder="例: AYANA Resort Bali" />
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">チェックイン</label>
                 <input type="date" value={checkin} onChange={e => setCheckin(e.target.value)}
@@ -134,15 +107,7 @@ export default function AgodaScrapePage() {
                 <input type="date" value={checkout} onChange={e => setCheckout(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">最大件数</label>
-                <select value={maxItems} onChange={e => setMaxItems(Number(e.target.value))}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                  {[10, 15, 20].map(n => <option key={n} value={n}>{n}件</option>)}
-                </select>
-              </div>
             </div>
-            <p className="text-xs text-gray-400">※ IPRoyalプロキシでインドネシアIPから接続し、現地価格を取得します（1回あたり上限$0.05）</p>
           </div>
         </div>
 
@@ -156,75 +121,61 @@ export default function AgodaScrapePage() {
               </svg>
               {statusMsg} ({elapsed}秒)
             </span>
-          ) : 'Agoda価格を検索'}
+          ) : 'インドネシア価格を取得'}
         </button>
 
         {error && <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 mb-6">{error}</div>}
 
-        {hotels.length > 0 && (
-          <div className="space-y-4">
-            <p className="text-sm text-gray-500">{hotels.length}件のホテルが見つかりました</p>
-            {hotels.map((h, i) => {
-              const price = getPrice(h);
-              const rating = getRating(h);
-              const image = getImage(h);
-              const url = getUrl(h);
-              return (
-                <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="flex flex-col md:flex-row">
-                    {image && (
-                      <div className="md:w-56 h-44 md:h-auto flex-shrink-0">
-                        <img src={image} alt={getName(h)} className="w-full h-full object-cover" />
-                      </div>
-                    )}
-                    <div className="flex-1 p-5">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <h3 className="font-bold text-lg">{getName(h)}</h3>
-                        {rating > 0 && (
-                          <div className="flex-shrink-0 text-center">
-                            <div className={`text-white text-sm font-bold px-2.5 py-1 rounded-lg ${
-                              rating >= 8.5 ? 'bg-green-600' : rating >= 7 ? 'bg-blue-600' : 'bg-gray-500'
-                            }`}>{rating}</div>
-                            {getReviews(h) > 0 && (
-                              <p className="text-[10px] text-gray-400 mt-0.5">{getReviews(h).toLocaleString()}件</p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      {getAddress(h) && <p className="text-xs text-gray-500 mb-3">{getAddress(h)}</p>}
+        {result && (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            {str(result.image || result.thumbnail) && (
+              <div className="h-48 w-full">
+                <img src={str(result.image || result.thumbnail)} alt={str(result.name || result.hotelName || result.title)}
+                  className="w-full h-full object-cover" />
+              </div>
+            )}
+            <div className="p-6">
+              <h3 className="font-bold text-xl mb-1">
+                {str(result.name || result.hotelName || result.title) || 'ホテル名不明'}
+              </h3>
+              {str(result.address || result.location) && (
+                <p className="text-sm text-gray-500 mb-4">{str(result.address || result.location)}</p>
+              )}
 
-                      <div className="flex items-center justify-between mt-3">
-                        <div>
-                          {price ? (
-                            <div>
-                              <span className="text-2xl font-bold text-red-600">
-                                {str(h.currency)} {price.toLocaleString()}
-                              </span>
-                              <span className="text-xs text-gray-400 ml-1">/泊</span>
-                            </div>
-                          ) : (
-                            <span className="text-sm text-gray-400">価格情報なし</span>
-                          )}
-                        </div>
-                        {url && (
-                          <a href={url} target="_blank" rel="noopener noreferrer"
-                            className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors">
-                            Agodaで見る
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+              {Number(result.rating || result.reviewScore || 0) > 0 && (
+                <div className="flex items-center gap-2 mb-4">
+                  <div className={`text-white text-sm font-bold px-2.5 py-1 rounded-lg ${
+                    Number(result.rating || result.reviewScore) >= 8.5 ? 'bg-green-600' :
+                    Number(result.rating || result.reviewScore) >= 7 ? 'bg-blue-600' : 'bg-gray-500'
+                  }`}>{str(result.rating || result.reviewScore)}</div>
+                  {Number(result.reviews || result.reviewCount || 0) > 0 && (
+                    <span className="text-xs text-gray-400">{Number(result.reviews || result.reviewCount).toLocaleString()}件のレビュー</span>
+                  )}
                 </div>
-              );
-            })}
+              )}
+
+              <div className="bg-purple-50 border border-purple-200 rounded-xl p-5 text-center">
+                <p className="text-xs text-purple-600 font-medium mb-1">インドネシアからのAgoda価格</p>
+                {price ? (
+                  <p className="text-3xl font-bold text-red-600">
+                    {str(result.currency)} {price.toLocaleString()}
+                    <span className="text-sm text-gray-400 font-normal ml-1">/泊</span>
+                  </p>
+                ) : (
+                  <p className="text-gray-400">価格情報を取得できませんでした</p>
+                )}
+              </div>
+
+              {str(result.url || result.link) && (
+                <a href={str(result.url || result.link)} target="_blank" rel="noopener noreferrer"
+                  className="block mt-4 text-center bg-purple-600 text-white px-4 py-3 rounded-xl font-medium hover:bg-purple-700 transition-colors">
+                  Agodaで予約ページを開く
+                </a>
+              )}
+            </div>
           </div>
         )}
       </main>
-
-      <footer className="text-center py-10 text-gray-400 text-xs">
-        &copy; 2026 Agoda Price Scanner - インドネシアIP経由で現地価格を取得
-      </footer>
     </div>
   );
 }

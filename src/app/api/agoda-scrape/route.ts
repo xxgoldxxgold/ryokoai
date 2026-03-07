@@ -7,7 +7,7 @@ const IPROYAL_PASS = process.env.IPROYAL_PASSWORD || '';
 
 export async function POST(req: NextRequest) {
   try {
-    const { action, runId, datasetId, search, checkIn, checkOut, maxItems } = await req.json();
+    const { action, runId, datasetId, search, checkIn, checkOut } = await req.json();
 
     // Action: check status
     if (action === 'status' && runId) {
@@ -21,20 +21,20 @@ export async function POST(req: NextRequest) {
 
     // Action: get results
     if (action === 'results' && datasetId) {
-      const res = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${APIFY_TOKEN}&limit=20`);
+      const res = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${APIFY_TOKEN}&limit=1`);
       const items = await res.json();
-      return NextResponse.json({ hotels: items });
+      return NextResponse.json({ hotel: Array.isArray(items) ? items[0] || null : null });
     }
 
     // Default: start run
     if (!search) {
-      return NextResponse.json({ error: '検索キーワードを入力してください' }, { status: 400 });
+      return NextResponse.json({ error: 'ホテル名を入力してください' }, { status: 400 });
     }
 
     const proxyUrl = `http://${IPROYAL_USER}:${IPROYAL_PASS}_country-id@geo.iproyal.com:12321`;
 
     const runRes = await fetch(
-      `https://api.apify.com/v2/acts/${ACTOR_ID}/runs?token=${APIFY_TOKEN}&maxItems=${Math.max(maxItems || 10, 10)}`,
+      `https://api.apify.com/v2/acts/${ACTOR_ID}/runs?token=${APIFY_TOKEN}&maxItems=10`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
           search: search,
           checkInDate: checkIn || '2026-05-10',
           checkOutDate: checkOut || '2026-05-11',
-          maxItems: Math.max(maxItems || 10, 10),
+          maxItems: 10,
           maxTotalChargeUsd: 0.05,
           proxyConfiguration: {
             useApifyProxy: false,
