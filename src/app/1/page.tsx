@@ -27,6 +27,7 @@ export default function HotelScrapePage() {
   const [screenshot, setScreenshot] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [prices, setPrices] = useState<string[]>([]);
+  const [rooms, setRooms] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -42,6 +43,7 @@ export default function HotelScrapePage() {
     setError('');
     setScreenshot(null);
     setPrices([]);
+    setRooms([]);
 
     try {
       const res = await fetch('/api/proxy-scrape', {
@@ -56,6 +58,7 @@ export default function HotelScrapePage() {
         setScreenshot(data.screenshot);
         setTitle(data.title);
         setPrices(data.prices || []);
+        setRooms(data.rooms || []);
       }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : '通信エラー');
@@ -151,14 +154,28 @@ export default function HotelScrapePage() {
           </div>
         )}
 
-        {prices.length > 0 && (
+        {(prices.length > 0 || rooms.length > 0) && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h3 className="text-lg font-bold mb-3">検出された価格情報</h3>
-            <div className="space-y-1">
-              {prices.map((p, i) => (
-                <div key={i} className="text-sm bg-gray-50 px-3 py-2 rounded">{p}</div>
-              ))}
-            </div>
+            {prices.length > 0 && (
+              <>
+                <h3 className="text-lg font-bold mb-3">検出された価格</h3>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {prices.map((p, i) => (
+                    <span key={i} className="bg-blue-50 text-blue-800 font-bold px-4 py-2 rounded-lg text-lg border border-blue-200">{p}</span>
+                  ))}
+                </div>
+              </>
+            )}
+            {rooms.length > 0 && (
+              <>
+                <h3 className="text-lg font-bold mb-3 mt-4">客室タイプ</h3>
+                <div className="space-y-1">
+                  {rooms.map((r, i) => (
+                    <div key={i} className="text-sm bg-gray-50 px-3 py-2 rounded">{r}</div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         )}
 
