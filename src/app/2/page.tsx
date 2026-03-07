@@ -31,6 +31,8 @@ export default function AgodaPricePage() {
   const [error, setError] = useState('');
   const [elapsed, setElapsed] = useState(0);
   const [statusMsg, setStatusMsg] = useState('');
+  const [debugKeys, setDebugKeys] = useState<string[]>([]);
+  const [debugRaw, setDebugRaw] = useState<string>('');
 
   const handleSearch = async () => {
     if (!hotelName.trim()) { setError('ホテル名を入力してください'); return; }
@@ -61,6 +63,8 @@ export default function AgodaPricePage() {
       setStatusMsg('結果を取得中...');
       const resultData = await api({ action: 'results', datasetId });
       setResult(resultData.hotel || null);
+      setDebugKeys(resultData.debug_keys || []);
+      if (resultData.hotel) setDebugRaw(JSON.stringify(resultData.hotel, null, 2));
       if (!resultData.hotel) setError('該当するホテルが見つかりませんでした');
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : '通信エラー');
@@ -125,6 +129,14 @@ export default function AgodaPricePage() {
         </button>
 
         {error && <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 mb-6">{error}</div>}
+
+        {debugKeys.length > 0 && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6 text-xs">
+            <p className="font-bold mb-1">DEBUG - フィールド一覧:</p>
+            <p>{debugKeys.join(', ')}</p>
+            <details className="mt-2"><summary>生データ</summary><pre className="overflow-auto max-h-60 mt-1">{debugRaw}</pre></details>
+          </div>
+        )}
 
         {result && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
