@@ -150,10 +150,10 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
       <div>
         <h3 className="text-white font-bold text-sm flex items-center gap-2">
           <span className="text-base">{'\u{1F30D}'}</span>
-          OTA × 国別 最安ランキング
+          予約サイト × 国別 最安ランキング
         </h3>
         <p className="text-white/30 text-xs mt-1">
-          各OTAを各国のIPから接続して実際の表示価格を比較
+          各予約サイトを各国のIPから接続して実際の表示価格を比較
         </p>
       </div>
 
@@ -165,7 +165,7 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
             <span className="text-white/40 text-xs">
               {data && data.completed > 0
                 ? `${data.completed}/${total} 取得完了`
-                : '各OTA × 各国の価格を取得中...'}
+                : '各予約サイト × 各国の価格を取得中...'}
             </span>
           </div>
 
@@ -288,7 +288,7 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
       )}
 
       <p className="text-white/20 text-[10px] text-center">
-        ※ 各OTAを各国IPからリアルタイム取得（USD）。VPNでその国に接続して予約可能。
+        ※ 各予約サイトを各国IPからリアルタイム取得（USD）。VPNでその国に接続して予約可能。
       </p>
     </div>
   );

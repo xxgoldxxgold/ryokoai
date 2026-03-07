@@ -185,7 +185,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
     <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
       <div className="px-5 py-4 border-b border-gray-100">
         <div className="flex items-center gap-2">
-          <h3 className="text-gray-900 font-bold text-base">OTA最安ランキング</h3>
+          <h3 className="text-gray-900 font-bold text-base">予約サイト最安ランキング</h3>
           {!dfsDone && (
             <span className="flex items-center gap-1 text-[10px] text-blue-500">
               <span className="w-2.5 h-2.5 border border-blue-300 border-t-blue-500 rounded-full animate-spin" />

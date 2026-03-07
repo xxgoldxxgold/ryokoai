@@ -2,15 +2,15 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'OTA比較でホテルを安く予約する方法 | RyokoAI',
-  description: 'ホテル予約サイト（OTA）によって同じ部屋でも価格が大きく異なります。RyokoAIで複数OTAの価格を一括比較して最安値で予約する方法を解説。',
+  title: '予約サイト比較でホテルを安く予約する方法 | RyokoAI',
+  description: '予約サイトによって同じ部屋でも価格が大きく異なります。RyokoAIで複数の予約サイトの価格を一括比較して最安値で予約する方法を解説。',
 };
 
 export default function GuidePage() {
   return (
     <div className="px-4 py-12 max-w-2xl mx-auto space-y-10">
       <div className="space-y-3">
-        <h1 className="text-gray-900 font-bold text-2xl">OTA比較でホテルを安く予約する方法</h1>
+        <h1 className="text-gray-900 font-bold text-2xl">予約サイト比較でホテルを安く予約する方法</h1>
         <p className="text-gray-500 text-sm leading-relaxed">
           同じホテル、同じ日程でも、予約サイトによって価格が大きく異なります。
           この仕組みを理解して、最安値を手に入れましょう。
@@ -19,10 +19,10 @@ export default function GuidePage() {
 
       {/* Why prices differ */}
       <section className="space-y-3">
-        <h2 className="text-gray-900 font-bold text-lg">なぜOTAによって価格が違うのか？</h2>
+        <h2 className="text-gray-900 font-bold text-lg">なぜ予約サイトによって価格が違うのか？</h2>
         <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-3 text-gray-600 text-sm leading-relaxed shadow-sm">
           <p>
-            AgodaやBooking.comなどのOTA（オンライン旅行代理店）は
+            AgodaやBooking.comなどの予約サイトは
             それぞれホテルと<strong className="text-gray-900">異なる契約条件</strong>を結んでいます。
             仕入れ価格、手数料率、販促キャンペーンが異なるため、同じ部屋でもサイトごとに価格が変わります。
           </p>
@@ -53,7 +53,7 @@ export default function GuidePage() {
             </div>
             <div className="h-px bg-gray-200 my-2" />
             <div className="flex justify-between">
-              <span className="text-gray-500">OTA間の最大差額</span>
+              <span className="text-gray-500">予約サイト間の最大差額</span>
               <span className="text-amber-600 font-semibold">$85 (25%)</span>
             </div>
           </div>
@@ -73,11 +73,11 @@ export default function GuidePage() {
           </div>
           <div className="flex gap-3">
             <span className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center text-xs font-bold shrink-0">2</span>
-            <p>複数OTAの価格がランキング表示される</p>
+            <p>複数の予約サイトの価格がランキング表示される</p>
           </div>
           <div className="flex gap-3">
             <span className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center text-xs font-bold shrink-0">3</span>
-            <p>最安のOTAのリンクをクリック</p>
+            <p>最安の予約サイトのリンクをクリック</p>
           </div>
           <div className="flex gap-3">
             <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-xs font-bold shrink-0">4</span>
@@ -91,7 +91,7 @@ export default function GuidePage() {
         <h2 className="text-gray-900 font-bold text-lg">さらに安くするには（VPN）</h2>
         <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-3 text-gray-600 text-sm leading-relaxed shadow-sm">
           <p>
-            一部のOTAはアクセス元の国によっても価格を変えています。
+            一部の予約サイトはアクセス元の国によっても価格を変えています。
             VPNで別の国から接続すると、さらに安い価格が表示される場合があります。
           </p>
           <p className="text-gray-400 text-xs">
@@ -106,7 +106,7 @@ export default function GuidePage() {
         <div className="bg-amber-50 border border-amber-100 rounded-xl p-5 space-y-3 text-sm leading-relaxed">
           <div className="flex gap-2">
             <span className="shrink-0">&#x2705;</span>
-            <p className="text-gray-600"><strong className="text-gray-900">ホテル予約は問題なし</strong> &#8212; 主要OTAはVPN使用を明示的に禁止していません</p>
+            <p className="text-gray-600"><strong className="text-gray-900">ホテル予約は問題なし</strong> &#8212; 主要予約サイトはVPN使用を明示的に禁止していません</p>
           </div>
           <div className="flex gap-2">
             <span className="shrink-0">&#x26A0;&#xFE0F;</span>
@@ -122,7 +122,7 @@ export default function GuidePage() {
       {/* CTA */}
       <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-6 text-center space-y-3">
         <p className="text-gray-900 text-sm font-medium">
-          RyokoAIでOTA最安値を見つけよう
+          RyokoAIで予約サイトの最安値を見つけよう
         </p>
         <Link
           href="/"

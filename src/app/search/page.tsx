@@ -63,7 +63,7 @@ function SpeedPromoBanner() {
         <div className="flex-1 min-w-0">
           <p className="text-indigo-700 font-bold text-sm">ログインで高速検索</p>
           <p className="text-indigo-500 text-xs mt-0.5">
-            無料ログインで3倍速く、より多くのOTA価格を比較できます
+            無料ログインで3倍速く、より多くの予約サイト価格を比較できます
           </p>
         </div>
         <svg className="w-5 h-5 text-indigo-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -214,7 +214,7 @@ function SearchResults() {
 
       {/* Disclaimer */}
       <p className="text-gray-400 text-xs text-center">
-        表示される価格はOTAサイト上の価格です。RyokoAIは価格を保証するものではありません。
+        表示される価格は各予約サイト上の価格です。RyokoAIは価格を保証するものではありません。
       </p>
     </div>
   );

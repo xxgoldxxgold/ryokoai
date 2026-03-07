@@ -55,7 +55,7 @@ export default function OtaPriceComparison({ hotelKey, checkin, checkout, adults
       <div className="bg-[#1E293B] border border-white/5 rounded-xl p-5 space-y-3">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin" />
-          <span className="text-white/50 text-sm">OTA価格を取得中...</span>
+          <span className="text-white/50 text-sm">予約サイト価格を取得中...</span>
         </div>
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
@@ -86,7 +86,7 @@ export default function OtaPriceComparison({ hotelKey, checkin, checkout, adults
     <div className="bg-[#1E293B] border border-white/5 rounded-xl p-5 space-y-4">
       <h3 className="text-white font-bold text-sm flex items-center gap-2">
         <span className="text-base">📊</span>
-        OTA価格比較（リアルタイム）
+        予約サイト価格比較（リアルタイム）
       </h3>
 
       <div className="space-y-2">

@@ -59,10 +59,10 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
     <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
       <div className="px-5 py-4 border-b border-gray-100">
         <div className="flex items-center gap-2">
-          <h3 className="text-gray-900 font-bold text-base">OTA価格比較</h3>
+          <h3 className="text-gray-900 font-bold text-base">予約サイト価格比較</h3>
         </div>
         <p className="text-gray-400 text-xs mt-0.5">
-          {hotelTitle ? `${hotelTitle} — ` : ''}Google Hotels経由の全OTA価格（1泊・USD）
+          {hotelTitle ? `${hotelTitle} — ` : ''}Google Hotels経由の全予約サイト価格（1泊・USD）
         </p>
       </div>
 

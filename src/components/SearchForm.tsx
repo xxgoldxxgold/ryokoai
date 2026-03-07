@@ -39,8 +39,8 @@ export default function SearchForm() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <div className="min-w-0">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="min-w-0 overflow-hidden">
           <label className="block text-xs text-gray-500 mb-1">チェックイン</label>
           <input
             type="date"
@@ -48,10 +48,10 @@ export default function SearchForm() {
             onChange={(e) => setCheckin(e.target.value)}
             min={today}
             required
-            className="w-full px-2 sm:px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 shadow-sm"
+            className="w-full px-2 sm:px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 shadow-sm"
           />
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 overflow-hidden">
           <label className="block text-xs text-gray-500 mb-1">チェックアウト</label>
           <input
             type="date"
@@ -59,7 +59,7 @@ export default function SearchForm() {
             onChange={(e) => setCheckout(e.target.value)}
             min={checkin || today}
             required
-            className="w-full px-2 sm:px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 shadow-sm"
+            className="w-full px-2 sm:px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 shadow-sm"
           />
         </div>
       </div>
@@ -98,7 +98,7 @@ export default function SearchForm() {
         価格を比較する
       </button>
       <p className="text-gray-400 text-[10px] text-center">
-        ホテル名を入力するだけでOTA価格比較が表示されます
+        ホテル名を入力するだけで予約サイトの価格比較が表示されます
       </p>
     </form>
   );

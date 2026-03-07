@@ -3,16 +3,16 @@ import HowItWorks from '@/components/HowItWorks';
 
 const FAQ = [
   {
-    q: 'なぜOTAによって価格が違うのか？',
-    a: 'OTA（オンライン旅行代理店）はそれぞれホテルと異なる契約を結んでいるため、同じ部屋でもサイトごとに価格が異なります。差額は数十ドルに及ぶこともあります。',
+    q: 'なぜ予約サイトによって価格が違うのか？',
+    a: '予約サイトはそれぞれホテルと異なる契約を結んでいるため、同じ部屋でもサイトごとに価格が異なります。差額は数十ドルに及ぶこともあります。',
   },
   {
-    q: 'どのOTAが安い？',
-    a: 'ホテルや時期によって異なりますが、Agoda・Trip.comは比較的安い傾向があります。RyokoAIで複数OTAの価格を一括比較して最安値を見つけましょう。',
+    q: 'どの予約サイトが安い？',
+    a: 'ホテルや時期によって異なりますが、Agoda・Trip.comは比較的安い傾向があります。RyokoAIで複数の予約サイトの価格を一括比較して最安値を見つけましょう。',
   },
   {
     q: 'VPNは必要？',
-    a: '一部のOTAはアクセス元の国によって価格が変わります。VPNで別の国から接続すると、さらに安くなる場合があります。',
+    a: '一部の予約サイトはアクセス元の国によって価格が変わります。VPNで別の国から接続すると、さらに安くなる場合があります。',
   },
 ];
 
@@ -27,14 +27,14 @@ export default function HomePage() {
         </h1>
         <p className="text-gray-500 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
           Agoda・Booking.com・Trip.com・Expedia...<br />
-          同じ部屋なのにOTAで数十ドルの差。<br />
+          同じ部屋なのに予約サイトで数十ドルの差。<br />
           RyokoAIで最安を見つけよう。
         </p>
         <div className="px-4">
           <SearchForm />
         </div>
         <div className="flex flex-wrap justify-center gap-4 text-xs text-gray-400">
-          <span>対応OTA: Agoda / Booking.com / Trip.com / Expedia 他</span>
+          <span>対応予約サイト: Agoda / Booking.com / Trip.com / Expedia 他</span>
         </div>
       </section>
 
