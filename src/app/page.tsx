@@ -30,9 +30,7 @@ export default function HomePage() {
           同じ部屋なのに予約サイトで数十ドルの差。<br />
           RyokoAIで最安を見つけよう。
         </p>
-        <div className="px-4">
-          <SearchForm />
-        </div>
+        <SearchForm />
         <div className="flex flex-wrap justify-center gap-4 text-xs text-gray-400">
           <span>対応予約サイト: Agoda / Booking.com / Trip.com / Expedia 他</span>
         </div>
