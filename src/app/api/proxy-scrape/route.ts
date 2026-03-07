@@ -16,9 +16,9 @@ export async function POST(req: NextRequest) {
 
     const browser = await puppeteer.launch({
       args: [...chromium.args, `--proxy-server=${proxyServer}`],
-      defaultViewport: chromium.defaultViewport,
+      defaultViewport: { width: 1280, height: 800 },
       executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
+      headless: true,
     });
 
     const page = await browser.newPage();
