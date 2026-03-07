@@ -40,7 +40,7 @@ export default function SearchForm() {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="min-w-0 overflow-hidden">
+        <div className="min-w-0">
           <label className="block text-xs text-gray-500 mb-1">チェックイン</label>
           <input
             type="date"
@@ -51,7 +51,7 @@ export default function SearchForm() {
             className="w-full px-2 sm:px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 shadow-sm"
           />
         </div>
-        <div className="min-w-0 overflow-hidden">
+        <div className="min-w-0">
           <label className="block text-xs text-gray-500 mb-1">チェックアウト</label>
           <input
             type="date"
