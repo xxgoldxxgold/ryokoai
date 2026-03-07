@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
     // Start Apify actor run
     const runRes = await fetch(
-      `https://api.apify.com/v2/acts/${ACTOR_ID}/runs?token=${APIFY_TOKEN}`,
+      `https://api.apify.com/v2/acts/${ACTOR_ID}/runs?token=${APIFY_TOKEN}&maxItems=10`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
