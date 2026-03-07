@@ -19,12 +19,6 @@ input[type="date"] {
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-*, *::before, *::after {
-  min-width: 0;
 }
 
 @keyframes fadeIn {
