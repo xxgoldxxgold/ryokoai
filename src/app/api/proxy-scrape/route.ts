@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export const maxDuration = 300;
 
 const APIFY_TOKEN = process.env.APIFY_TOKEN || '';
-const ACTOR_ID = 'knagymate~fast-agoda-scraper';
+const ACTOR_ID = 'martin.forejt~google-hotels-scraper';
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,21 +13,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'ホテル名を入力してください' }, { status: 400 });
     }
 
-    const ci = checkIn || '2026-05-10';
-    const co = checkOut || '2026-05-11';
-    const curr = currency || 'JPY';
-    const ad = adults || 2;
-
-    // Build Agoda search URL
-    const searchUrl = `https://www.agoda.com/search?q=${encodeURIComponent(hotelName)}&checkIn=${ci}&checkOut=${co}&rooms=1&adults=${ad}&currency=${curr}`;
-
     // Start Apify actor run
     const runRes = await fetch(
-      `https://api.apify.com/v2/acts/${ACTOR_ID}/runs?token=${APIFY_TOKEN}&maxItems=10&maxTotalChargeUsd=1`,
+      `https://api.apify.com/v2/acts/${ACTOR_ID}/runs?token=${APIFY_TOKEN}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: searchUrl }),
+        body: JSON.stringify({
+          searchQuery: hotelName,
+          checkInDate: checkIn || '2026-05-10',
+          checkOutDate: checkOut || '2026-05-11',
+          numberOfAdults: adults || 2,
+          numberOfChildren: 0,
+          currencyCode: currency || 'JPY',
+          numberOfResults: 5,
+        }),
       }
     );
     const runData = await runRes.json();
@@ -35,7 +35,8 @@ export async function POST(req: NextRequest) {
     const datasetId = runData?.data?.defaultDatasetId;
 
     if (!runId) {
-      return NextResponse.json({ error: 'Apify実行の開始に失敗しました' }, { status: 500 });
+      const errMsg = runData?.error?.message || 'Apify実行の開始に失敗しました';
+      return NextResponse.json({ error: errMsg }, { status: 500 });
     }
 
     // Poll for completion (max ~4 minutes)
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
 
     // Get results
     const itemsRes = await fetch(
-      `https://api.apify.com/v2/datasets/${datasetId}/items?token=${APIFY_TOKEN}&limit=20`
+      `https://api.apify.com/v2/datasets/${datasetId}/items?token=${APIFY_TOKEN}&limit=10`
     );
     const items = await itemsRes.json();
 
