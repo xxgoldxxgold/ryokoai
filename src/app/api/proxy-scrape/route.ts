@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium-min';
-import proxyChain from 'proxy-chain';
+import * as proxyChain from 'proxy-chain';
 
 export const maxDuration = 60;
 
