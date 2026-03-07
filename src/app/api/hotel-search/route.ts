@@ -273,25 +273,41 @@ export async function GET(req: NextRequest) {
     });
   }
 
+  // Convert Japanese query to English for searching
+  let englishQuery = query;
+  for (const [kata, en] of Object.entries(KATA_MAP)) {
+    englishQuery = englishQuery.replace(new RegExp(kata, 'g'), en);
+  }
+  for (const [jp, enList] of Object.entries(LOCATION_MAP)) {
+    englishQuery = englishQuery.replace(new RegExp(jp, 'g'), enList[0]);
+  }
+  englishQuery = englishQuery.replace(/\s+/g, ' ').trim();
+
   // Extract location keywords from query for filtering
   const locations = extractLocations(query);
 
+  // Try both Japanese and English queries
+  const queries = query !== englishQuery ? [query, englishQuery] : [query];
+
   // 2. Try TripAdvisor TypeAhead first
-  const taCandidates = await searchViaTripAdvisor(query);
-  if (taCandidates.length > 0) {
-    const deduped = dedup(taCandidates);
-    const { filtered, autoSelect } = filterAndSort(deduped, locations, query);
-    return NextResponse.json({
-      hotel_key: filtered[0]?.hotel_key || null,
-      hotel_name: filtered[0]?.name || null,
-      source: 'tripadvisor',
-      candidates: filtered,
-      auto_select: autoSelect,
-    });
+  for (const q of queries) {
+    const taCandidates = await searchViaTripAdvisor(q);
+    if (taCandidates.length > 0) {
+      const deduped = dedup(taCandidates);
+      const { filtered, autoSelect } = filterAndSort(deduped, locations, query);
+      return NextResponse.json({
+        hotel_key: filtered[0]?.hotel_key || null,
+        hotel_name: filtered[0]?.name || null,
+        source: 'tripadvisor',
+        candidates: filtered,
+        auto_select: autoSelect,
+      });
+    }
   }
 
-  // 3. Fallback: Brave Search
-  const braveCandidates = await searchViaBrave(query);
+  // 3. Fallback: Brave Search (use English query)
+  const braveQuery = query !== englishQuery ? englishQuery : query;
+  const braveCandidates = await searchViaBrave(braveQuery);
   if (braveCandidates.length > 0) {
     const deduped = dedup(braveCandidates);
     const { filtered, autoSelect } = filterAndSort(deduped, locations, query);
