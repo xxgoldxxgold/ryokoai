@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium-min';
-import * as proxyChain from 'proxy-chain';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const proxyChain = require('proxy-chain');
 
 export const maxDuration = 60;
 
