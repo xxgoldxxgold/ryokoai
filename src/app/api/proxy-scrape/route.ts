@@ -4,15 +4,27 @@ import chromium from '@sparticuz/chromium';
 
 export const maxDuration = 60;
 
+const IPROYAL_HOST = 'geo.iproyal.com';
+const IPROYAL_PORT = '12321';
+
 export async function POST(req: NextRequest) {
   try {
-    const { query, countryCode, lang, proxyHost, proxyPort, proxyUser, proxyPass } = await req.json();
+    const ipRoyalUser = process.env.IPROYAL_USERNAME;
+    const ipRoyalPass = process.env.IPROYAL_PASSWORD;
 
-    if (!query || !proxyHost || !proxyPort || !proxyUser || !proxyPass) {
-      return NextResponse.json({ error: '必須項目が不足しています' }, { status: 400 });
+    if (!ipRoyalUser || !ipRoyalPass) {
+      return NextResponse.json({ error: 'プロキシの設定がされていません' }, { status: 500 });
     }
 
-    const proxyServer = `http://${proxyHost}:${proxyPort}`;
+    const { query, countryCode, lang } = await req.json();
+
+    if (!query) {
+      return NextResponse.json({ error: '検索キーワードを入力してください' }, { status: 400 });
+    }
+
+    const cc = countryCode || 'tr';
+    const proxyUser = `${ipRoyalUser}_country-${cc}`;
+    const proxyServer = `http://${IPROYAL_HOST}:${IPROYAL_PORT}`;
 
     const browser = await puppeteer.launch({
       args: [...chromium.args, `--proxy-server=${proxyServer}`],
@@ -22,11 +34,10 @@ export async function POST(req: NextRequest) {
     });
 
     const page = await browser.newPage();
-    await page.authenticate({ username: proxyUser, password: proxyPass });
+    await page.authenticate({ username: proxyUser, password: ipRoyalPass });
 
-    const gl = countryCode || 'tr';
-    const hl = lang || gl;
-    const url = `https://www.google.com/search?q=${encodeURIComponent(query)}&gl=${gl}&hl=${hl}`;
+    const hl = lang || cc;
+    const url = `https://www.google.com/search?q=${encodeURIComponent(query)}&gl=${cc}&hl=${hl}`;
 
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
 
