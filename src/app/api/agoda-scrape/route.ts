@@ -4,6 +4,7 @@ const APIFY_TOKEN = process.env.APIFY_TOKEN || '';
 const ACTOR_ID = 'apify~ai-web-agent';
 const IPROYAL_USER = process.env.IPROYAL_USERNAME || '';
 const IPROYAL_PASS = process.env.IPROYAL_PASSWORD || '';
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 
 export async function POST(req: NextRequest) {
   try {
@@ -51,6 +52,7 @@ If you see multiple hotels, extract the one that best matches "${hotelName}". If
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          openaiApiKey: OPENAI_API_KEY,
           startUrl: agodaUrl,
           instructions: instructions,
           maxTotalChargeUsd: 0.1,
