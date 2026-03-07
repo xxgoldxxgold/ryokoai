@@ -7,7 +7,7 @@ const IPROYAL_PASS = process.env.IPROYAL_PASSWORD || '';
 
 export async function POST(req: NextRequest) {
   try {
-    const { action, runId, datasetId, search, searchName, checkIn, checkOut } = await req.json();
+    const { action, runId, datasetId, search, checkIn, checkOut } = await req.json();
 
     // Action: check status
     if (action === 'status' && runId) {
@@ -23,21 +23,7 @@ export async function POST(req: NextRequest) {
     if (action === 'results' && datasetId) {
       const res = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${APIFY_TOKEN}&limit=10`);
       const items = await res.json();
-      if (!Array.isArray(items) || items.length === 0) {
-        return NextResponse.json({ hotel: null });
-      }
-      // Find best match by name similarity
-      const query = (searchName || '').toLowerCase();
-      let best = items[0];
-      let bestScore = 0;
-      for (const item of items) {
-        const name = (item.name || '').toLowerCase();
-        if (name === query) { best = item; break; }
-        const words = query.split(/\s+/);
-        const score = words.filter((w: string) => name.includes(w)).length;
-        if (score > bestScore) { bestScore = score; best = item; }
-      }
-      return NextResponse.json({ hotel: best });
+      return NextResponse.json({ hotels: Array.isArray(items) ? items : [] });
     }
 
     // Default: start run
