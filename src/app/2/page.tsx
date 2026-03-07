@@ -84,12 +84,23 @@ export default function AgodaScrapePage() {
     return typeof p === 'string' ? parseFloat(p.replace(/[^0-9.]/g, '')) : p;
   };
 
-  const getName = (h: Hotel) => h.name || h.hotelName || h.title || '名称不明';
-  const getRating = (h: Hotel) => h.rating || h.reviewScore || 0;
-  const getReviews = (h: Hotel) => h.reviews || h.reviewCount || 0;
-  const getImage = (h: Hotel) => h.image || h.thumbnail || '';
-  const getAddress = (h: Hotel) => h.address || h.location || '';
-  const getUrl = (h: Hotel) => h.url || h.link || '';
+  const str = (v: unknown): string => {
+    if (!v) return '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number') return String(v);
+    if (typeof v === 'object') {
+      const o = v as Record<string, unknown>;
+      return Object.values(o).filter(x => typeof x === 'string' && x).join(', ');
+    }
+    return String(v);
+  };
+
+  const getName = (h: Hotel) => str(h.name) || str(h.hotelName) || str(h.title) || '名称不明';
+  const getRating = (h: Hotel) => Number(h.rating || h.reviewScore || 0);
+  const getReviews = (h: Hotel) => Number(h.reviews || h.reviewCount || 0);
+  const getImage = (h: Hotel) => str(h.image) || str(h.thumbnail);
+  const getAddress = (h: Hotel) => str(h.address) || str(h.location);
+  const getUrl = (h: Hotel) => str(h.url) || str(h.link);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -187,7 +198,7 @@ export default function AgodaScrapePage() {
                           {price ? (
                             <div>
                               <span className="text-2xl font-bold text-red-600">
-                                {h.currency || ''} {price.toLocaleString()}
+                                {str(h.currency)} {price.toLocaleString()}
                               </span>
                               <span className="text-xs text-gray-400 ml-1">/泊</span>
                             </div>
