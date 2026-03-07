@@ -114,7 +114,8 @@ export default function AgodaPricePage() {
           <div className="space-y-4">
             <p className="text-sm text-gray-500">{hotels.length}件のホテルが見つかりました</p>
             {hotels.map((h, i) => {
-              const price = h.priceText ? parseInt(h.priceText.replace(/[^\d]/g, ''), 10) : 0;
+              const priceIDR = h.priceText ? parseInt(h.priceText.replace(/[^\d]/g, ''), 10) : 0;
+              const priceJPY = priceIDR > 0 ? Math.round(priceIDR / 107) : 0;
               return (
                 <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                   <div className="flex flex-col sm:flex-row">
@@ -126,12 +127,13 @@ export default function AgodaPricePage() {
                     <div className="flex-1 p-4">
                       <h3 className="font-bold text-base mb-2">{str(h.hotelName)}</h3>
                       <div className="flex items-center justify-between">
-                        {price > 0 ? (
+                        {priceJPY > 0 ? (
                           <div>
                             <span className="text-xl font-bold text-red-600">
-                              IDR {price.toLocaleString()}
+                              ¥{priceJPY.toLocaleString()}
                             </span>
                             <span className="text-xs text-gray-400 ml-1">/泊</span>
+                            <p className="text-xs text-gray-400">IDR {priceIDR.toLocaleString()}</p>
                           </div>
                         ) : (
                           <span className="text-sm text-gray-400">価格なし</span>
