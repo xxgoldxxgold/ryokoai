@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import puppeteer from 'puppeteer-core';
-import chromium from '@sparticuz/chromium';
+import chromium from '@sparticuz/chromium-min';
 
 export const maxDuration = 60;
 
 const IPROYAL_HOST = 'geo.iproyal.com';
 const IPROYAL_PORT = '12321';
+const CHROMIUM_URL = 'https://github.com/nichochar/chromium-build-standalone/releases/download/v133.0.0/chromium-v133.0.0-pack.tar';
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,10 +27,12 @@ export async function POST(req: NextRequest) {
     const proxyUser = `${ipRoyalUser}_country-${cc}`;
     const proxyServer = `http://${IPROYAL_HOST}:${IPROYAL_PORT}`;
 
+    const executablePath = await chromium.executablePath(CHROMIUM_URL);
+
     const browser = await puppeteer.launch({
-      args: [...chromium.args, `--proxy-server=${proxyServer}`],
+      args: chromium.args.concat([`--proxy-server=${proxyServer}`]),
       defaultViewport: { width: 1280, height: 800 },
-      executablePath: await chromium.executablePath(),
+      executablePath,
       headless: true,
     });
 
