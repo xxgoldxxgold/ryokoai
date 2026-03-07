@@ -37,7 +37,26 @@ export async function POST(req: NextRequest) {
     });
 
     const page = await browser.newPage();
-    await page.authenticate({ username: proxyUser, password: ipRoyalPass });
+
+    const client = await page.createCDPSession();
+    await client.send('Fetch.enable', {
+      handleAuthRequests: true,
+    });
+    client.on('Fetch.authRequired', async (event: { requestId: string }) => {
+      await client.send('Fetch.continueWithAuth', {
+        requestId: event.requestId,
+        authChallengeResponse: {
+          response: 'ProvideCredentials',
+          username: proxyUser,
+          password: ipRoyalPass,
+        },
+      });
+    });
+    client.on('Fetch.requestPaused', async (event: { requestId: string }) => {
+      await client.send('Fetch.continueRequest', {
+        requestId: event.requestId,
+      });
+    });
 
     const hl = lang || cc;
     const url = `https://www.google.com/search?q=${encodeURIComponent(query)}&gl=${cc}&hl=${hl}`;
