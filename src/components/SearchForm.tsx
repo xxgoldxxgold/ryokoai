@@ -39,7 +39,7 @@ export default function SearchForm() {
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs text-gray-500 mb-1">チェックイン</label>
           <input
@@ -64,7 +64,7 @@ export default function SearchForm() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs text-gray-500 mb-1">大人</label>
           <select
