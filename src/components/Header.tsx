@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/lib/useAuth';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -196,7 +197,8 @@ export default function Header() {
     <>
       <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/" className="text-lg font-bold text-gray-900 tracking-tight">
+          <Link href="/" className="flex items-center gap-1.5 text-lg font-bold text-gray-900 tracking-tight">
+            <Image src="/logo.svg" alt="RyokoAI" width={28} height={28} className="h-7 w-7" />
             Ryoko<span className="text-indigo-500">AI</span>
           </Link>
           <nav className="flex items-center gap-4 text-sm">
