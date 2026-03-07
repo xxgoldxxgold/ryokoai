@@ -13,6 +13,7 @@
     "@supabase/ssr": "^0.9.0",
     "@supabase/supabase-js": "^2.98.0",
     "next": "14.2.21",
+    "proxy-chain": "^2.7.1",
     "puppeteer-core": "^23.11.1",
     "react": "^18",
     "react-dom": "^18"
