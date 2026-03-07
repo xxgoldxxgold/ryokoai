@@ -11,7 +11,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] flex-col items-center justify-center bg-white px-4">
       <Link href="/" className="mb-8 flex items-center gap-2 text-xl font-bold text-gray-900 tracking-tight">
-        <Image src="/logo.svg" alt="RyokoAI" width={32} height={32} className="h-8 w-8" />
+        <Image src="/logo.png" alt="RyokoAI" width={32} height={32} className="h-8 w-8" />
         Ryoko<span className="text-indigo-500">AI</span>
       </Link>
       <LoginForm />
