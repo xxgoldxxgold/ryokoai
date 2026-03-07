@@ -101,7 +101,7 @@ function SearchResults() {
       .then((data) => {
         const cands: Candidate[] = data.candidates || [];
         setCandidates(cands);
-        if (cands.length > 0 && (data.auto_select || cands.length === 1)) {
+        if (cands.length > 0) {
           setSelectedKey(cands[0].hotel_key);
           setSelectedName(cands[0].name);
         }
