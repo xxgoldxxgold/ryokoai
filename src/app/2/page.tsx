@@ -2,15 +2,6 @@
 
 import { useState } from 'react';
 
-async function api(body: Record<string, unknown>) {
-  const res = await fetch('/api/agoda-scrape', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  return res.json();
-}
-
 function str(v: unknown): string {
   if (!v) return '';
   if (typeof v === 'string') return v;
@@ -22,51 +13,49 @@ function str(v: unknown): string {
   return String(v);
 }
 
+interface Hotel {
+  hotelName?: string;
+  priceText?: string;
+  rating?: string;
+  reviewCount?: string;
+  imageUrl?: string;
+  agodaUrl?: string;
+}
+
 export default function AgodaPricePage() {
   const [hotelName, setHotelName] = useState('AYANA Resort Bali');
   const [checkin, setCheckin] = useState('2026-05-10');
   const [checkout, setCheckout] = useState('2026-05-11');
-  const [results, setResults] = useState<Record<string, unknown>[]>([]);
+  const [hotels, setHotels] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [elapsed, setElapsed] = useState(0);
-  const [statusMsg, setStatusMsg] = useState('');
 
   const handleSearch = async () => {
     if (!hotelName.trim()) { setError('ホテル名を入力してください'); return; }
-    setLoading(true); setError(''); setResults([]); setElapsed(0); setStatusMsg('起動中...');
+    setLoading(true); setError(''); setHotels([]); setElapsed(0);
     const start = Date.now();
     const timer = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 1000);
 
     try {
-      const startData = await api({ hotelName, checkIn: checkin, checkOut: checkout });
-      if (startData.error) { setError(startData.error); return; }
-      const { runId, datasetId } = startData;
+      const res = await fetch('/api/agoda-scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hotelName, checkIn: checkin, checkOut: checkout, country: 'id' }),
+      });
+      const data = await res.json();
 
-      setStatusMsg('AI AgentがAgodaを検索中...');
-      let status = 'RUNNING';
-      for (let i = 0; i < 120; i++) {
-        await new Promise(r => setTimeout(r, 5000));
-        const statusData = await api({ action: 'status', runId });
-        status = statusData.status;
-        if (statusData.statusMessage) setStatusMsg(statusData.statusMessage);
-        if (status === 'SUCCEEDED' || status === 'FAILED' || status === 'ABORTED') break;
+      if (data.error) {
+        setError(data.error);
+      } else if (data.success && data.data?.hotels?.length > 0) {
+        setHotels(data.data.hotels);
+      } else {
+        setError('ホテルが見つかりませんでした');
       }
-
-      if (status !== 'SUCCEEDED') {
-        setError(`検索が失敗しました (${status})`);
-        return;
-      }
-
-      setStatusMsg('結果を取得中...');
-      const resultData = await api({ action: 'results', datasetId });
-      const list = resultData.results || [];
-      setResults(list);
-      if (list.length === 0) setError('該当するホテルが見つかりませんでした');
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : '通信エラー');
     } finally {
-      clearInterval(timer); setLoading(false); setStatusMsg('');
+      clearInterval(timer); setLoading(false);
     }
   };
 
@@ -76,7 +65,7 @@ export default function AgodaPricePage() {
         <div className="container mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold">Agoda <span className="text-yellow-400">ID価格</span></h1>
           <span className="text-xs bg-purple-800/50 px-3 py-1 rounded-full border border-purple-400/50">
-            AI Agent + インドネシアIP
+            インドネシアIP経由
           </span>
         </div>
       </nav>
@@ -114,61 +103,41 @@ export default function AgodaPricePage() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              {statusMsg} ({elapsed}秒)
+              検索中... ({elapsed}秒)
             </span>
           ) : 'インドネシア価格を取得'}
         </button>
 
         {error && <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 mb-6">{error}</div>}
 
-        {results.length > 0 && (
+        {hotels.length > 0 && (
           <div className="space-y-4">
-            {results.map((r, i) => {
-              const name = str(r.hotelName || r.name || r.title);
-              const price = Number(r.price || 0);
-              const currency = str(r.currency);
-              const rating = Number(r.rating || r.reviewScore || 0);
-              const reviews = Number(r.reviewCount || r.reviews || 0);
-              const address = str(r.address || r.location);
-              const image = str(r.imageUrl || r.image || r.thumbnail);
-              const url = str(r.agodaUrl || r.url || r.link);
-
+            <p className="text-sm text-gray-500">{hotels.length}件のホテルが見つかりました</p>
+            {hotels.map((h, i) => {
+              const price = h.priceText ? parseInt(h.priceText.replace(/[^\d]/g, ''), 10) : 0;
               return (
                 <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                   <div className="flex flex-col sm:flex-row">
-                    {image && (
+                    {h.imageUrl && (
                       <div className="sm:w-48 h-36 sm:h-auto flex-shrink-0">
-                        <img src={image} alt={name} className="w-full h-full object-cover" />
+                        <img src={h.imageUrl} alt={str(h.hotelName)} className="w-full h-full object-cover" />
                       </div>
                     )}
                     <div className="flex-1 p-4">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <h3 className="font-bold text-base">{name || '名称不明'}</h3>
-                        {rating > 0 && (
-                          <div className="flex-shrink-0 text-center">
-                            <div className={`text-white text-xs font-bold px-2 py-0.5 rounded-md ${
-                              rating >= 8.5 ? 'bg-green-600' : rating >= 7 ? 'bg-blue-600' : 'bg-gray-500'
-                            }`}>{rating}</div>
-                            {reviews > 0 && (
-                              <p className="text-[10px] text-gray-400 mt-0.5">{reviews.toLocaleString()}件</p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      {address && <p className="text-xs text-gray-500 mb-2">{address}</p>}
-                      <div className="flex items-center justify-between mt-2">
+                      <h3 className="font-bold text-base mb-2">{str(h.hotelName)}</h3>
+                      <div className="flex items-center justify-between">
                         {price > 0 ? (
                           <div>
                             <span className="text-xl font-bold text-red-600">
-                              {currency} {price.toLocaleString()}
+                              IDR {price.toLocaleString()}
                             </span>
                             <span className="text-xs text-gray-400 ml-1">/泊</span>
                           </div>
                         ) : (
-                          <span className="text-sm text-gray-400">価格取得中...</span>
+                          <span className="text-sm text-gray-400">価格なし</span>
                         )}
-                        {url && (
-                          <a href={url} target="_blank" rel="noopener noreferrer"
+                        {h.agodaUrl && (
+                          <a href={h.agodaUrl} target="_blank" rel="noopener noreferrer"
                             className="bg-purple-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-purple-700 transition-colors flex-shrink-0">
                             Agoda
                           </a>
