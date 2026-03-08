@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const DATAFORSEO_AUTH = process.env.DATAFORSEO_AUTH || 'eEB4LmdvbGQ6ZDg1ZjM5MDQwZDg1OGVkNw==';
 
 // In-memory cache for hotel identifiers (survives across requests in same serverless instance)
-const idCache = new Map<string, { id: string; expires: number }>();
+const idCache = new Map<string, { id: string; title: string; expires: number }>();
 
 interface DfsPrice {
   title: string;
@@ -14,76 +14,49 @@ interface DfsPrice {
   is_paid?: boolean;
 }
 
-async function findHotelIdentifier(hotelName: string, checkin?: string, checkout?: string, adults?: number): Promise<string | null> {
+async function findHotelIdentifier(
+  hotelName: string,
+  checkin: string,
+  checkout: string,
+  adults: number,
+): Promise<{ id: string; title: string } | null> {
   const cacheKey = hotelName.toLowerCase().trim();
   const cached = idCache.get(cacheKey);
-  if (cached && Date.now() < cached.expires) return cached.id;
+  if (cached && Date.now() < cached.expires) return { id: cached.id, title: cached.title };
 
-  // Try Google Hotels SERP first (more reliable for finding hotel_identifier)
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
   try {
-    const controller1 = new AbortController();
-    const timeout1 = setTimeout(() => controller1.abort(), 15000);
-    const hotelSearchBody: Record<string, unknown> = {
-      keyword: hotelName,
-      location_code: 2840,
-      language_code: 'en',
-      currency: 'USD',
-    };
-    if (checkin) hotelSearchBody.check_in = checkin;
-    if (checkout) hotelSearchBody.check_out = checkout;
-    if (adults) hotelSearchBody.adults = adults;
-
-    const res = await fetch('https://api.dataforseo.com/v3/serp/google/hotels/live/advanced', {
+    const res = await fetch('https://api.dataforseo.com/v3/business_data/google/hotel_searches/live', {
       method: 'POST',
-      signal: controller1.signal,
-      headers: {
-        'Authorization': `Basic ${DATAFORSEO_AUTH}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify([hotelSearchBody]),
-    });
-    clearTimeout(timeout1);
-    const data = await res.json();
-    const items = data.tasks?.[0]?.result?.[0]?.items || [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const hotelPack = items.find((i: any) => i.type === 'hotel_pack');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const firstHotel = hotelPack?.items?.[0] || items.find((i: any) => i.hotel_identifier);
-    if (firstHotel?.hotel_identifier) {
-      idCache.set(cacheKey, { id: firstHotel.hotel_identifier, expires: Date.now() + 86400000 });
-      return firstHotel.hotel_identifier;
-    }
-  } catch { /* fall through to organic SERP */ }
-
-  // Fallback: organic SERP search
-  try {
-    const controller2 = new AbortController();
-    const timeout2 = setTimeout(() => controller2.abort(), 15000);
-    const res = await fetch('https://api.dataforseo.com/v3/serp/google/organic/live/advanced', {
-      method: 'POST',
-      signal: controller2.signal,
+      signal: controller.signal,
       headers: {
         'Authorization': `Basic ${DATAFORSEO_AUTH}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify([{
-        keyword: `${hotelName} hotel`,
+        keyword: hotelName,
         location_code: 2840,
         language_code: 'en',
+        check_in: checkin,
+        check_out: checkout,
+        adults,
+        currency: 'USD',
       }]),
     });
-    clearTimeout(timeout2);
+    clearTimeout(timeout);
     const data = await res.json();
     const items = data.tasks?.[0]?.result?.[0]?.items || [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const hotelItem = items.find((i: any) => i.type === 'google_hotels');
-    if (hotelItem?.hotel_identifier) {
-      idCache.set(cacheKey, { id: hotelItem.hotel_identifier, expires: Date.now() + 86400000 });
-      return hotelItem.hotel_identifier;
-    }
-  } catch { /* return null */ }
-
-  return null;
+    if (items.length === 0) return null;
+    const first = items[0];
+    if (!first.hotel_identifier) return null;
+    const title = first.title || hotelName;
+    idCache.set(cacheKey, { id: first.hotel_identifier, title, expires: Date.now() + 86400000 });
+    return { id: first.hotel_identifier, title };
+  } catch {
+    clearTimeout(timeout);
+    return null;
+  }
 }
 
 export async function GET(req: NextRequest) {
@@ -98,8 +71,8 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const hotelId = await findHotelIdentifier(hotelName, checkin, checkout, parseInt(adults));
-    if (!hotelId) {
+    const found = await findHotelIdentifier(hotelName, checkin, checkout, parseInt(adults));
+    if (!found) {
       return NextResponse.json({ error: 'Hotel not found', prices: [] });
     }
 
@@ -113,7 +86,7 @@ export async function GET(req: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify([{
-        hotel_identifier: hotelId,
+        hotel_identifier: found.id,
         check_in: checkin,
         check_out: checkout,
         adults: parseInt(adults),
@@ -131,7 +104,7 @@ export async function GET(req: NextRequest) {
     }
 
     const rawItems: DfsPrice[] = result.prices?.items || [];
-    const hotelTitle = result.title || hotelName;
+    const hotelTitle = result.title || found.title || hotelName;
 
     const prices = rawItems
       .filter(p => p.price > 0 && p.domain && p.domain !== 'google.com')
