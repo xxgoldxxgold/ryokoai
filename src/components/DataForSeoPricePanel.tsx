@@ -38,7 +38,9 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
     setHotelTitle(null);
     setError(null);
 
-    fetch(`/api/dataforseo-hotels?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}`)
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    fetch(`/api/dataforseo-hotels?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}`, { signal: controller.signal })
       .then(r => r.json())
       .then(data => {
         if (data.error && (!data.prices || data.prices.length === 0)) {
@@ -47,8 +49,14 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
         setPrices(data.prices || []);
         setHotelTitle(data.hotel_name || null);
       })
-      .catch((e) => { setError(e.message || 'ネットワークエラー'); })
-      .finally(() => setLoading(false));
+      .catch((e) => {
+        if (e.name === 'AbortError') {
+          setError('取得がタイムアウトしました');
+        } else {
+          setError(e.message || 'ネットワークエラー');
+        }
+      })
+      .finally(() => { clearTimeout(timeout); setLoading(false); });
   }, [paramsKey, hotelName, checkin, checkout, adults]);
 
   const best = prices.length > 0 ? prices[0] : null;

@@ -19,8 +19,11 @@ async function findHotelIdentifier(hotelName: string): Promise<string | null> {
   const cached = idCache.get(cacheKey);
   if (cached && Date.now() < cached.expires) return cached.id;
 
+  const controller1 = new AbortController();
+  const timeout1 = setTimeout(() => controller1.abort(), 15000);
   const res = await fetch('https://api.dataforseo.com/v3/serp/google/organic/live/advanced', {
     method: 'POST',
+    signal: controller1.signal,
     headers: {
       'Authorization': `Basic ${DATAFORSEO_AUTH}`,
       'Content-Type': 'application/json',
@@ -31,6 +34,7 @@ async function findHotelIdentifier(hotelName: string): Promise<string | null> {
       language_code: 'en',
     }]),
   });
+  clearTimeout(timeout1);
   const data = await res.json();
   const items = data.tasks?.[0]?.result?.[0]?.items || [];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -59,8 +63,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Hotel not found', prices: [] });
     }
 
+    const controller2 = new AbortController();
+    const timeout2 = setTimeout(() => controller2.abort(), 15000);
     const infoRes = await fetch('https://api.dataforseo.com/v3/business_data/google/hotel_info/live/advanced', {
       method: 'POST',
+      signal: controller2.signal,
       headers: {
         'Authorization': `Basic ${DATAFORSEO_AUTH}`,
         'Content-Type': 'application/json',
@@ -75,6 +82,7 @@ export async function GET(req: NextRequest) {
         location_code: 2840,
       }]),
     });
+    clearTimeout(timeout2);
     const infoData = await infoRes.json();
     const result = infoData.tasks?.[0]?.result?.[0];
 
