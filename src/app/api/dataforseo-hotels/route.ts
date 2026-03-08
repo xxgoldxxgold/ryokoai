@@ -14,36 +14,76 @@ interface DfsPrice {
   is_paid?: boolean;
 }
 
-async function findHotelIdentifier(hotelName: string): Promise<string | null> {
+async function findHotelIdentifier(hotelName: string, checkin?: string, checkout?: string, adults?: number): Promise<string | null> {
   const cacheKey = hotelName.toLowerCase().trim();
   const cached = idCache.get(cacheKey);
   if (cached && Date.now() < cached.expires) return cached.id;
 
-  const controller1 = new AbortController();
-  const timeout1 = setTimeout(() => controller1.abort(), 15000);
-  const res = await fetch('https://api.dataforseo.com/v3/serp/google/organic/live/advanced', {
-    method: 'POST',
-    signal: controller1.signal,
-    headers: {
-      'Authorization': `Basic ${DATAFORSEO_AUTH}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify([{
-      keyword: `${hotelName} hotel`,
+  // Try Google Hotels SERP first (more reliable for finding hotel_identifier)
+  try {
+    const controller1 = new AbortController();
+    const timeout1 = setTimeout(() => controller1.abort(), 15000);
+    const hotelSearchBody: Record<string, unknown> = {
+      keyword: hotelName,
       location_code: 2840,
       language_code: 'en',
-    }]),
-  });
-  clearTimeout(timeout1);
-  const data = await res.json();
-  const items = data.tasks?.[0]?.result?.[0]?.items || [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const hotelItem = items.find((i: any) => i.type === 'google_hotels');
-  if (!hotelItem?.hotel_identifier) return null;
+      currency: 'USD',
+    };
+    if (checkin) hotelSearchBody.check_in = checkin;
+    if (checkout) hotelSearchBody.check_out = checkout;
+    if (adults) hotelSearchBody.adults = adults;
 
-  // Cache for 24 hours
-  idCache.set(cacheKey, { id: hotelItem.hotel_identifier, expires: Date.now() + 86400000 });
-  return hotelItem.hotel_identifier;
+    const res = await fetch('https://api.dataforseo.com/v3/serp/google/hotels/live/advanced', {
+      method: 'POST',
+      signal: controller1.signal,
+      headers: {
+        'Authorization': `Basic ${DATAFORSEO_AUTH}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify([hotelSearchBody]),
+    });
+    clearTimeout(timeout1);
+    const data = await res.json();
+    const items = data.tasks?.[0]?.result?.[0]?.items || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const hotelPack = items.find((i: any) => i.type === 'hotel_pack');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const firstHotel = hotelPack?.items?.[0] || items.find((i: any) => i.hotel_identifier);
+    if (firstHotel?.hotel_identifier) {
+      idCache.set(cacheKey, { id: firstHotel.hotel_identifier, expires: Date.now() + 86400000 });
+      return firstHotel.hotel_identifier;
+    }
+  } catch { /* fall through to organic SERP */ }
+
+  // Fallback: organic SERP search
+  try {
+    const controller2 = new AbortController();
+    const timeout2 = setTimeout(() => controller2.abort(), 15000);
+    const res = await fetch('https://api.dataforseo.com/v3/serp/google/organic/live/advanced', {
+      method: 'POST',
+      signal: controller2.signal,
+      headers: {
+        'Authorization': `Basic ${DATAFORSEO_AUTH}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify([{
+        keyword: `${hotelName} hotel`,
+        location_code: 2840,
+        language_code: 'en',
+      }]),
+    });
+    clearTimeout(timeout2);
+    const data = await res.json();
+    const items = data.tasks?.[0]?.result?.[0]?.items || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const hotelItem = items.find((i: any) => i.type === 'google_hotels');
+    if (hotelItem?.hotel_identifier) {
+      idCache.set(cacheKey, { id: hotelItem.hotel_identifier, expires: Date.now() + 86400000 });
+      return hotelItem.hotel_identifier;
+    }
+  } catch { /* return null */ }
+
+  return null;
 }
 
 export async function GET(req: NextRequest) {
@@ -58,7 +98,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const hotelId = await findHotelIdentifier(hotelName);
+    const hotelId = await findHotelIdentifier(hotelName, checkin, checkout, parseInt(adults));
     if (!hotelId) {
       return NextResponse.json({ error: 'Hotel not found', prices: [] });
     }
