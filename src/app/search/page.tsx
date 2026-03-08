@@ -8,6 +8,7 @@ import DataForSeoPricePanel from '@/components/DataForSeoPricePanel';
 import SearchForm from '@/components/SearchForm';
 import { useAuth } from '@/lib/useAuth';
 import Link from 'next/link';
+import VpnTip from '@/components/VpnTip';
 
 const CITY_CODES: Record<string, string> = {
   seoul: 'SEL', tokyo: 'TYO', osaka: 'OSA', kyoto: 'UKY', bangkok: 'BKK',
@@ -192,6 +193,9 @@ function SearchResults() {
           </>
         )
       )}
+
+      {/* VPN tip */}
+      {selectedKey && <VpnTip hotelName={selectedName || hotel} />}
 
       {/* Disclaimer */}
       <p className="text-gray-400 text-xs text-center">
