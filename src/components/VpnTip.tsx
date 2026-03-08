@@ -36,11 +36,11 @@ const REGION_KEYWORDS: { keywords: string[]; index: number }[] = [
 // Japan luxury detection
 const JAPAN_LUXURY_KEYWORDS = ['ritz', 'four seasons', 'aman', 'mandarin', 'peninsula', 'park hyatt', 'palace', 'imperial', 'okura', 'prince', 'conrad', 'st. regis', 'edition', 'luxury', 'resort'];
 
-const OTA_LINKS: Record<string, { base: string; label: string }> = {
-  'Agoda': { base: 'https://www.agoda.com/search?q=', label: 'Agoda' },
-  'Booking.com': { base: 'https://www.booking.com/searchresults.html?ss=', label: 'Booking.com' },
-  'Trip.com': { base: 'https://www.trip.com/hotels/list?keyword=', label: 'Trip.com' },
-  'Expedia': { base: 'https://www.expedia.com/Hotel-Search?destination=', label: 'Expedia' },
+const OTA_LINKS: Record<string, { base: string; vpn: string }> = {
+  'Agoda': { base: 'https://www.agoda.com/search?q=', vpn: 'ベトナム、タイ' },
+  'Booking.com': { base: 'https://www.booking.com/searchresults.html?ss=', vpn: 'ポーランド、ルーマニア' },
+  'Trip.com': { base: 'https://www.trip.com/hotels/list?keyword=', vpn: 'インド、韓国' },
+  'Expedia': { base: 'https://www.expedia.com/Hotel-Search?destination=', vpn: 'メキシコ、ブラジル' },
 };
 
 function detectRegion(hotelName: string): GeoTip | null {
@@ -76,55 +76,34 @@ export default function VpnTip({ hotelName }: Props) {
   const tip = detectRegion(hotelName);
   if (!tip) return null;
 
-  const otaEntries = [
-    { ota: 'Agoda', vpn: 'ベトナム、タイ', target: 'アジア全域・日本のビジホ' },
-    { ota: 'Booking.com', vpn: 'ポーランド、ルーマニア', target: '欧州のホテル・日本の高級宿' },
-    { ota: 'Trip.com', vpn: 'インド、韓国', target: '全世界の高級チェーン' },
-    { ota: 'Expedia', vpn: 'メキシコ、ブラジル', target: '北米・ハワイのホテル' },
-  ];
-
+  const ota = OTA_LINKS[tip.platform];
   const encodedName = encodeURIComponent(hotelName);
 
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-2xl overflow-hidden">
-      <div className="px-5 py-4 border-b border-amber-100">
-        <p className="text-amber-800 font-bold text-sm">
-          このホテルはVPNでさらに安くなる可能性があります
-        </p>
-        <p className="text-amber-600 text-xs mt-1">
-          {tip.vpn1}や{tip.vpn2}のVPNで最大<span className="font-bold">{tip.discount}OFF</span>の実績あり（{tip.category}）
-        </p>
-      </div>
-      <div className="divide-y divide-amber-100">
-        {otaEntries.map((entry) => {
-          const link = OTA_LINKS[entry.ota];
-          return (
-            <a
-              key={entry.ota}
-              href={`${link.base}${encodedName}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-between px-5 py-3 hover:bg-amber-100/50 transition-colors"
-            >
-              <div>
-                <span className="text-gray-900 text-sm font-semibold">{entry.ota}</span>
-                <span className="text-amber-600 text-xs ml-2">VPN: {entry.vpn}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-gray-400 text-xs">{entry.target}</span>
-                <svg className="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </a>
-          );
-        })}
-      </div>
-      <div className="px-5 py-2.5 bg-amber-50 border-t border-amber-100">
-        <p className="text-amber-500 text-[10px] text-center">
-          VPNで別の国から接続すると、予約サイトの表示価格が変わる場合があります
+    <a
+      href={`${ota.base}${encodedName}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="block bg-amber-50 border border-amber-200 rounded-2xl overflow-hidden hover:bg-amber-100/50 transition-colors"
+    >
+      <div className="px-5 py-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-amber-800 font-bold text-sm">
+              VPNでさらに安くなる可能性あり
+            </p>
+            <p className="text-amber-600 text-xs mt-1">
+              {tip.vpn1}や{tip.vpn2}のVPNで{tip.platform}を見ると最大<span className="font-bold">{tip.discount}OFF</span>
+            </p>
+          </div>
+          <svg className="w-5 h-5 text-amber-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+        <p className="text-amber-500 text-[10px] mt-2">
+          VPN: {ota.vpn} → {tip.platform}で検索
         </p>
       </div>
-    </div>
+    </a>
   );
 }
