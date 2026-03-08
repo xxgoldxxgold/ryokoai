@@ -53,22 +53,16 @@ function detectRegion(hotelName: string): GeoTip | null {
     return GEO_DATA[isLuxury ? 1 : 0];
   }
 
-  // Check global luxury chains
-  const luxuryMatch = REGION_KEYWORDS.find(r => r.index === 2)?.keywords.some(k => lower.includes(k));
-
-  // Check other regions
+  // Check regional match (takes priority over luxury chain detection)
   for (const region of REGION_KEYWORDS) {
     if (region.index <= 2) continue; // skip luxury and japan
     if (region.keywords.some(k => lower.includes(k))) {
-      // If it's a luxury chain in this region, might prefer global luxury tip
-      if (luxuryMatch && GEO_DATA[2].discount > GEO_DATA[region.index].discount) {
-        return GEO_DATA[2];
-      }
       return GEO_DATA[region.index];
     }
   }
 
-  // If luxury chain but no region detected
+  // No region detected — check global luxury chains as fallback
+  const luxuryMatch = REGION_KEYWORDS.find(r => r.index === 2)?.keywords.some(k => lower.includes(k));
   if (luxuryMatch) return GEO_DATA[2];
 
   return null;
