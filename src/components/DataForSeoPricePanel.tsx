@@ -201,7 +201,7 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
 
           <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50">
             <p className="text-gray-400 text-[10px] text-center">
-              Google Hotels経由・1泊あたり（USD）{jpyRate && ` / 1USD≈¥${Math.round(jpyRate)}`}
+              Google Hotels経由・1泊あたり（USD）・税別の場合あり{jpyRate && ` / 1USD≈¥${Math.round(jpyRate)}`}
             </p>
           </div>
         </div>
