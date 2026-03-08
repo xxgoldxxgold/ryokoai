@@ -21,47 +21,69 @@ interface Props {
 export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adults }: Props) {
   const [prices, setPrices] = useState<DfsPrice[]>([]);
   const [hotelTitle, setHotelTitle] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [basePrice, setBasePrice] = useState<number | null>(null);
+  const [searching, setSearching] = useState(true);
+  const [loadingPrices, setLoadingPrices] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const prevParams = useRef('');
   const jpyRate = useUsdToJpy();
 
   const paramsKey = `${hotelName}|${checkin}|${checkout}|${adults}`;
+  const base = `/api/dataforseo-hotels?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}`;
 
   useEffect(() => {
     if (!hotelName || !checkin || !checkout) return;
     if (prevParams.current === paramsKey) return;
     prevParams.current = paramsKey;
 
-    setLoading(true);
+    setSearching(true);
+    setLoadingPrices(false);
     setPrices([]);
     setHotelTitle(null);
+    setBasePrice(null);
     setError(null);
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000);
-    fetch(`/api/dataforseo-hotels?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}`, { signal: controller.signal })
+
+    // Phase 1: Find hotel + base price (~3-6s)
+    fetch(`${base}&phase=search`, { signal: controller.signal })
       .then(r => r.json())
       .then(data => {
-        if (data.error && (!data.prices || data.prices.length === 0)) {
+        if (data.error) {
           setError(data.error);
+          setSearching(false);
+          return;
         }
-        setPrices(data.prices || []);
         setHotelTitle(data.hotel_name || null);
+        setBasePrice(data.base_price || null);
+        setSearching(false);
+        setLoadingPrices(true);
+
+        // Phase 2: Get OTA prices (~10s)
+        return fetch(`${base}&phase=prices&id=${encodeURIComponent(data.hotel_id)}`, { signal: controller.signal })
+          .then(r => r.json())
+          .then(priceData => {
+            if (priceData.hotel_name) setHotelTitle(priceData.hotel_name);
+            setPrices(priceData.prices || []);
+            setLoadingPrices(false);
+          });
       })
       .catch((e) => {
-        if (e.name === 'AbortError') {
-          setError('取得がタイムアウトしました');
-        } else {
-          setError(e.message || 'ネットワークエラー');
-        }
-      })
-      .finally(() => { clearTimeout(timeout); setLoading(false); });
-  }, [paramsKey, hotelName, checkin, checkout, adults]);
+        if (e.name === 'AbortError') return;
+        setError(e.message || 'ネットワークエラー');
+        setSearching(false);
+        setLoadingPrices(false);
+      });
+
+    return () => controller.abort();
+  }, [paramsKey, hotelName, checkin, checkout, adults, base]);
 
   const best = prices.length > 0 ? prices[0] : null;
   const worst = prices.length > 1 ? prices[prices.length - 1] : null;
   const savings = best && worst && worst.price > best.price ? worst.price - best.price : 0;
+
+  const loading = searching || loadingPrices;
+  const showBasePrice = basePrice && basePrice > 0 && prices.length === 0;
 
   return (
     <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
@@ -74,14 +96,33 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
         </p>
       </div>
 
-      {loading && (
+      {searching && (
         <div className="px-5 py-8 flex items-center justify-center gap-2">
           <div className="w-4 h-4 border-2 border-blue-200 border-t-blue-500 rounded-full animate-spin" />
-          <span className="text-gray-400 text-sm">価格を取得中...</span>
+          <span className="text-gray-400 text-sm">ホテルを検索中...</span>
         </div>
       )}
 
-      {!loading && prices.length > 0 && (
+      {showBasePrice && (
+        <div className="px-5 py-4">
+          <div className="flex items-center justify-between">
+            <span className="text-gray-700 text-sm">Google Hotels参考価格</span>
+            <div>
+              <span className="text-gray-900 text-xl font-bold">${basePrice.toLocaleString()}</span>
+              <span className="text-gray-400 text-xs">/泊</span>
+              {jpyRate && <span className="text-gray-400 text-xs ml-1.5">({toJpy(basePrice, jpyRate)})</span>}
+            </div>
+          </div>
+          {loadingPrices && (
+            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
+              <div className="w-3 h-3 border-2 border-blue-200 border-t-blue-500 rounded-full animate-spin" />
+              <span className="text-gray-400 text-xs">各予約サイトの価格を比較中...</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {prices.length > 0 && (
         <div>
           {best && savings > 0 && (
             <div className="bg-emerald-50 px-5 py-3 border-b border-emerald-100">
@@ -154,7 +195,7 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
         </div>
       )}
 
-      {!loading && prices.length === 0 && (
+      {!loading && prices.length === 0 && !showBasePrice && (
         <div className="px-5 py-8 text-center">
           <p className="text-gray-400 text-sm">
             {error || '価格データを取得できませんでした。'}
