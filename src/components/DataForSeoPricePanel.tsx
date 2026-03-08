@@ -78,12 +78,15 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
     return () => controller.abort();
   }, [paramsKey, hotelName, checkin, checkout, adults, base]);
 
+  const [expanded, setExpanded] = useState(false);
+
   const best = prices.length > 0 ? prices[0] : null;
   const worst = prices.length > 1 ? prices[prices.length - 1] : null;
   const savings = best && worst && worst.price > best.price ? worst.price - best.price : 0;
 
   const loading = searching || loadingPrices;
   const showBasePrice = basePrice && basePrice > 0 && prices.length === 0;
+  const visiblePrices = expanded ? prices : prices.slice(0, 5);
 
   return (
     <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
@@ -145,7 +148,7 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
           )}
 
           <div className="divide-y divide-gray-50">
-            {prices.map((entry, i) => {
+            {visiblePrices.map((entry, i) => {
               const isBest = i === 0 && prices.length > 1;
               const inner = (
                 <div className={`flex items-center justify-between px-5 py-3.5 transition-colors hover:bg-gray-50 ${isBest ? 'bg-emerald-50/50' : ''}`}>
@@ -186,6 +189,15 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
               );
             })}
           </div>
+
+          {!expanded && prices.length > 5 && (
+            <button
+              onClick={() => setExpanded(true)}
+              className="w-full px-5 py-3 text-center text-blue-600 text-sm font-medium hover:bg-blue-50 transition-colors border-t border-gray-100"
+            >
+              他 {prices.length - 5}件の予約サイトを見る
+            </button>
+          )}
 
           <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50">
             <p className="text-gray-400 text-[10px] text-center">
