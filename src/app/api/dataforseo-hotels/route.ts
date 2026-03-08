@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const DATAFORSEO_AUTH = process.env.DATAFORSEO_AUTH || 'eEB4LmdvbGQ6ZDg1ZjM5MDQwZDg1OGVkNw==';
 
-const idCache = new Map<string, { id: string; title: string; basePrice: number; expires: number }>();
+const idCache = new Map<string, { id: string; title: string; basePrice: number; locationCode: number; expires: number }>();
 
 interface DfsPrice {
   title: string;
@@ -17,6 +17,54 @@ const DFS_HEADERS = {
   'Authorization': `Basic ${DATAFORSEO_AUTH}`,
   'Content-Type': 'application/json',
 };
+
+// location_code mapping: keyword → DataForSEO location code
+const LOCATION_KEYWORDS: { keywords: string[]; code: number }[] = [
+  { keywords: ['tokyo', 'osaka', 'kyoto', 'fukuoka', 'sapporo', 'okinawa', 'naha', 'nagoya', 'hakone', 'karuizawa', 'nikko', 'hiroshima', 'kobe', 'yokohama', 'japan', 'namba', 'shinjuku', 'shibuya', 'ginza', 'roppongi', 'asakusa', 'ueno', 'ikebukuro', 'akihabara', 'umeda', 'dotonbori', 'gion', 'arashiyama', 'niseko', 'hokkaido', 'sendai', 'kanazawa', 'takayama', 'miyajima', 'narita', 'haneda', 'kansai'], code: 2392 },
+  { keywords: ['bangkok', 'phuket', 'chiang', 'pattaya', 'thailand', 'krabi', 'samui'], code: 2764 },
+  { keywords: ['bali', 'jakarta', 'indonesia', 'ubud', 'seminyak', 'kuta', 'lombok'], code: 2360 },
+  { keywords: ['singapore'], code: 2702 },
+  { keywords: ['seoul', 'busan', 'jeju', 'korea', 'gangnam', 'myeongdong', 'hongdae'], code: 2410 },
+  { keywords: ['taipei', 'taiwan', 'kaohsiung', 'taichung'], code: 2158 },
+  { keywords: ['hong kong', 'hongkong'], code: 2344 },
+  { keywords: ['kuala lumpur', 'langkawi', 'penang', 'malaysia'], code: 2458 },
+  { keywords: ['manila', 'cebu', 'boracay', 'philippines', 'palawan'], code: 2608 },
+  { keywords: ['hanoi', 'ho chi minh', 'da nang', 'vietnam', 'saigon', 'hoi an', 'nha trang'], code: 2704 },
+  { keywords: ['paris', 'nice', 'lyon', 'france', 'marseille'], code: 2250 },
+  { keywords: ['london', 'manchester', 'edinburgh', 'uk', 'england', 'britain', 'scotland'], code: 2826 },
+  { keywords: ['rome', 'milan', 'venice', 'florence', 'italy', 'naples', 'amalfi'], code: 2380 },
+  { keywords: ['barcelona', 'madrid', 'spain', 'seville', 'malaga', 'ibiza'], code: 2724 },
+  { keywords: ['berlin', 'munich', 'frankfurt', 'germany', 'hamburg'], code: 2276 },
+  { keywords: ['amsterdam', 'netherlands', 'rotterdam'], code: 2528 },
+  { keywords: ['dubai', 'abu dhabi', 'uae', 'emirates'], code: 2784 },
+  { keywords: ['sydney', 'melbourne', 'australia', 'brisbane', 'gold coast', 'cairns'], code: 2036 },
+  { keywords: ['auckland', 'new zealand', 'queenstown', 'wellington'], code: 2554 },
+  { keywords: ['cancun', 'mexico', 'playa del carmen', 'tulum'], code: 2484 },
+  { keywords: ['maldives', 'male'], code: 2462 },
+  { keywords: ['mumbai', 'delhi', 'goa', 'india', 'jaipur', 'bangalore', 'chennai'], code: 2356 },
+  { keywords: ['istanbul', 'turkey', 'antalya', 'cappadocia'], code: 2792 },
+  { keywords: ['prague', 'czech'], code: 2203 },
+  { keywords: ['budapest', 'hungary'], code: 2348 },
+  { keywords: ['vienna', 'austria', 'salzburg'], code: 2040 },
+  { keywords: ['lisbon', 'porto', 'portugal'], code: 2620 },
+  { keywords: ['athens', 'santorini', 'mykonos', 'greece', 'crete'], code: 2300 },
+  { keywords: ['cairo', 'egypt', 'luxor', 'hurghada'], code: 2818 },
+  { keywords: ['doha', 'qatar'], code: 2634 },
+  { keywords: ['macau', 'macao'], code: 2446 },
+];
+
+function detectLocationCode(hotelName: string): number[] {
+  const lower = hotelName.toLowerCase();
+  const codes: number[] = [];
+  for (const loc of LOCATION_KEYWORDS) {
+    if (loc.keywords.some(k => lower.includes(k))) {
+      codes.push(loc.code);
+    }
+  }
+  // Always include US as fallback, but put detected codes first
+  if (!codes.includes(2840)) codes.push(2840);
+  return codes;
+}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -45,49 +93,52 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000);
-      const res = await fetch('https://api.dataforseo.com/v3/business_data/google/hotel_searches/live', {
-        method: 'POST',
-        signal: controller.signal,
-        headers: DFS_HEADERS,
-        body: JSON.stringify([{
-          keyword: hotelName,
-          location_code: 2840,
-          language_code: 'en',
-          check_in: checkin,
-          check_out: checkout,
-          adults: parseInt(adults),
-          currency: 'USD',
-        }]),
-      });
-      clearTimeout(timeout);
-      const data = await res.json();
-      const items = data.tasks?.[0]?.result?.[0]?.items || [];
-      if (items.length === 0) {
-        return NextResponse.json({ phase: 'search', error: 'Hotel not found' });
-      }
-      const first = items[0];
-      if (!first.hotel_identifier) {
-        return NextResponse.json({ phase: 'search', error: 'Hotel not found' });
-      }
-      const title = first.title || hotelName;
-      const basePrice = first.prices?.price || 0;
-      idCache.set(cacheKey, { id: first.hotel_identifier, title, basePrice, expires: Date.now() + 86400000 });
+    const locationCodes = detectLocationCode(hotelName);
+    let found = false;
 
-      if (phase === 'search') {
-        return NextResponse.json({
-          phase: 'search',
-          hotel_name: title,
-          hotel_id: first.hotel_identifier,
-          base_price: basePrice,
+    for (const locCode of locationCodes) {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000);
+        const res = await fetch('https://api.dataforseo.com/v3/business_data/google/hotel_searches/live', {
+          method: 'POST',
+          signal: controller.signal,
+          headers: DFS_HEADERS,
+          body: JSON.stringify([{
+            keyword: hotelName,
+            location_code: locCode,
+            language_code: 'en',
+            check_in: checkin,
+            check_out: checkout,
+            adults: parseInt(adults),
+            currency: 'USD',
+          }]),
         });
-      }
-      // phase === 'all' falls through to get prices too
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      return NextResponse.json({ phase: 'search', error: message });
+        clearTimeout(timeout);
+        const data = await res.json();
+        const items = data.tasks?.[0]?.result?.[0]?.items || [];
+        if (items.length === 0 || !items[0].hotel_identifier) continue;
+
+        const first = items[0];
+        const title = first.title || hotelName;
+        const basePrice = first.prices?.price || 0;
+        idCache.set(cacheKey, { id: first.hotel_identifier, title, basePrice, locationCode: locCode, expires: Date.now() + 86400000 });
+        found = true;
+
+        if (phase === 'search') {
+          return NextResponse.json({
+            phase: 'search',
+            hotel_name: title,
+            hotel_id: first.hotel_identifier,
+            base_price: basePrice,
+          });
+        }
+        break; // phase === 'all' falls through to get prices
+      } catch { continue; }
+    }
+
+    if (!found) {
+      return NextResponse.json({ phase: 'search', error: 'Hotel not found' });
     }
   }
 
@@ -112,7 +163,7 @@ export async function GET(req: NextRequest) {
         adults: parseInt(adults),
         currency: 'USD',
         language_code: 'en',
-        location_code: 2840,
+        location_code: entry?.locationCode || 2840,
       }]),
     });
     clearTimeout(timeout2);
