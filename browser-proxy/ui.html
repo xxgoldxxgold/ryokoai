@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Remote Browser</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #111; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+
+  #toolbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    background: rgba(30,30,30,0.95); padding: 6px 8px; display: flex; gap: 6px; align-items: center;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
+  #url-bar {
+    flex: 1; padding: 7px 10px; border-radius: 6px; border: 1px solid #555;
+    background: #222; color: #fff; font-size: 14px; -webkit-appearance: none; outline: none;
+  }
+  #url-bar:focus { border-color: #0078d4; }
+  .tb-btn {
+    padding: 7px 14px; background: #0078d4; color: #fff; border: none;
+    border-radius: 6px; font-size: 13px; cursor: pointer; white-space: nowrap;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  }
+  #status-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: #888;
+    flex-shrink: 0; margin-left: 2px;
+  }
+
+  #vnc-container {
+    position: absolute; top: 38px; left: 0; right: 0; bottom: 0;
+  }
+  #vnc-container canvas {
+    width: 100% !important; height: 100% !important; object-fit: contain;
+  }
+
+  /* Mobile tweaks */
+  @media (max-width: 768px) {
+    #toolbar { padding: 5px 6px; }
+    #url-bar { font-size: 16px; padding: 8px 10px; }
+    .tb-btn { padding: 8px 12px; font-size: 14px; }
+    #vnc-container { top: 42px; }
+  }
+</style>
+</head>
+<body>
+<div id="toolbar">
+  <input id="url-bar" type="url" placeholder="URLを入力..." value="">
+  <button class="tb-btn" id="go-btn">Go</button>
+  <div id="status-dot"></div>
+</div>
+<div id="vnc-container"></div>
+
+<script type="module">
+import RFB from './core/rfb.js';
+
+const container = document.getElementById('vnc-container');
+const statusDot = document.getElementById('status-dot');
+const urlBar = document.getElementById('url-bar');
+const goBtn = document.getElementById('go-btn');
+
+// Connect
+const proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
+const wsUrl = proto + location.hostname + ':' + location.port + '/websockify';
+
+let rfb = null;
+
+function connect() {
+  rfb = new RFB(container, wsUrl, {
+    scaleViewport: true,
+    resizeSession: false,
+    clipViewport: true,
+    showDotCursor: false,
+    qualityLevel: 6,
+    compressionLevel: 6,
+  });
+  rfb.viewOnly = false;
+  rfb.focusOnClick = true;
+
+  rfb.addEventListener('connect', () => {
+    statusDot.style.background = '#4f4';
+  });
+
+  rfb.addEventListener('disconnect', () => {
+    statusDot.style.background = '#f44';
+    setTimeout(connect, 3000);
+  });
+}
+
+connect();
+
+// URL navigation via Ctrl+L
+function navigateTo(url) {
+  if (!rfb || !url) return;
+
+  // Ctrl+L to focus Chrome address bar
+  rfb.sendKey(0xffe3, 'ControlLeft', true);
+  rfb.sendKey(0x006c, 'KeyL');
+  rfb.sendKey(0xffe3, 'ControlLeft', false);
+
+  setTimeout(() => {
+    // Select all existing text
+    rfb.sendKey(0xffe3, 'ControlLeft', true);
+    rfb.sendKey(0x0061, 'KeyA');
+    rfb.sendKey(0xffe3, 'ControlLeft', false);
+
+    setTimeout(() => {
+      // Paste URL via clipboard
+      rfb.clipboardPasteFrom(url);
+      setTimeout(() => {
+        rfb.sendKey(0xff0d, 'Enter');
+      }, 300);
+    }, 200);
+  }, 300);
+}
+
+goBtn.addEventListener('click', () => {
+  navigateTo(urlBar.value.trim());
+  urlBar.blur();
+});
+
+urlBar.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    navigateTo(urlBar.value.trim());
+    urlBar.blur();
+  }
+});
+
+// Prevent keyboard events from going to VNC when typing in URL bar
+urlBar.addEventListener('focus', () => {
+  if (rfb) rfb.focusOnClick = false;
+});
+urlBar.addEventListener('blur', () => {
+  if (rfb) rfb.focusOnClick = true;
+});
+</script>
+</body>
+</html>

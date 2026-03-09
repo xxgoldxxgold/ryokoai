@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { useUsdToJpy, toJpy } from '@/lib/useExchangeRate';
-
 interface PriceEntry {
   source: string;
   link: string | null;
@@ -58,7 +56,6 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
   const [loading, setLoading] = useState(false);
   const serpRef = useRef<PriceEntry[]>([]);
   const prevParamsRef = useRef('');
-  const jpyRate = useUsdToJpy();
 
   const paramsKey = `${hotelName}|${checkin}|${checkout}|${adults}`;
   const cacheKey = `ryoko_prices_${paramsKey}`;
@@ -91,7 +88,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
 
     // Fetch Xotelo (fast, uses TripAdvisor hotel_key) + SerpAPI in parallel
     const xoteloPromise = hotelKey
-      ? fetch(`/api/hotel-rates?hotel_key=${encodeURIComponent(hotelKey)}&checkin=${checkin}&checkout=${checkout}&currency=USD&adults=${adults}`)
+      ? fetch(`/api/hotel-rates?hotel_key=${encodeURIComponent(hotelKey)}&checkin=${checkin}&checkout=${checkout}&currency=JPY&adults=${adults}`)
           .then(r => r.json())
           .then(data => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -104,7 +101,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
           .catch(() => [] as PriceEntry[])
       : Promise.resolve([] as PriceEntry[]);
 
-    const serpPromise = fetch(`https://vpn.ryokoai.com/hotel-serpapi.php?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}&currency=USD`)
+    const serpPromise = fetch(`https://vpn.ryokoai.com/hotel-serpapi.php?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}&currency=JPY`)
       .then(r => r.json())
       .then(data => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -193,7 +190,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
             </span>
           )}
         </div>
-        <p className="text-gray-400 text-xs mt-0.5">複数の予約サイトの価格を比較（1泊・USD）</p>
+        <p className="text-gray-400 text-xs mt-0.5">複数の予約サイトの価格を比較（1泊・円）</p>
       </div>
 
       {loading && (
@@ -214,9 +211,8 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="text-right">
-                    <span className="text-emerald-700 text-xl font-bold">${best.rate.toLocaleString()}</span>
+                    <span className="text-emerald-700 text-xl font-bold">¥{best.rate.toLocaleString()}</span>
                     <span className="text-emerald-500 text-xs font-normal">/泊</span>
-                    {jpyRate && <span className="text-emerald-500 text-xs ml-1.5">({toJpy(best.rate, jpyRate)})</span>}
                   </div>
                   <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -224,7 +220,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
                 </div>
               </div>
               <p className="text-emerald-500 text-xs mt-1">
-                最高値より <span className="font-semibold">${savings.toLocaleString()}{jpyRate && `（${toJpy(savings, jpyRate)}）`}</span> お得
+                最高値より <span className="font-semibold">¥{savings.toLocaleString()}</span> お得
                 （{Math.round((savings / worst!.rate) * 100)}%OFF）
               </p>
             </a>
@@ -252,13 +248,10 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
                   <div className="flex items-center gap-2">
                     <div className="text-right">
                       <span className={`text-sm font-bold ${isBest ? 'text-emerald-600' : 'text-gray-900'}`}>
-                        ${entry.rate.toLocaleString()}
+                        ¥{entry.rate.toLocaleString()}
                       </span>
-                      {jpyRate && (
-                        <span className="text-gray-400 text-[11px] ml-1.5">{toJpy(entry.rate, jpyRate)}</span>
-                      )}
                       {entry.rateWithTax > entry.rate && (
-                        <span className="text-gray-300 text-[10px] ml-1.5">税込${entry.rateWithTax.toLocaleString()}{jpyRate && `(${toJpy(entry.rateWithTax, jpyRate)})`}</span>
+                        <span className="text-gray-300 text-[10px] ml-1.5">税込¥{entry.rateWithTax.toLocaleString()}</span>
                       )}
                     </div>
                     {entry.link && (
@@ -282,7 +275,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
 
           <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50">
             <p className="text-gray-400 text-[10px] text-center">
-              SerpAPI + DataForSEO経由・税抜1泊あたり（USD）{jpyRate && ` / 1USD≈¥${Math.round(jpyRate)}`}
+              SerpAPI + DataForSEO経由・税抜1泊あたり（JPY）
             </p>
           </div>
         </div>

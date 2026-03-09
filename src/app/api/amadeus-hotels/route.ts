@@ -105,7 +105,7 @@ export async function GET(req: NextRequest) {
     offersUrl.searchParams.set('adults', adults);
     offersUrl.searchParams.set('checkInDate', checkin);
     offersUrl.searchParams.set('checkOutDate', checkout);
-    offersUrl.searchParams.set('currencyCode', 'USD');
+    offersUrl.searchParams.set('currencyCode', 'JPY');
 
     const offersRes = await fetch(offersUrl.toString(), {
       headers: { Authorization: `Bearer ${token}` },

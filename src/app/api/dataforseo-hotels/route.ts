@@ -159,7 +159,7 @@ export async function GET(req: NextRequest) {
               check_in: checkin,
               check_out: checkout,
               adults: parseInt(adults),
-              currency: 'USD',
+              currency: 'JPY',
             }]),
           });
           clearTimeout(timeout);
@@ -210,7 +210,7 @@ export async function GET(req: NextRequest) {
         check_in: checkin,
         check_out: checkout,
         adults: parseInt(adults),
-        currency: 'USD',
+        currency: 'JPY',
         language_code: 'en',
         location_code: entry?.locationCode || 2840,
       }]),

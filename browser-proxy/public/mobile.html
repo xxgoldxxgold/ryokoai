@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Remote Browser</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: -apple-system, sans-serif; }
+  #vnc-container { width: 100%; height: 100%; }
+  #vnc-container canvas { width: 100% !important; height: auto !important; display: block; }
+  #toolbar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(30,30,30,0.95); padding: 8px; display: flex; gap: 6px; align-items: center;
+    z-index: 100; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
+  #toolbar.hidden { transform: translateY(100%); }
+  #url-bar { flex: 1; padding: 8px 10px; border-radius: 8px; border: 1px solid #555; background: #222; color: #fff; font-size: 16px; -webkit-appearance: none; }
+  .tb-btn { padding: 8px 14px; background: #0078d4; color: #fff; border: none; border-radius: 8px; font-size: 14px; touch-action: manipulation; }
+  #toggle-bar {
+    position: fixed; bottom: 8px; right: 8px; z-index: 99;
+    width: 40px; height: 40px; border-radius: 50%; background: rgba(0,120,212,0.8);
+    color: #fff; border: none; font-size: 20px; line-height: 40px; text-align: center;
+    display: none; touch-action: manipulation;
+  }
+  #status-dot {
+    position: fixed; top: 8px; right: 8px; z-index: 100;
+    width: 10px; height: 10px; border-radius: 50%; background: #888;
+  }
+</style>
+</head>
+<body>
+<div id="vnc-container"></div>
+<div id="status-dot"></div>
+<button id="toggle-bar">⌨</button>
+<div id="toolbar">
+  <input id="url-bar" type="url" placeholder="URL" value="">
+  <button class="tb-btn" id="go-btn">Go</button>
+  <button class="tb-btn" id="hide-btn">✕</button>
+</div>
+
+<script type="module">
+import RFB from '/core/rfb.js';
+
+const container = document.getElementById('vnc-container');
+const statusDot = document.getElementById('status-dot');
+const toolbar = document.getElementById('toolbar');
+const toggleBar = document.getElementById('toggle-bar');
+const urlBar = document.getElementById('url-bar');
+const goBtn = document.getElementById('go-btn');
+const hideBtn = document.getElementById('hide-btn');
+
+// Connect to VNC via websockify
+const proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
+const wsUrl = proto + location.hostname + ':' + location.port + '/websockify';
+const rfb = new RFB(container, wsUrl, {
+  scaleViewport: true,
+  resizeSession: false,
+  clipViewport: true,
+  showDotCursor: false,
+  qualityLevel: 5,
+  compressionLevel: 7,
+});
+
+rfb.viewOnly = false;
+rfb.focusOnClick = true;
+
+rfb.addEventListener('connect', () => {
+  statusDot.style.background = '#4f4';
+});
+
+rfb.addEventListener('disconnect', () => {
+  statusDot.style.background = '#f44';
+  // Auto reconnect
+  setTimeout(() => location.reload(), 3000);
+});
+
+// Toolbar toggle
+hideBtn.addEventListener('click', () => {
+  toolbar.classList.add('hidden');
+  toggleBar.style.display = 'block';
+});
+
+toggleBar.addEventListener('click', () => {
+  toolbar.classList.remove('hidden');
+  toggleBar.style.display = 'none';
+  urlBar.focus();
+});
+
+// Navigate - type URL into remote browser
+goBtn.addEventListener('click', () => {
+  const url = urlBar.value.trim();
+  if (!url) return;
+  // Ctrl+L to focus address bar, type URL, Enter
+  rfb.sendCtrlAltDel(); // clear any stuck keys
+  setTimeout(() => {
+    rfb.sendKey(0xffe3, 'ControlLeft', true); // Ctrl down
+    rfb.sendKey(0x006c, 'KeyL'); // L
+    rfb.sendKey(0xffe3, 'ControlLeft', false); // Ctrl up
+    setTimeout(() => {
+      // Select all and type new URL
+      rfb.sendKey(0xffe3, 'ControlLeft', true);
+      rfb.sendKey(0x0061, 'KeyA');
+      rfb.sendKey(0xffe3, 'ControlLeft', false);
+      setTimeout(() => {
+        rfb.clipboardPasteFrom(url);
+        setTimeout(() => {
+          rfb.sendKey(0xff0d, 'Enter');
+        }, 200);
+      }, 200);
+    }, 300);
+  }, 200);
+  urlBar.blur();
+});
+
+urlBar.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    goBtn.click();
+  }
+});
+
+// Prevent iOS rubber-banding
+document.addEventListener('touchmove', (e) => {
+  if (e.target.closest('#toolbar')) return;
+  // let noVNC handle touch
+}, { passive: true });
+</script>
+</body>
+</html>

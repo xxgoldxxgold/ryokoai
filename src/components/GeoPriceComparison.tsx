@@ -54,7 +54,7 @@ function buildLink(ota: string, countryCode: string, hotel: string, checkin: str
     return match?.url || '#';
   }
   if (ota === 'trip') {
-    return 'https://www.trip.com/hotels/list?keyword=' + encodeURIComponent(hotel) + '&checkin=' + checkin.replace(/-/g, '/') + '&checkout=' + checkout.replace(/-/g, '/') + '&adult=' + adults + '&curr=USD';
+    return 'https://www.trip.com/hotels/list?keyword=' + encodeURIComponent(hotel) + '&checkin=' + checkin.replace(/-/g, '/') + '&checkout=' + checkout.replace(/-/g, '/') + '&adult=' + adults + '&curr=JPY';
   }
   return '#';
 }
@@ -182,7 +182,7 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
                       <span className="text-white/60 text-xs">{p.otaName}</span>
                       <span className="text-white/30 text-[10px]">{p.countryName}</span>
                     </div>
-                    <span className="text-white/80 text-sm font-semibold">${p.price.toLocaleString()}</span>
+                    <span className="text-white/80 text-sm font-semibold">¥{p.price.toLocaleString()}</span>
                   </div>
                 );
               })}
@@ -227,11 +227,11 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
                   </span>
                 </div>
                 <span className="text-emerald-400 text-lg font-bold">
-                  ${best.price.toLocaleString()}<span className="text-xs font-normal text-emerald-400/50">/泊</span>
+                  ¥{best.price.toLocaleString()}<span className="text-xs font-normal text-emerald-400/50">/泊</span>
                 </span>
               </div>
               <p className="text-emerald-400/60 text-xs mt-1">
-                最高値より ${(worst.price - best.price).toLocaleString()}お得
+                最高値より ¥{(worst.price - best.price).toLocaleString()}お得
                 （{Math.round(((worst.price - best.price) / worst.price) * 100)}%OFF）
               </p>
               <a
@@ -276,7 +276,7 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={`text-sm font-semibold ${isBest ? 'text-emerald-400' : 'text-white/80'}`}>
-                      ${p.price.toLocaleString()}
+                      ¥{p.price.toLocaleString()}
                     </span>
                     <span className="text-white/20 text-[10px]">→</span>
                   </div>
@@ -288,7 +288,7 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
       )}
 
       <p className="text-white/20 text-[10px] text-center">
-        ※ 各予約サイトを各国IPからリアルタイム取得（USD）。VPNでその国に接続して予約可能。
+        ※ 各予約サイトを各国IPからリアルタイム取得（JPY）。VPNでその国に接続して予約可能。
       </p>
     </div>
   );

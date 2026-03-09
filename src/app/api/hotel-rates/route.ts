@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   const hotelKey = searchParams.get('hotel_key');
   const checkin = searchParams.get('checkin');
   const checkout = searchParams.get('checkout');
-  const currency = searchParams.get('currency') || 'USD';
+  const currency = searchParams.get('currency') || 'JPY';
   const adults = searchParams.get('adults') || '2';
 
   if (!hotelKey || !checkin || !checkout) {

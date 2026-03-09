@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
   const checkin = searchParams.get('checkin') || '';
   const checkout = searchParams.get('checkout') || '';
   const adults = searchParams.get('adults') || '2';
-  const currency = searchParams.get('currency') || 'USD';
+  const currency = searchParams.get('currency') || 'JPY';
 
   if (!query || !checkin || !checkout) {
     return NextResponse.json({ error: 'Missing q, checkin, checkout' }, { status: 400 });

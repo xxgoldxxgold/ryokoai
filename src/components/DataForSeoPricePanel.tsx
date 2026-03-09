@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { useUsdToJpy, toJpy } from '@/lib/useExchangeRate';
-
 interface DfsPrice {
   source: string;
   price: number;
@@ -121,7 +119,6 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
   const [loadingPrices, setLoadingPrices] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const prevParams = useRef('');
-  const jpyRate = useUsdToJpy();
 
   const paramsKey = `${hotelName}|${checkin}|${checkout}|${adults}`;
   const base = `https://vpn.ryokoai.com/hotel-prices.php?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}`;
@@ -196,7 +193,7 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
           <h3 className="text-gray-900 font-bold text-base">予約サイト価格比較</h3>
         </div>
         <p className="text-gray-400 text-xs mt-0.5">
-          {hotelTitle ? `${hotelTitle} — ` : ''}Google Hotels経由（1泊・USD）・総額予想順
+          {hotelTitle ? `${hotelTitle} — ` : ''}Google Hotels経由（1泊・円）・総額予想順
         </p>
       </div>
 
@@ -212,9 +209,8 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
           <div className="flex items-center justify-between">
             <span className="text-gray-700 text-sm">Google Hotels参考価格</span>
             <div>
-              <span className="text-gray-900 text-xl font-bold">${basePrice.toLocaleString()}</span>
+              <span className="text-gray-900 text-xl font-bold">¥{basePrice.toLocaleString()}</span>
               <span className="text-gray-400 text-xs">/泊</span>
-              {jpyRate && <span className="text-gray-400 text-xs ml-1.5">({toJpy(basePrice, jpyRate)})</span>}
             </div>
           </div>
           {loadingPrices && (
@@ -238,16 +234,15 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
                   <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${best.tax.color}`}>{best.tax.label}</span>
                 </div>
                 <div className="text-right flex items-center gap-1">
-                  <span className="text-emerald-700 text-xl font-bold">${best.estimatedTotal.toLocaleString()}</span>
+                  <span className="text-emerald-700 text-xl font-bold">¥{best.estimatedTotal.toLocaleString()}</span>
                   <span className="text-emerald-500 text-xs font-normal">/泊</span>
-                  {jpyRate && <span className="text-emerald-500 text-xs ml-1.5">({toJpy(best.estimatedTotal, jpyRate)})</span>}
                   <svg className="w-4 h-4 text-emerald-400 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
               </div>
               <p className="text-emerald-500 text-xs mt-1">
-                最高値より <span className="font-semibold">${savings.toLocaleString()}{jpyRate && `（${toJpy(savings, jpyRate)}）`}</span> お得
+                最高値より <span className="font-semibold">¥{savings.toLocaleString()}</span> お得
                 （{Math.round((savings / worst!.estimatedTotal) * 100)}%OFF）
               </p>
             </a>
@@ -260,13 +255,12 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
                   <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${best.tax.color}`}>{best.tax.label}</span>
                 </div>
                 <div className="text-right">
-                  <span className="text-emerald-700 text-xl font-bold">${best.estimatedTotal.toLocaleString()}</span>
+                  <span className="text-emerald-700 text-xl font-bold">¥{best.estimatedTotal.toLocaleString()}</span>
                   <span className="text-emerald-500 text-xs font-normal">/泊</span>
-                  {jpyRate && <span className="text-emerald-500 text-xs ml-1.5">({toJpy(best.estimatedTotal, jpyRate)})</span>}
                 </div>
               </div>
               <p className="text-emerald-500 text-xs mt-1">
-                最高値より <span className="font-semibold">${savings.toLocaleString()}{jpyRate && `（${toJpy(savings, jpyRate)}）`}</span> お得
+                最高値より <span className="font-semibold">¥{savings.toLocaleString()}</span> お得
                 （{Math.round((savings / worst!.estimatedTotal) * 100)}%OFF）
               </p>
             </div>
@@ -297,18 +291,15 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
                       <div className="text-right">
                         {showEstimate ? (
                           <>
-                            <span className="text-gray-400 text-[11px] line-through">${entry.price.toLocaleString()}</span>
+                            <span className="text-gray-400 text-[11px] line-through">¥{entry.price.toLocaleString()}</span>
                             <span className={`text-sm font-bold ml-1 ${isBest ? 'text-emerald-600' : 'text-gray-900'}`}>
-                              ~${entry.estimatedTotal.toLocaleString()}
+                              ~¥{entry.estimatedTotal.toLocaleString()}
                             </span>
                           </>
                         ) : (
                           <span className={`text-sm font-bold ${isBest ? 'text-emerald-600' : 'text-gray-900'}`}>
-                            ${entry.price.toLocaleString()}
+                            ¥{entry.price.toLocaleString()}
                           </span>
-                        )}
-                        {jpyRate && (
-                          <span className="text-gray-400 text-[11px] ml-1">{toJpy(entry.estimatedTotal, jpyRate)}</span>
                         )}
                       </div>
                       {entry.link && (
@@ -353,7 +344,7 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
 
           <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50">
             <p className="text-gray-400 text-[10px] text-center">
-              ※総額予想は推定です。リンク先で正確な価格を確認してください{jpyRate && ` / 1USD≈¥${Math.round(jpyRate)}`}
+              ※総額予想は推定です。リンク先で正確な価格を確認してください
             </p>
           </div>
         </div>

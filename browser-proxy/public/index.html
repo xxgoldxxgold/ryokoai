@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Remote Browser</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #111; display: flex; flex-direction: column; align-items: center; height: 100vh; font-family: sans-serif; overflow: hidden; }
+  #toolbar { background: #222; width: 100%; padding: 8px 12px; display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+  #url-bar { flex: 1; padding: 6px 10px; border-radius: 4px; border: 1px solid #555; background: #333; color: #fff; font-size: 14px; }
+  #go-btn { padding: 6px 16px; background: #0078d4; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+  #fps { color: #888; font-size: 11px; margin-left: 4px; min-width: 70px; }
+  #status { color: #888; font-size: 12px; margin-left: 4px; }
+  #screen-wrap { flex: 1; display: flex; justify-content: center; align-items: flex-start; overflow: auto; width: 100%; }
+  #screen { cursor: default; max-width: 100%; max-height: calc(100vh - 44px); display: block; }
+</style>
+</head>
+<body>
+<div id="toolbar">
+  <input id="url-bar" type="text" placeholder="URL" value="https://www.booking.com">
+  <button id="go-btn">Go</button>
+  <span id="fps"></span>
+  <span id="status">Connecting...</span>
+</div>
+<div id="screen-wrap">
+  <img id="screen" alt="">
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io({ transports: ['websocket'] }); // skip polling, go straight to ws
+const screen = document.getElementById('screen');
+const urlBar = document.getElementById('url-bar');
+const goBtn = document.getElementById('go-btn');
+const statusEl = document.getElementById('status');
+const fpsEl = document.getElementById('fps');
+
+socket.on('connect', () => { statusEl.textContent = 'Connected'; statusEl.style.color = '#4f4'; });
+socket.on('disconnect', () => { statusEl.textContent = 'Disconnected'; statusEl.style.color = '#f44'; });
+
+// FPS counter
+let frameCount = 0;
+let byteCount = 0;
+setInterval(() => {
+  const kbps = Math.round(byteCount / 1024);
+  fpsEl.textContent = frameCount + ' fps / ' + kbps + ' KB/s';
+  frameCount = 0;
+  byteCount = 0;
+}, 1000);
+
+// Double buffering: preload in hidden img, swap when ready
+const bufImg = new Image();
+let pendingUrl = null;
+
+bufImg.onload = () => {
+  screen.src = bufImg.src;
+  if (pendingUrl) URL.revokeObjectURL(pendingUrl);
+  pendingUrl = null;
+};
+
+socket.on('frame', (data) => {
+  // data is ArrayBuffer (binary)
+  const blob = new Blob([data], { type: 'image/jpeg' });
+  byteCount += data.byteLength;
+  if (pendingUrl) URL.revokeObjectURL(pendingUrl);
+  pendingUrl = URL.createObjectURL(blob);
+  bufImg.src = pendingUrl;
+  frameCount++;
+});
+
+function getCoords(e) {
+  const rect = screen.getBoundingClientRect();
+  const scaleX = screen.naturalWidth / rect.width;
+  const scaleY = screen.naturalHeight / rect.height;
+  return {
+    x: Math.round((e.clientX - rect.left) * scaleX),
+    y: Math.round((e.clientY - rect.top) * scaleY),
+  };
+}
+
+screen.addEventListener('click', (e) => {
+  e.preventDefault();
+  socket.emit('click', getCoords(e));
+});
+
+screen.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const coords = getCoords(e);
+  socket.emit('scroll', { ...coords, deltaX: e.deltaX, deltaY: e.deltaY });
+}, { passive: false });
+
+document.addEventListener('keydown', (e) => {
+  if (document.activeElement === urlBar) return;
+  e.preventDefault();
+  if (e.key.length === 1) {
+    socket.emit('type', { text: e.key });
+  } else {
+    socket.emit('keydown', { key: e.key });
+  }
+});
+
+goBtn.addEventListener('click', () => {
+  const url = urlBar.value.trim();
+  if (url) socket.emit('navigate', { url });
+});
+
+urlBar.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const url = urlBar.value.trim();
+    if (url) socket.emit('navigate', { url });
+    urlBar.blur();
+  }
+});
+</script>
+</body>
+</html>
