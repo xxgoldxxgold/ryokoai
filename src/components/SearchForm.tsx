@@ -270,28 +270,7 @@ export default function SearchForm({ initialHotel, initialCheckin, initialChecko
         価格を比較する
       </button>
       <div className="space-y-3 mt-2">
-        {isLoggedIn ? (
-          <a href="https://vpn.ryokoai.com" target="_blank" rel="noopener noreferrer" className="block bg-amber-50 border border-amber-200 rounded-2xl overflow-hidden hover:bg-amber-100/50 transition-colors">
-            <div className="px-5 py-4 space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
-                  <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <p className="text-amber-800 font-bold text-sm">無料VPNで更に安くなる！</p>
-                </div>
-                <svg className="w-5 h-5 text-amber-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-              <p className="text-amber-700 text-xs leading-relaxed">
-                これを使うと更に激安価格に
-              </p>
-            </div>
-          </a>
-        ) : (
+        {isLoggedIn ? null : (
           <>
             <a href="/login" className="block bg-gradient-to-r from-blue-100 to-blue-100 border border-blue-300 rounded-2xl px-5 py-4 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3">
