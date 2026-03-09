@@ -170,7 +170,7 @@ function AuthModal({ onClose }: { onClose: () => void }) {
 
           <button
             type="submit" disabled={loading}
-            className="w-full py-3 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 shadow-sm"
+            className="w-full py-3 rounded-xl bg-blue-800 text-white text-sm font-bold hover:bg-blue-900 transition-colors disabled:opacity-50 shadow-sm"
           >
             {loading ? (tab === 'login' ? 'ログイン中...' : '登録中...') : (tab === 'login' ? 'ログイン' : '登録する')}
           </button>
@@ -199,7 +199,7 @@ export default function Header() {
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-1 text-lg font-bold text-gray-900 tracking-tight">
             <img src="/logo.png" alt="RyokoAI" style={{ height: '0.8em', width: 'auto' }} />
-            Ryoko<span className="text-indigo-500">AI</span>
+            Ryoko<span className="text-blue-700">AI</span>
           </Link>
           <nav className="flex items-center gap-4 text-sm">
             <Link href="/guide" className="text-gray-400 hover:text-gray-700 transition-colors">
@@ -211,8 +211,8 @@ export default function Header() {
                   onClick={handleLogout}
                   className="flex items-center gap-2 text-gray-400 hover:text-gray-700 transition-colors"
                 >
-                  <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center">
-                    <span className="text-indigo-600 text-xs font-bold">
+                  <div className="w-7 h-7 rounded-full bg-blue-200 flex items-center justify-center">
+                    <span className="text-blue-800 text-xs font-bold">
                       {(user.email?.[0] || 'U').toUpperCase()}
                     </span>
                   </div>
@@ -221,7 +221,7 @@ export default function Header() {
               ) : (
                 <button
                   onClick={() => setShowAuth(true)}
-                  className="px-4 py-1.5 rounded-full border-2 border-indigo-500 bg-indigo-50/50 text-indigo-600 font-bold text-sm hover:bg-indigo-100 active:translate-y-0 transition-all"
+                  className="px-4 py-1.5 rounded-full border-2 border-blue-700 bg-blue-100/50 text-blue-800 font-bold text-sm hover:bg-blue-200 active:translate-y-0 transition-all"
                 >
                   登録 / ログイン
                 </button>

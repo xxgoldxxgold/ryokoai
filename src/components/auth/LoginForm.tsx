@@ -64,7 +64,7 @@ export default function LoginForm() {
           <input
             id="email" type="email" required value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 block w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-700"
             placeholder="you@example.com"
           />
         </div>
@@ -74,14 +74,14 @@ export default function LoginForm() {
           <input
             id="password" type="password" required value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-700"
             placeholder="パスワード"
           />
         </div>
 
         <button
           type="submit" disabled={loading}
-          className="w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
+          className="w-full rounded-xl bg-blue-800 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-900 disabled:opacity-50"
         >
           {loading ? 'ログイン中...' : 'ログイン'}
         </button>
@@ -89,7 +89,7 @@ export default function LoginForm() {
 
       <p className="text-center text-sm text-gray-400">
         アカウントをお持ちでない方は{' '}
-        <Link href="/signup" className="font-semibold text-indigo-600 hover:text-indigo-500">新規登録</Link>
+        <Link href="/signup" className="font-semibold text-blue-800 hover:text-blue-700">新規登録</Link>
       </p>
     </div>
   )

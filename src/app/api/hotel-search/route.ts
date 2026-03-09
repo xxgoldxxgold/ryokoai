@@ -113,6 +113,10 @@ const KATA_MAP: Record<string, string> = {
   'コンラッド': 'conrad', 'ウェスティン': 'westin', 'セント': 'st',
   'レジス': 'regis', 'アマン': 'aman', 'ブルガリ': 'bulgari',
   'ホテル': 'hotel', 'イン': 'inn', 'スイート': 'suite',
+  'リブマックス': 'livemax', 'プレミア': 'premier', 'プレミアム': 'premium',
+  'バジェット': 'budget', 'ドーミー': 'dormy', 'ルート': 'route',
+  'アパ': 'apa', 'トヨコ': 'toyoko', '東横': 'toyoko',
+  'スーパー': 'super', 'コンフォート': 'comfort', 'ベッセル': 'vessel',
 };
 
 /** Normalize query for matching: convert katakana, remove common words, lowercase */

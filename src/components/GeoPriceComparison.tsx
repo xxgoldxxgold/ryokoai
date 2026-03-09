@@ -161,7 +161,7 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
       {isLoading && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin" />
+            <div className="w-3 h-3 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
             <span className="text-white/40 text-xs">
               {data && data.completed > 0
                 ? `${data.completed}/${total} 取得完了`

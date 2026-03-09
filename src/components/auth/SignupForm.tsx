@@ -70,7 +70,7 @@ export default function SignupForm() {
           <span className="font-medium text-gray-900">{email}</span> に確認メールを送信しました。
           メール内のリンクをクリックして登録を完了してください。
         </p>
-        <Link href="/login" className="inline-block text-sm font-semibold text-indigo-600 hover:text-indigo-500">
+        <Link href="/login" className="inline-block text-sm font-semibold text-blue-800 hover:text-blue-700">
           ログインページへ戻る
         </Link>
       </div>
@@ -105,7 +105,7 @@ export default function SignupForm() {
           <input
             id="email" type="email" required value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 block w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-700"
             placeholder="you@example.com"
           />
         </div>
@@ -115,14 +115,14 @@ export default function SignupForm() {
           <input
             id="password" type="password" required minLength={6} value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-700"
             placeholder="6文字以上"
           />
         </div>
 
         <button
           type="submit" disabled={loading}
-          className="w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
+          className="w-full rounded-xl bg-blue-800 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-900 disabled:opacity-50"
         >
           {loading ? '登録中...' : '無料で始める'}
         </button>
@@ -130,7 +130,7 @@ export default function SignupForm() {
 
       <p className="text-center text-sm text-gray-400">
         すでにアカウントをお持ちの方は{' '}
-        <Link href="/login" className="font-semibold text-indigo-600 hover:text-indigo-500">ログイン</Link>
+        <Link href="/login" className="font-semibold text-blue-800 hover:text-blue-700">ログイン</Link>
       </p>
     </div>
   )

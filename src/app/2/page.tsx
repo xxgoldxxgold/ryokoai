@@ -61,10 +61,10 @@ export default function AgodaPricePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-gradient-to-r from-purple-700 to-indigo-900 p-4 text-white shadow-lg">
+      <nav className="bg-gradient-to-r from-blue-900 to-blue-950 p-4 text-white shadow-lg">
         <div className="container mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold">Agoda <span className="text-yellow-400">ID価格</span></h1>
-          <span className="text-xs bg-purple-800/50 px-3 py-1 rounded-full border border-purple-400/50">
+          <span className="text-xs bg-blue-950/50 px-3 py-1 rounded-full border border-blue-600/50">
             インドネシアIP経由
           </span>
         </div>
@@ -96,7 +96,7 @@ export default function AgodaPricePage() {
         </div>
 
         <button onClick={handleSearch} disabled={loading}
-          className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white font-bold py-4 rounded-xl transition-all shadow-lg mb-6 text-lg">
+          className="w-full bg-blue-800 hover:bg-blue-900 disabled:bg-gray-400 text-white font-bold py-4 rounded-xl transition-all shadow-lg mb-6 text-lg">
           {loading ? (
             <span className="flex items-center justify-center gap-2">
               <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
@@ -140,7 +140,7 @@ export default function AgodaPricePage() {
                         )}
                         {h.agodaUrl && (
                           <a href={h.agodaUrl} target="_blank" rel="noopener noreferrer"
-                            className="bg-purple-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-purple-700 transition-colors flex-shrink-0">
+                            className="bg-blue-800 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-900 transition-colors flex-shrink-0">
                             Agoda
                           </a>
                         )}

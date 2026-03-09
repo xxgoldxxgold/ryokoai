@@ -187,8 +187,8 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
         <div className="flex items-center gap-2">
           <h3 className="text-gray-900 font-bold text-base">予約サイト最安ランキング</h3>
           {!dfsDone && (
-            <span className="flex items-center gap-1 text-[10px] text-blue-500">
-              <span className="w-2.5 h-2.5 border border-blue-300 border-t-blue-500 rounded-full animate-spin" />
+            <span className="flex items-center gap-1 text-[10px] text-blue-700">
+              <span className="w-2.5 h-2.5 border border-blue-1000 border-t-blue-700 rounded-full animate-spin" />
               追加取得中
             </span>
           )}
@@ -198,7 +198,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
 
       {loading && (
         <div className="px-5 py-8 flex items-center justify-center gap-2">
-          <div className="w-4 h-4 border-2 border-indigo-200 border-t-indigo-500 rounded-full animate-spin" />
+          <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-700 rounded-full animate-spin" />
           <span className="text-gray-400 text-sm">価格を取得中...</span>
         </div>
       )}
@@ -246,7 +246,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
                       {entry.source}
                     </span>
                     {entry.from === 'dataforseo' && (
-                      <span className="text-[9px] text-blue-400 bg-blue-50 px-1 py-0.5 rounded">+DFS</span>
+                      <span className="text-[9px] text-blue-600 bg-blue-100 px-1 py-0.5 rounded">+DFS</span>
                     )}
                   </div>
                   <div className="flex items-center gap-2">

@@ -202,7 +202,7 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
 
       {searching && (
         <div className="px-5 py-8 flex items-center justify-center gap-2">
-          <div className="w-4 h-4 border-2 border-blue-200 border-t-blue-500 rounded-full animate-spin" />
+          <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-700 rounded-full animate-spin" />
           <span className="text-gray-400 text-sm">ホテルを検索中...</span>
         </div>
       )}
@@ -219,7 +219,7 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
           </div>
           {loadingPrices && (
             <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
-              <div className="w-3 h-3 border-2 border-blue-200 border-t-blue-500 rounded-full animate-spin" />
+              <div className="w-3 h-3 border-2 border-blue-300 border-t-blue-700 rounded-full animate-spin" />
               <span className="text-gray-400 text-xs">各予約サイトの価格を比較中...</span>
             </div>
           )}
@@ -321,7 +321,7 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
           {!expanded && enriched.length > 5 && (
             <button
               onClick={() => setExpanded(true)}
-              className="w-full px-5 py-3 text-center text-blue-600 text-sm font-medium hover:bg-blue-50 transition-colors border-t border-gray-100"
+              className="w-full px-5 py-3 text-center text-blue-800 text-sm font-medium hover:bg-blue-100 transition-colors border-t border-gray-100"
             >
               他 {enriched.length - 5}件の予約サイトを見る
             </button>

@@ -36,7 +36,7 @@ export default function GuidePage() {
       {/* Real example */}
       <section className="space-y-3">
         <h2 className="text-gray-900 font-bold text-lg">実際の価格差の例</h2>
-        <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5 space-y-3">
+        <div className="bg-blue-100 border border-blue-200 rounded-xl p-5 space-y-3">
           <p className="text-gray-900 text-sm font-medium">Hyatt Regency Waikiki（1泊・2名）</p>
           <div className="space-y-1.5 text-sm">
             <div className="flex justify-between">
@@ -68,15 +68,15 @@ export default function GuidePage() {
         <h2 className="text-gray-900 font-bold text-lg">使い方</h2>
         <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4 text-gray-600 text-sm leading-relaxed shadow-sm">
           <div className="flex gap-3">
-            <span className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center text-xs font-bold shrink-0">1</span>
+            <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold shrink-0">1</span>
             <p>RyokoAIでホテル名を入力して検索</p>
           </div>
           <div className="flex gap-3">
-            <span className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center text-xs font-bold shrink-0">2</span>
+            <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold shrink-0">2</span>
             <p>複数の予約サイトの価格がランキング表示される</p>
           </div>
           <div className="flex gap-3">
-            <span className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center text-xs font-bold shrink-0">3</span>
+            <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold shrink-0">3</span>
             <p>最安の予約サイトのリンクをクリック</p>
           </div>
           <div className="flex gap-3">
@@ -95,7 +95,7 @@ export default function GuidePage() {
             VPNで別の国から接続すると、さらに安い価格が表示される場合があります。
           </p>
           <p className="text-gray-400 text-xs">
-            おすすめ: <a href="https://protonvpn.com/" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:underline">Proton VPN</a>（無料プランあり）
+            おすすめ: <a href="https://protonvpn.com/" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">Proton VPN</a>（無料プランあり）
           </p>
         </div>
       </section>
@@ -120,13 +120,13 @@ export default function GuidePage() {
       </section>
 
       {/* CTA */}
-      <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-6 text-center space-y-3">
+      <div className="bg-blue-100 border border-blue-200 rounded-xl p-6 text-center space-y-3">
         <p className="text-gray-900 text-sm font-medium">
           RyokoAIで予約サイトの最安値を見つけよう
         </p>
         <Link
           href="/"
-          className="inline-block px-6 py-3 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium transition-colors shadow-md shadow-indigo-500/20"
+          className="inline-block px-6 py-3 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium transition-colors shadow-md shadow-blue-700/20"
         >
           ホテルを検索する
         </Link>

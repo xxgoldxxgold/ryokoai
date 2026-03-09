@@ -12,7 +12,7 @@ export default function SignupPage() {
     <div className="flex min-h-[calc(100vh-3.5rem)] flex-col items-center justify-center bg-white px-4">
       <Link href="/" className="mb-8 flex items-center gap-1 text-xl font-bold text-gray-900 tracking-tight">
         <img src="/logo.png" alt="RyokoAI" style={{ height: '0.8em', width: 'auto' }} />
-        Ryoko<span className="text-indigo-500">AI</span>
+        Ryoko<span className="text-blue-700">AI</span>
       </Link>
       <SignupForm />
     </div>

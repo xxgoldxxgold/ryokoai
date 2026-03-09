@@ -36,6 +36,81 @@ function detectCityCode(hotelName: string): string | undefined {
   return undefined;
 }
 
+const JP_TO_EN: Record<string, string> = {
+  'リブマックス': 'livemax', 'ヒルトン': 'hilton', 'マリオット': 'marriott',
+  'シェラトン': 'sheraton', 'ハイアット': 'hyatt', 'コンラッド': 'conrad',
+  'ウェスティン': 'westin', 'アパ': 'apa', '東横': 'toyoko', 'トヨコ': 'toyoko',
+  'ドーミー': 'dormy', 'スーパー': 'super', 'コンフォート': 'comfort',
+  'ホテル': 'hotel', 'リゾート': 'resort', 'プレミアム': 'premium',
+  'バジェット': 'budget', '札幌': 'sapporo', 'すすきの': 'susukino',
+  '駅前': 'ekimae', '東京': 'tokyo', '大阪': 'osaka', '京都': 'kyoto',
+  '沖縄': 'okinawa', '福岡': 'fukuoka', '名古屋': 'nagoya', '北海道': 'hokkaido',
+  '新宿': 'shinjuku', '渋谷': 'shibuya', '池袋': 'ikebukuro', '品川': 'shinagawa',
+  '浅草': 'asakusa', '銀座': 'ginza', '上野': 'ueno', '六本木': 'roppongi',
+  '赤坂': 'akasaka', '横浜': 'yokohama', '博多': 'hakata', '梅田': 'umeda',
+  '難波': 'namba', '心斎橋': 'shinsaibashi', '那覇': 'naha',
+};
+
+function japaneseToEnglish(s: string): string {
+  let result = s;
+  for (const [jp, en] of Object.entries(JP_TO_EN)) {
+    result = result.replace(new RegExp(jp, 'g'), en);
+  }
+  return result.toLowerCase().replace(/[,\s]+/g, ' ').trim();
+}
+
+const EN_TO_JP: Record<string, string> = Object.fromEntries(
+  Object.entries(JP_TO_EN).map(([jp, en]) => [en, jp])
+);
+Object.assign(EN_TO_JP, {
+  'odoriKoen': '大通公園', 'odori': '大通', 'chuo': '中央', 'minami': '南',
+  'kita': '北', 'nishi': '西', 'higashi': '東', 'kabukicho': '歌舞伎町',
+  'meijidori': '明治通り', 'kayabacho': '茅場町',
+  'east': '東口', 'west': '西口', 'shin': '新', 'grand': 'グランド',
+  'grande': 'グランデ', 'yodoyabashi': '淀屋橋', 'esaka': '江坂',
+  'kawaji': '川治', 'inn': 'イン', 'station': '駅', 'meiki': '名駅',
+});
+
+function englishToJapanese(name: string): string {
+  const words = name.replace(/([A-Z])/g, ' $1').split(/[\s,]+/).filter(Boolean);
+  return words.map(w => EN_TO_JP[w.toLowerCase()] || w).join('');
+}
+
+interface Candidate { hotel_key: string; name: string; }
+
+function findBestMatch(query: string, candidates: Candidate[]): Candidate | null {
+  if (candidates.length === 0) return null;
+  if (candidates.length === 1) return candidates[0];
+
+  const queryNorm = japaneseToEnglish(query);
+  const queryWords = queryNorm.split(/\s+/).filter(w => w.length > 1);
+
+  let bestMatch: Candidate | null = null;
+  let bestScore = -1;
+
+  for (const c of candidates) {
+    const cNorm = c.name.toLowerCase().replace(/[,\s]+/g, ' ').trim();
+    const cWords = cNorm.split(/\s+/).filter(w => w.length > 1);
+
+    // Count how many query words appear in candidate
+    const queryHits = queryWords.filter(w => cNorm.includes(w)).length;
+    // Count how many candidate words appear in query
+    const candHits = cWords.filter(w => queryNorm.includes(w)).length;
+    // Combined score weighted by both directions
+    const score = (queryWords.length > 0 ? queryHits / queryWords.length : 0)
+                + (cWords.length > 0 ? candHits / cWords.length : 0);
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = c;
+    }
+  }
+
+  // Only auto-select if reasonable match (at least 50% of query words matched)
+  if (bestMatch && bestScore >= 0.8) return bestMatch;
+  return null;
+}
+
 function extractDirectKey(input: string): string | null {
   const taMatch = input.match(/Hotel_Review-(g\d+-d\d+)/);
   if (taMatch) return taMatch[1];
@@ -48,21 +123,21 @@ function SpeedPromoBanner() {
   return (
     <Link
       href="/login"
-      className="block bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-2xl px-5 py-4 shadow-sm hover:shadow-md transition-shadow"
+      className="block bg-gradient-to-r from-blue-100 to-blue-100 border border-blue-300 rounded-2xl px-5 py-4 shadow-sm hover:shadow-md transition-shadow"
     >
       <div className="flex items-center gap-3">
-        <div className="flex-shrink-0 w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-          <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <div className="flex-shrink-0 w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center">
+          <svg className="w-5 h-5 text-blue-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-indigo-700 font-bold text-sm">ログインで高速検索</p>
-          <p className="text-indigo-500 text-xs mt-0.5">
+          <p className="text-blue-900 font-bold text-sm">ログインで高速検索</p>
+          <p className="text-blue-700 text-xs mt-0.5">
             無料ログインで3倍速く、より多くの予約サイト価格を比較できます
           </p>
         </div>
-        <svg className="w-5 h-5 text-indigo-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
       </div>
@@ -73,6 +148,7 @@ function SpeedPromoBanner() {
 function SearchResults() {
   const searchParams = useSearchParams();
   const hotel = searchParams.get('hotel');
+  const hotelDisplayName = searchParams.get('name') || null;
   const checkin = searchParams.get('checkin');
   const checkout = searchParams.get('checkout');
   const adults = Number(searchParams.get('adults')) || 2;
@@ -80,10 +156,9 @@ function SearchResults() {
   const { isLoggedIn, loading: authLoading } = useAuth();
 
   const directKey = useMemo(() => hotel ? extractDirectKey(hotel) : null, [hotel]);
-  interface Candidate { hotel_key: string; name: string; }
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [selectedKey, setSelectedKey] = useState<string | null>(directKey);
-  const [selectedName, setSelectedName] = useState<string | null>(null);
+  const [selectedName, setSelectedName] = useState<string | null>(hotelDisplayName);
   const [searching, setSearching] = useState(false);
 
   useEffect(() => {
@@ -93,18 +168,37 @@ function SearchResults() {
     setSelectedKey(null);
     setSelectedName(null);
 
-    fetch(`/api/hotel-search?query=${encodeURIComponent(hotel)}`)
+    // Use VPS API (returns Japanese names from tripadvisor.jp)
+    fetch(`https://vpn.ryokoai.com/suggest.php?q=${encodeURIComponent(hotel)}`)
       .then((res) => res.json())
-      .then((data) => {
-        const cands: Candidate[] = data.candidates || [];
-        setCandidates(cands);
-        // auto_select=true or only 1 candidate → pick first automatically
-        if (cands.length > 0 && (data.auto_select || cands.length === 1)) {
-          setSelectedKey(cands[0].hotel_key);
-          setSelectedName(cands[0].name);
-        } else if (cands.length === 0 && data.hotel_key) {
-          setSelectedKey(data.hotel_key);
-          setSelectedName(data.hotel_name || null);
+      .then((results: Candidate[]) => {
+        if (results.length > 0) {
+          setCandidates(results);
+          // Find best match by scoring against input
+          const best = findBestMatch(hotel, results);
+          if (best) {
+            setSelectedKey(best.hotel_key);
+            setSelectedName(best.name);
+          }
+        } else {
+          // Fallback to original API (English names → convert to Japanese)
+          return fetch(`/api/hotel-search?query=${encodeURIComponent(hotel)}`)
+            .then((res) => res.json())
+            .then((data) => {
+              const cands: Candidate[] = (data.candidates || []).map((c: Candidate) => ({
+                ...c,
+                name: englishToJapanese(c.name),
+              }));
+              setCandidates(cands);
+              const best = findBestMatch(hotel, cands);
+              if (best) {
+                setSelectedKey(best.hotel_key);
+                setSelectedName(best.name);
+              } else if (cands.length === 0 && data.hotel_key) {
+                setSelectedKey(data.hotel_key);
+                setSelectedName(data.hotel_name ? englishToJapanese(data.hotel_name) : null);
+              }
+            });
         }
       })
       .catch(() => {})
@@ -136,7 +230,7 @@ function SearchResults() {
       {/* Hotel search status */}
       {searching && (
         <div className="flex items-center gap-2 text-gray-400 text-sm">
-          <div className="w-3 h-3 border-2 border-indigo-200 border-t-indigo-500 rounded-full animate-spin" />
+          <div className="w-3 h-3 border-2 border-blue-300 border-t-blue-700 rounded-full animate-spin" />
           ホテルを検索中...
         </div>
       )}
@@ -152,7 +246,7 @@ function SearchResults() {
               <button
                 key={c.hotel_key}
                 onClick={() => { setSelectedKey(c.hotel_key); setSelectedName(c.name); }}
-                className="w-full text-left px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 hover:bg-indigo-50 hover:border-indigo-200 transition-colors"
+                className="w-full text-left px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 hover:bg-blue-100 hover:border-blue-300 transition-colors"
               >
                 <span className="text-gray-900 text-sm">{c.name}</span>
               </button>
@@ -202,7 +296,7 @@ function SearchResults() {
       </div>
 
       {/* VPN tip */}
-      {selectedKey && <VpnTip hotelName={selectedName || hotel} />}
+      <VpnTip hotelName={selectedName || hotel} />
     </div>
   );
 }

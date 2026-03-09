@@ -69,10 +69,10 @@ export default function HotelScrapePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-gradient-to-r from-blue-700 to-blue-900 p-4 text-white shadow-lg">
+      <nav className="bg-gradient-to-r from-blue-900 to-blue-950 p-4 text-white shadow-lg">
         <div className="container mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold">🏨 Hotel Price <span className="text-yellow-400">Scanner</span></h1>
-          <span className="text-xs bg-blue-800/50 px-3 py-1 rounded-full border border-blue-400/50">複数サイトの価格を一括比較</span>
+          <span className="text-xs bg-blue-950/50 px-3 py-1 rounded-full border border-blue-600/50">複数サイトの価格を一括比較</span>
         </div>
       </nav>
 
@@ -139,7 +139,7 @@ export default function HotelScrapePage() {
                       {h.rating > 0 && (
                         <div className="flex-shrink-0 text-center">
                           <div className={`text-white text-sm font-bold px-2.5 py-1 rounded-lg ${
-                            h.rating >= 4.5 ? 'bg-green-600' : h.rating >= 4 ? 'bg-blue-600' : 'bg-gray-500'
+                            h.rating >= 4.5 ? 'bg-green-600' : h.rating >= 4 ? 'bg-blue-800' : 'bg-gray-500'
                           }`}>{h.rating}</div>
                           <p className="text-[10px] text-gray-400 mt-0.5">{h.reviews?.toLocaleString()}件</p>
                         </div>

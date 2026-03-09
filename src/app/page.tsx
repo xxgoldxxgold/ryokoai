@@ -23,17 +23,13 @@ export default function HomePage() {
       <section className="pt-16 pb-4 px-4 text-center space-y-6">
         <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
           同じホテル、予約サイトで<br />
-          <span className="text-indigo-500">これだけ違う。</span>
+          <span className="text-blue-700">これだけ違う。</span>
         </h1>
         <p className="text-gray-500 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
-          Agoda・Booking.com・Trip.com・Expedia...<br />
-          同じ部屋なのに予約サイトで数十ドルの差。<br />
-          RyokoAIで最安を見つけよう。
+          同じ部屋なのに予約サイトによって数千円、数万円の差。<br />
+          RyokoAIで最安価格を見つけよう。
         </p>
         <SearchForm />
-        <div className="flex flex-wrap justify-center gap-4 text-xs text-gray-400">
-          <span>対応予約サイト: Agoda / Booking.com / Trip.com / Expedia 他</span>
-        </div>
       </section>
 
       {/* How it works */}
