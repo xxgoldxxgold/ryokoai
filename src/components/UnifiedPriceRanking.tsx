@@ -275,7 +275,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
 
           <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50">
             <p className="text-gray-400 text-[10px] text-center">
-              SerpAPI + DataForSEO経由・税抜1泊あたり（JPY）
+              SerpAPI + DataForSEO経由・1泊あたり（JPY）
             </p>
           </div>
         </div>

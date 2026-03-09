@@ -44,6 +44,7 @@ const OTA_TAX_MAP: { match: string[]; info: TaxInfo }[] = [
   { match: ['luxury escapes'], info: TAX_INCLUSIVE },
   { match: ['tablethotels', 'tablet hotels'], info: TAX_INCLUSIVE },
   { match: ['mr & mrs smith', 'mrandmrssmith'], info: TAX_INCLUSIVE },
+  { match: ['bluepillow'], info: TAX_INCLUSIVE },
   // 世界大手（税抜/混在）
   { match: ['agoda'], info: { label: '税抜', color: 'text-red-600 bg-red-50', risk: '高', riskColor: 'text-red-500', surchargeRate: 0.20 } },
   { match: ['expedia'], info: TAX_MIXED },
