@@ -124,7 +124,7 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
   const jpyRate = useUsdToJpy();
 
   const paramsKey = `${hotelName}|${checkin}|${checkout}|${adults}`;
-  const base = `/api/dataforseo-hotels?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}`;
+  const base = `https://vpn.ryokoai.com/hotel-prices.php?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}`;
 
   useEffect(() => {
     if (!hotelName || !checkin || !checkout) return;
@@ -153,7 +153,7 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
         setSearching(false);
         setLoadingPrices(true);
 
-        return fetch(`${base}&phase=prices&id=${encodeURIComponent(data.hotel_id)}`, { signal: controller.signal })
+        return fetch(`${base}&phase=prices&id=${encodeURIComponent(data.hotel_id)}&loc=${data.location_code || 2392}`, { signal: controller.signal })
           .then(r => r.json())
           .then(priceData => {
             if (priceData.hotel_name) setHotelTitle(priceData.hotel_name);
