@@ -120,8 +120,9 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
   const [error, setError] = useState<string | null>(null);
   const prevParams = useRef('');
 
-  const paramsKey = `${hotelName}|${checkin}|${checkout}|${adults}`;
-  const base = `https://vpn.ryokoai.com/hotel-prices.php?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}`;
+  const cleanName = hotelName.split(',')[0].trim();
+  const paramsKey = `${cleanName}|${checkin}|${checkout}|${adults}`;
+  const base = `https://vpn.ryokoai.com/hotel-prices.php?q=${encodeURIComponent(cleanName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}`;
 
   useEffect(() => {
     if (!hotelName || !checkin || !checkout) return;
