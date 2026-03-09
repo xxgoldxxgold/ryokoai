@@ -290,12 +290,12 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
                     <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                       <div className="text-right">
                         {showEstimate ? (
-                          <>
-                            <span className="text-gray-400 text-[11px] line-through">¥{entry.price.toLocaleString()}</span>
-                            <span className={`text-sm font-bold ml-1 ${isBest ? 'text-emerald-600' : 'text-gray-900'}`}>
+                          <div className="flex flex-col items-end">
+                            <span className={`text-sm font-bold ${isBest ? 'text-emerald-600' : 'text-gray-900'}`}>
                               ~¥{entry.estimatedTotal.toLocaleString()}
                             </span>
-                          </>
+                            <span className="text-gray-400 text-[10px]">税抜 ¥{entry.price.toLocaleString()}</span>
+                          </div>
                         ) : (
                           <span className={`text-sm font-bold ${isBest ? 'text-emerald-600' : 'text-gray-900'}`}>
                             ¥{entry.price.toLocaleString()}

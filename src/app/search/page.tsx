@@ -332,6 +332,7 @@ function SearchResults() {
         ) : (
           <>
             <SpeedPromoBanner />
+            <VpnBanner />
             <DataForSeoPricePanel
               hotelName={selectedName || hotel}
               checkin={checkin}
