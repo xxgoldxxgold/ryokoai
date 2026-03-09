@@ -142,59 +142,47 @@ export async function GET(req: NextRequest) {
     const langCode = detectLanguage(hotelName);
     let found = false;
 
-    // Try all combinations in parallel for speed
-    const searchTasks: Promise<{ name: string; locCode: number; items: unknown[] } | null>[] = [];
     for (const searchName of searchNames) {
-      for (const locCode of locationCodes.slice(0, 2)) {
-        searchTasks.push(
-          (async () => {
-            try {
-              const controller = new AbortController();
-              const timeout = setTimeout(() => controller.abort(), 8000);
-              const res = await fetch('https://api.dataforseo.com/v3/business_data/google/hotel_searches/live', {
-                method: 'POST',
-                signal: controller.signal,
-                headers: DFS_HEADERS,
-                body: JSON.stringify([{
-                  keyword: searchName,
-                  location_code: locCode,
-                  language_code: langCode,
-                  check_in: checkin,
-                  check_out: checkout,
-                  adults: parseInt(adults),
-                  currency: 'JPY',
-                }]),
-              });
-              clearTimeout(timeout);
-              const data = await res.json();
-              const items = data.tasks?.[0]?.result?.[0]?.items || [];
-              if (items.length > 0 && items[0].hotel_identifier) {
-                return { name: searchName, locCode, items };
-              }
-              return null;
-            } catch { return null; }
-          })()
-        );
-      }
-    }
+      if (found) break;
+      for (const locCode of locationCodes) {
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 15000);
+          const res = await fetch('https://api.dataforseo.com/v3/business_data/google/hotel_searches/live', {
+            method: 'POST',
+            signal: controller.signal,
+            headers: DFS_HEADERS,
+            body: JSON.stringify([{
+              keyword: searchName,
+              location_code: locCode,
+              language_code: langCode,
+              check_in: checkin,
+              check_out: checkout,
+              adults: parseInt(adults),
+              currency: 'JPY',
+            }]),
+          });
+          clearTimeout(timeout);
+          const data = await res.json();
+          const items = data.tasks?.[0]?.result?.[0]?.items || [];
+          if (items.length === 0 || !items[0].hotel_identifier) continue;
 
-    const results = await Promise.all(searchTasks);
-    const hit = results.find(r => r !== null);
-    if (hit) {
-      const first = (hit.items as Record<string, unknown>[])[0] as { hotel_identifier: string; title?: string; prices?: { price?: number } };
-      const title = first.title || hotelName;
-      const basePrice = first.prices?.price || 0;
-      idCache.set(cacheKey, { id: first.hotel_identifier, title, basePrice, locationCode: hit.locCode, expires: Date.now() + 86400000 });
-      found = true;
+          const first = items[0];
+          const title = first.title || hotelName;
+          const basePrice = first.prices?.price || 0;
+          idCache.set(cacheKey, { id: first.hotel_identifier, title, basePrice, locationCode: locCode, expires: Date.now() + 86400000 });
+          found = true;
 
-      if (phase === 'search') {
-        return NextResponse.json({
-          phase: 'search',
-          hotel_name: title,
-          hotel_id: first.hotel_identifier,
-          base_price: basePrice,
-          location_code: hit.locCode,
-        });
+          if (phase === 'search') {
+            return NextResponse.json({
+              phase: 'search',
+              hotel_name: title,
+              hotel_id: first.hotel_identifier,
+              base_price: basePrice,
+            });
+          }
+          break;
+        } catch { continue; }
       }
     }
 
@@ -212,7 +200,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const controller2 = new AbortController();
-    const timeout2 = setTimeout(() => controller2.abort(), 10000);
+    const timeout2 = setTimeout(() => controller2.abort(), 15000);
     const infoRes = await fetch('https://api.dataforseo.com/v3/business_data/google/hotel_info/live/advanced', {
       method: 'POST',
       signal: controller2.signal,
