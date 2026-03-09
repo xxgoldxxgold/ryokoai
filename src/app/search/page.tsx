@@ -198,9 +198,11 @@ function SearchResults() {
       {selectedKey && <VpnTip hotelName={selectedName || hotel} />}
 
       {/* Disclaimer */}
-      <p className="text-gray-400 text-xs text-center">
-        表示される価格は各予約サイト上の価格です。RyokoAIは価格を保証するものではありません。
-      </p>
+      <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-center">
+        <p className="text-gray-500 text-xs">
+          表示価格は各予約サイトの掲載価格であり、RyokoAIは正確性や最新性を保証しません。予約前に必ずリンク先で最終価格をご確認ください。
+        </p>
+      </div>
     </div>
   );
 }
