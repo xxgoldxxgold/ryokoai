@@ -53,17 +53,61 @@ const LOCATION_KEYWORDS: { keywords: string[]; code: number }[] = [
   { keywords: ['macau', 'macao'], code: 2446 },
 ];
 
+// Japanese location keywords → location code
+const JP_LOCATION_KEYWORDS: { keywords: string[]; code: number }[] = [
+  { keywords: ['東京', '新宿', '渋谷', '池袋', '品川', '浅草', '銀座', '上野', '六本木', '赤坂', '秋葉原', '成田', '羽田', '横浜', '大阪', '梅田', '難波', '心斎橋', '道頓堀', '京都', '祇園', '嵐山', '福岡', '博多', '札幌', 'すすきの', '沖縄', '那覇', '名古屋', '箱根', '軽井沢', '日光', '広島', '神戸', '北海道', 'ニセコ', '仙台', '金沢', '高山', '宮島'], code: 2392 },
+  { keywords: ['バンコク', 'プーケット', 'チェンマイ', 'パタヤ', 'タイ', 'クラビ', 'サムイ'], code: 2764 },
+  { keywords: ['バリ', 'ジャカルタ', 'インドネシア', 'ウブド', 'スミニャック', 'クタ', 'ロンボク'], code: 2360 },
+  { keywords: ['シンガポール'], code: 2702 },
+  { keywords: ['ソウル', '釜山', '済州', '韓国', '江南', '明洞', '弘大'], code: 2410 },
+  { keywords: ['台北', '台湾', '高雄', '台中'], code: 2158 },
+  { keywords: ['香港'], code: 2344 },
+  { keywords: ['クアラルンプール', 'ランカウイ', 'ペナン', 'マレーシア'], code: 2458 },
+  { keywords: ['マニラ', 'セブ', 'ボラカイ', 'フィリピン', 'パラワン'], code: 2608 },
+  { keywords: ['ハノイ', 'ホーチミン', 'ダナン', 'ベトナム', 'ホイアン', 'ニャチャン'], code: 2704 },
+  { keywords: ['パリ', 'ニース', 'リヨン', 'フランス', 'マルセイユ'], code: 2250 },
+  { keywords: ['ロンドン', 'マンチェスター', 'エディンバラ', 'イギリス'], code: 2826 },
+  { keywords: ['ローマ', 'ミラノ', 'ベネチア', 'フィレンツェ', 'イタリア', 'ナポリ', 'アマルフィ'], code: 2380 },
+  { keywords: ['バルセロナ', 'マドリード', 'スペイン', 'セビリア', 'マラガ', 'イビサ'], code: 2724 },
+  { keywords: ['ドバイ', 'アブダビ'], code: 2784 },
+  { keywords: ['シドニー', 'メルボルン', 'オーストラリア'], code: 2036 },
+  { keywords: ['カンクン', 'メキシコ'], code: 2484 },
+  { keywords: ['モルディブ', 'マルディブ'], code: 2462 },
+];
+
 function detectLocationCode(hotelName: string): number[] {
   const lower = hotelName.toLowerCase();
   const codes: number[] = [];
+  // Check English keywords
   for (const loc of LOCATION_KEYWORDS) {
     if (loc.keywords.some(k => lower.includes(k))) {
+      codes.push(loc.code);
+    }
+  }
+  // Check Japanese keywords
+  for (const loc of JP_LOCATION_KEYWORDS) {
+    if (loc.keywords.some(k => hotelName.includes(k)) && !codes.includes(loc.code)) {
       codes.push(loc.code);
     }
   }
   // Always include US as fallback, but put detected codes first
   if (!codes.includes(2840)) codes.push(2840);
   return codes;
+}
+
+/** Clean hotel name for search: strip location suffixes and simplify */
+function cleanHotelName(name: string): string[] {
+  // Remove common location suffixes like ", 札幌市, 北海道, 日本"
+  const stripped = name.replace(/[,、].*(市|区|都|府|県|道|省|国|日本|Japan|China|Thailand|Indonesia|Vietnam|Korea|Taiwan|Singapore|Malaysia|Philippines).*$/i, '').trim();
+  const names = [stripped];
+  if (stripped !== name) names.push(name);
+  return names;
+}
+
+function detectLanguage(hotelName: string): string {
+  // If hotel name contains Japanese characters, use 'ja'
+  if (/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/.test(hotelName)) return 'ja';
+  return 'en';
 }
 
 export async function GET(req: NextRequest) {
@@ -94,47 +138,52 @@ export async function GET(req: NextRequest) {
     }
 
     const locationCodes = detectLocationCode(hotelName);
+    const searchNames = cleanHotelName(hotelName);
+    const langCode = detectLanguage(hotelName);
     let found = false;
 
-    for (const locCode of locationCodes) {
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 15000);
-        const res = await fetch('https://api.dataforseo.com/v3/business_data/google/hotel_searches/live', {
-          method: 'POST',
-          signal: controller.signal,
-          headers: DFS_HEADERS,
-          body: JSON.stringify([{
-            keyword: hotelName,
-            location_code: locCode,
-            language_code: 'en',
-            check_in: checkin,
-            check_out: checkout,
-            adults: parseInt(adults),
-            currency: 'USD',
-          }]),
-        });
-        clearTimeout(timeout);
-        const data = await res.json();
-        const items = data.tasks?.[0]?.result?.[0]?.items || [];
-        if (items.length === 0 || !items[0].hotel_identifier) continue;
-
-        const first = items[0];
-        const title = first.title || hotelName;
-        const basePrice = first.prices?.price || 0;
-        idCache.set(cacheKey, { id: first.hotel_identifier, title, basePrice, locationCode: locCode, expires: Date.now() + 86400000 });
-        found = true;
-
-        if (phase === 'search') {
-          return NextResponse.json({
-            phase: 'search',
-            hotel_name: title,
-            hotel_id: first.hotel_identifier,
-            base_price: basePrice,
+    for (const searchName of searchNames) {
+      if (found) break;
+      for (const locCode of locationCodes) {
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 15000);
+          const res = await fetch('https://api.dataforseo.com/v3/business_data/google/hotel_searches/live', {
+            method: 'POST',
+            signal: controller.signal,
+            headers: DFS_HEADERS,
+            body: JSON.stringify([{
+              keyword: searchName,
+              location_code: locCode,
+              language_code: langCode,
+              check_in: checkin,
+              check_out: checkout,
+              adults: parseInt(adults),
+              currency: 'USD',
+            }]),
           });
-        }
-        break; // phase === 'all' falls through to get prices
-      } catch { continue; }
+          clearTimeout(timeout);
+          const data = await res.json();
+          const items = data.tasks?.[0]?.result?.[0]?.items || [];
+          if (items.length === 0 || !items[0].hotel_identifier) continue;
+
+          const first = items[0];
+          const title = first.title || hotelName;
+          const basePrice = first.prices?.price || 0;
+          idCache.set(cacheKey, { id: first.hotel_identifier, title, basePrice, locationCode: locCode, expires: Date.now() + 86400000 });
+          found = true;
+
+          if (phase === 'search') {
+            return NextResponse.json({
+              phase: 'search',
+              hotel_name: title,
+              hotel_id: first.hotel_identifier,
+              base_price: basePrice,
+            });
+          }
+          break;
+        } catch { continue; }
+      }
     }
 
     if (!found) {
