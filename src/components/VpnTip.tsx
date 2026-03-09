@@ -22,19 +22,19 @@ const GEO_DATA: GeoTip[] = [
 ];
 
 const REGION_KEYWORDS: { keywords: string[]; index: number }[] = [
-  { keywords: ['marriott', 'hilton', 'hyatt', 'intercontinental', 'sheraton', 'westin', 'ritz', 'st. regis', 'conrad', 'waldorf', 'four seasons', 'mandarin oriental', 'peninsula', 'shangri-la', 'banyan tree', 'aman', 'bulgari'], index: 2 },
-  { keywords: ['bali', 'thailand', 'bangkok', 'phuket', 'vietnam', 'hanoi', 'ho chi minh', 'singapore', 'kuala lumpur', 'langkawi', 'cebu', 'manila', 'jakarta', 'da nang', 'cambodia', 'siem reap'], index: 6 },
-  { keywords: ['dubai', 'abu dhabi', 'doha', 'qatar', 'oman', 'bahrain', 'riyadh', 'jeddah'], index: 7 },
-  { keywords: ['sydney', 'melbourne', 'auckland', 'australia', 'new zealand', 'fiji'], index: 8 },
-  { keywords: ['cancun', 'mexico', 'brazil', 'argentina', 'colombia', 'peru', 'chile', 'costa rica', 'rio', 'sao paulo', 'buenos aires'], index: 9 },
-  { keywords: ['new york', 'los angeles', 'las vegas', 'hawaii', 'waikiki', 'honolulu', 'miami', 'san francisco', 'chicago', 'boston', 'seattle', 'orlando', 'washington', 'toronto', 'vancouver', 'canada', 'guam'], index: 3 },
-  { keywords: ['paris', 'london', 'amsterdam', 'berlin', 'munich', 'vienna', 'zurich', 'stockholm', 'copenhagen', 'oslo', 'helsinki', 'brussels', 'dublin'], index: 4 },
-  { keywords: ['rome', 'barcelona', 'madrid', 'lisbon', 'prague', 'budapest', 'warsaw', 'krakow', 'athens', 'istanbul', 'croatia', 'dubrovnik'], index: 5 },
-  { keywords: ['tokyo', 'osaka', 'kyoto', 'fukuoka', 'sapporo', 'okinawa', 'naha', 'nagoya', 'hakone', 'karuizawa', 'nikko', 'hiroshima', 'kobe', 'yokohama', 'japan'], index: 0 },
+  { keywords: ['marriott', 'hilton', 'hyatt', 'intercontinental', 'sheraton', 'westin', 'ritz', 'st. regis', 'conrad', 'waldorf', 'four seasons', 'mandarin oriental', 'peninsula', 'shangri-la', 'banyan tree', 'aman', 'bulgari', 'マリオット', 'ヒルトン', 'ハイアット', 'インターコンチネンタル', 'シェラトン', 'ウェスティン', 'リッツ', 'コンラッド', 'フォーシーズンズ', 'マンダリン', 'ペニンシュラ', 'シャングリラ', 'アマン', 'ブルガリ'], index: 2 },
+  { keywords: ['bali', 'thailand', 'bangkok', 'phuket', 'vietnam', 'hanoi', 'ho chi minh', 'singapore', 'kuala lumpur', 'langkawi', 'cebu', 'manila', 'jakarta', 'da nang', 'cambodia', 'siem reap', 'バリ', 'タイ', 'バンコク', 'プーケット', 'ベトナム', 'ハノイ', 'ホーチミン', 'シンガポール', 'クアラルンプール', 'セブ', 'マニラ', 'ジャカルタ', 'ダナン'], index: 6 },
+  { keywords: ['dubai', 'abu dhabi', 'doha', 'qatar', 'oman', 'bahrain', 'riyadh', 'jeddah', 'ドバイ', 'アブダビ', 'ドーハ', 'カタール'], index: 7 },
+  { keywords: ['sydney', 'melbourne', 'auckland', 'australia', 'new zealand', 'fiji', 'シドニー', 'メルボルン', 'オーストラリア', 'ニュージーランド'], index: 8 },
+  { keywords: ['cancun', 'mexico', 'brazil', 'argentina', 'colombia', 'peru', 'chile', 'costa rica', 'rio', 'sao paulo', 'buenos aires', 'カンクン', 'メキシコ', 'ブラジル', 'アルゼンチン'], index: 9 },
+  { keywords: ['new york', 'los angeles', 'las vegas', 'hawaii', 'waikiki', 'honolulu', 'miami', 'san francisco', 'chicago', 'boston', 'seattle', 'orlando', 'washington', 'toronto', 'vancouver', 'canada', 'guam', 'ニューヨーク', 'ロサンゼルス', 'ラスベガス', 'ハワイ', 'ワイキキ', 'ホノルル', 'マイアミ', 'サンフランシスコ', 'グアム', 'カナダ'], index: 3 },
+  { keywords: ['paris', 'london', 'amsterdam', 'berlin', 'munich', 'vienna', 'zurich', 'stockholm', 'copenhagen', 'oslo', 'helsinki', 'brussels', 'dublin', 'パリ', 'ロンドン', 'アムステルダム', 'ベルリン', 'ウィーン', 'チューリッヒ'], index: 4 },
+  { keywords: ['rome', 'barcelona', 'madrid', 'lisbon', 'prague', 'budapest', 'warsaw', 'krakow', 'athens', 'istanbul', 'croatia', 'dubrovnik', 'ローマ', 'バルセロナ', 'マドリード', 'プラハ', 'ブダペスト', 'イスタンブール'], index: 5 },
+  { keywords: ['tokyo', 'osaka', 'kyoto', 'fukuoka', 'sapporo', 'okinawa', 'naha', 'nagoya', 'hakone', 'karuizawa', 'nikko', 'hiroshima', 'kobe', 'yokohama', 'japan', '東京', '大阪', '京都', '福岡', '札幌', '沖縄', '那覇', '名古屋', '箱根', '軽井沢', '日光', '広島', '神戸', '横浜', '北海道', '新宿', '渋谷', '池袋', '品川', '浅草', '銀座', '上野', '六本木', '赤坂', '梅田', '難波', '心斎橋', 'すすきの', '博多'], index: 0 },
 ];
 
 // Japan luxury detection
-const JAPAN_LUXURY_KEYWORDS = ['ritz', 'four seasons', 'aman', 'mandarin', 'peninsula', 'park hyatt', 'palace', 'imperial', 'okura', 'prince', 'conrad', 'st. regis', 'edition', 'luxury', 'resort'];
+const JAPAN_LUXURY_KEYWORDS = ['ritz', 'four seasons', 'aman', 'mandarin', 'peninsula', 'park hyatt', 'palace', 'imperial', 'okura', 'prince', 'conrad', 'st. regis', 'edition', 'luxury', 'resort', 'リッツ', 'フォーシーズンズ', 'アマン', 'マンダリン', 'ペニンシュラ', 'パークハイアット', 'パレス', 'インペリアル', 'オークラ', 'プリンス', 'コンラッド', 'エディション'];
 
 const OTA_LINKS: Record<string, { base: string; vpn: string }> = {
   'Agoda': { base: 'https://www.agoda.com/search?q=', vpn: 'ベトナム、タイ' },
@@ -72,9 +72,10 @@ interface Props {
   hotelName: string;
 }
 
+const DEFAULT_TIP: GeoTip = { category: 'General', vpn1: 'ベトナム', vpn2: 'インド', discount: '10-30%', platform: 'Agoda' };
+
 export default function VpnTip({ hotelName }: Props) {
-  const tip = detectRegion(hotelName);
-  if (!tip) return null;
+  const tip = detectRegion(hotelName) || DEFAULT_TIP;
 
   const ota = OTA_LINKS[tip.platform];
   const encodedName = encodeURIComponent(hotelName);
