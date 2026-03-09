@@ -329,7 +329,7 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
 
           <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50">
             <p className="text-gray-400 text-[10px] text-center">
-              総額予想は税・サービス料の推定加算額です。実際の金額は予約サイトで確認してください{jpyRate && ` / 1USD≈¥${Math.round(jpyRate)}`}
+              ※総額予想は推定です。リンク先で正確な価格を確認してください{jpyRate && ` / 1USD≈¥${Math.round(jpyRate)}`}
             </p>
           </div>
         </div>
