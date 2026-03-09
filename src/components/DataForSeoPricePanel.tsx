@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { jaLink } from '@/lib/utils';
 interface DfsPrice {
   source: string;
   price: number;
@@ -227,7 +226,7 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
         <div>
           {best && savings > 0 && (
             best.link ? (
-            <a href={jaLink(best.link)!} target="_blank" rel="noopener noreferrer" className="block bg-emerald-50 px-5 py-3 border-b border-emerald-100 hover:bg-emerald-100/70 transition-colors">
+            <a href={best.link} target="_blank" rel="noopener noreferrer" className="block bg-emerald-50 px-5 py-3 border-b border-emerald-100 hover:bg-emerald-100/70 transition-colors">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-emerald-600 text-sm font-bold">{best.source}</span>
@@ -325,7 +324,7 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
               );
 
               return entry.link ? (
-                <a key={entry.domain || entry.source} href={jaLink(entry.link)!} target="_blank" rel="noopener noreferrer">
+                <a key={entry.domain || entry.source} href={entry.link} target="_blank" rel="noopener noreferrer">
                   {inner}
                 </a>
               ) : (
