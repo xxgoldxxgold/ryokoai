@@ -8,7 +8,6 @@ import DataForSeoPricePanel from '@/components/DataForSeoPricePanel';
 import SearchForm from '@/components/SearchForm';
 import { useAuth } from '@/lib/useAuth';
 import Link from 'next/link';
-import VpnTip from '@/components/VpnTip';
 
 const CITY_CODES: Record<string, string> = {
   seoul: 'SEL', tokyo: 'TYO', osaka: 'OSA', kyoto: 'UKY', bangkok: 'BKK',
@@ -329,8 +328,7 @@ function SearchResults() {
         </p>
       </div>
 
-      {/* VPN tip — only for non-logged-in users */}
-      {!isLoggedIn && <VpnTip hotelName={selectedName || hotel} />}
+      {/* VPN tip removed — login prompt already shown via SpeedPromoBanner */}
     </div>
   );
 }
