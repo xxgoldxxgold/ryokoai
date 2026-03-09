@@ -35,7 +35,7 @@ export default function SearchForm({ initialHotel, initialCheckin, initialChecko
   const [isLoading, setIsLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const skipFetchRef = useRef(false);
+  const skipFetchRef = useRef(!!initialHotel);
   const locationRef = useRef<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
@@ -92,15 +92,21 @@ export default function SearchForm({ initialHotel, initialCheckin, initialChecko
   }
 
   function handleInputChange(value: string) {
+    const prev = hotel;
     setHotel(value);
     if (skipFetchRef.current) {
-      skipFetchRef.current = false;
+      // Only clear skip flag if user actually changed the text
+      if (value !== prev) {
+        skipFetchRef.current = false;
+        fetchSuggestions(value);
+      }
       return;
     }
     fetchSuggestions(value);
   }
 
   const selectedKeyRef = useRef<string | null>(null);
+  const initialHotelRef = useRef(initialHotel || '');
 
   function selectSuggestion(s: Suggestion) {
     skipFetchRef.current = true;
@@ -131,8 +137,11 @@ export default function SearchForm({ initialHotel, initialCheckin, initialChecko
     if (!hotel.trim() || !checkin || !checkout) return;
     setShowSuggestions(false);
 
+    // If hotel name unchanged from initial, just re-search with same name (no suggestion needed)
+    const hotelUnchanged = initialHotelRef.current && hotel.trim() === initialHotelRef.current;
+
     // If no key selected but suggestions exist, use the first (most relevant) one
-    if (!selectedKeyRef.current && suggestions.length > 0) {
+    if (!selectedKeyRef.current && suggestions.length > 0 && !hotelUnchanged) {
       selectedKeyRef.current = suggestions[0].hotel_key;
     }
 
@@ -157,7 +166,7 @@ export default function SearchForm({ initialHotel, initialCheckin, initialChecko
           type="text"
           value={hotel}
           onChange={(e) => handleInputChange(e.target.value)}
-          onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+          onFocus={() => { if (suggestions.length > 0 && !skipFetchRef.current) setShowSuggestions(true); }}
           onKeyDown={handleKeyDown}
           placeholder="ホテル名"
           required
