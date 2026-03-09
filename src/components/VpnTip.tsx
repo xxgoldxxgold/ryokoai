@@ -82,7 +82,9 @@ export default function VpnTip({ hotelName }: Props) {
 
   return (
     <a
-      href="/login"
+      href={`${ota.base}${encodedName}`}
+      target="_blank"
+      rel="noopener noreferrer"
       className="block bg-amber-50 border border-amber-200 rounded-2xl overflow-hidden hover:bg-amber-100/50 transition-colors"
     >
       <div className="px-5 py-4">
