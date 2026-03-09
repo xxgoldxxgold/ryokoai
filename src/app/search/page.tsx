@@ -314,6 +314,10 @@ function SearchResults() {
         isLoggedIn ? (
           <>
             <VpnBanner />
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-2xl px-5 py-4 shadow-sm">
+              <p className="text-blue-900 font-bold text-sm">RyokoAIに登録してくれたメンバー様向けの激安価格をご提供</p>
+              <p className="text-blue-700 text-xs mt-0.5">ご利用になる方はこちらから。ご利用は自己責任で。</p>
+            </div>
             <UnifiedPriceRanking
               hotelName={selectedName || hotel}
               hotelKey={selectedKey}
@@ -322,6 +326,10 @@ function SearchResults() {
               adults={adults}
               rooms={rooms}
             />
+            <div className="bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-200 rounded-2xl px-5 py-4 shadow-sm">
+              <p className="text-amber-900 font-bold text-sm">RyokoAIに登録してくれたメンバー様向けの激安価格をご提供</p>
+              <p className="text-amber-700 text-xs mt-0.5">ご利用になる方はこちらから。ご利用は自己責任で。</p>
+            </div>
             <DataForSeoPricePanel
               hotelName={selectedName || hotel}
               checkin={checkin}
