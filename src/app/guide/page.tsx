@@ -9,13 +9,6 @@ export const metadata: Metadata = {
 export default function GuidePage() {
   return (
     <div className="px-4 py-12 max-w-2xl mx-auto space-y-10">
-      <Link
-        href="/"
-        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 transition-colors"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        トップに戻る
-      </Link>
       <div className="space-y-3">
         <h1 className="text-gray-900 font-bold text-2xl">予約サイト比較でホテルを安く予約する方法</h1>
         <p className="text-gray-500 text-sm leading-relaxed">
@@ -95,11 +88,14 @@ export default function GuidePage() {
 
       {/* VPN tip */}
       <section className="space-y-3">
-        <h2 className="text-gray-900 font-bold text-lg">さらに安くするには</h2>
+        <h2 className="text-gray-900 font-bold text-lg">さらに安くするには（VPN）</h2>
         <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-3 text-gray-600 text-sm leading-relaxed shadow-sm">
           <p>
             一部の予約サイトはアクセス元の国によっても価格を変えています。
-            別の国から接続すると、さらに安い価格が表示される場合があります。
+            VPNで別の国から接続すると、さらに安い価格が表示される場合があります。
+          </p>
+          <p className="text-gray-400 text-xs">
+            おすすめ: <a href="https://protonvpn.com/" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">Proton VPN</a>（無料プランあり）
           </p>
         </div>
       </section>
@@ -110,7 +106,7 @@ export default function GuidePage() {
         <div className="bg-amber-50 border border-amber-100 rounded-xl p-5 space-y-3 text-sm leading-relaxed">
           <div className="flex gap-2">
             <span className="shrink-0">&#x2705;</span>
-            <p className="text-gray-600"><strong className="text-gray-900">ホテル予約は問題なし</strong> &#8212; 主要予約サイトは海外からのアクセスを明示的に禁止していません</p>
+            <p className="text-gray-600"><strong className="text-gray-900">ホテル予約は問題なし</strong> &#8212; 主要予約サイトはVPN使用を明示的に禁止していません</p>
           </div>
           <div className="flex gap-2">
             <span className="shrink-0">&#x26A0;&#xFE0F;</span>
