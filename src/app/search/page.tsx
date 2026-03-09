@@ -167,8 +167,7 @@ function VpnBanner() {
           </svg>
         </div>
         <p className="text-amber-700 text-xs leading-relaxed">
-          VPNを使って海外からアクセスすると、同じホテルでも現地向けの安い料金が表示されます。
-          アプリ不要、ワンタップで接続でき、iPhone・Android・PCに対応。無料で使えます。
+          これを使うと更に激安価格に
         </p>
       </div>
     </a>
