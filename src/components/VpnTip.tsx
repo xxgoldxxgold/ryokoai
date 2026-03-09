@@ -82,9 +82,7 @@ export default function VpnTip({ hotelName }: Props) {
 
   return (
     <a
-      href={`${ota.base}${encodedName}`}
-      target="_blank"
-      rel="noopener noreferrer"
+      href="/login"
       className="block bg-amber-50 border border-amber-200 rounded-2xl overflow-hidden hover:bg-amber-100/50 transition-colors"
     >
       <div className="px-5 py-4">
@@ -101,9 +99,6 @@ export default function VpnTip({ hotelName }: Props) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </div>
-        <p className="text-amber-500 text-[10px] mt-2">
-          VPN: {ota.vpn} → {tip.platform}で検索
-        </p>
       </div>
     </a>
   );

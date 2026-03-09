@@ -229,6 +229,29 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
       {enriched.length > 0 && (
         <div>
           {best && savings > 0 && (
+            best.link ? (
+            <a href={best.link} target="_blank" rel="noopener noreferrer" className="block bg-emerald-50 px-5 py-3 border-b border-emerald-100 hover:bg-emerald-100/70 transition-colors">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-emerald-600 text-sm font-bold">{best.source}</span>
+                  <span className="text-emerald-500 bg-emerald-100 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">最安</span>
+                  <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${best.tax.color}`}>{best.tax.label}</span>
+                </div>
+                <div className="text-right flex items-center gap-1">
+                  <span className="text-emerald-700 text-xl font-bold">${best.estimatedTotal.toLocaleString()}</span>
+                  <span className="text-emerald-500 text-xs font-normal">/泊</span>
+                  {jpyRate && <span className="text-emerald-500 text-xs ml-1.5">({toJpy(best.estimatedTotal, jpyRate)})</span>}
+                  <svg className="w-4 h-4 text-emerald-400 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+              <p className="text-emerald-500 text-xs mt-1">
+                最高値より <span className="font-semibold">${savings.toLocaleString()}{jpyRate && `（${toJpy(savings, jpyRate)}）`}</span> お得
+                （{Math.round((savings / worst!.estimatedTotal) * 100)}%OFF）
+              </p>
+            </a>
+            ) : (
             <div className="bg-emerald-50 px-5 py-3 border-b border-emerald-100">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -247,6 +270,7 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
                 （{Math.round((savings / worst!.estimatedTotal) * 100)}%OFF）
               </p>
             </div>
+            )
           )}
 
           <div className="divide-y divide-gray-50">
@@ -338,7 +362,9 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
       {!loading && enriched.length === 0 && !showBasePrice && (
         <div className="px-5 py-8 text-center">
           <p className="text-gray-400 text-sm">
-            {error || '価格データを取得できませんでした。'}
+            {error === 'Hotel not found'
+              ? '該当するホテルが見つかりませんでした。地域名を含めて検索してみてください（例：リブマックス 札幌）'
+              : error || '価格データを取得できませんでした。'}
           </p>
         </div>
       )}
