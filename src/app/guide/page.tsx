@@ -91,15 +91,15 @@ export default function GuidePage() {
 
       {/* VPN tip */}
       <section className="space-y-3">
-        <h2 className="text-gray-900 font-bold text-lg">さらに安くするには（VPN）</h2>
+        <h2 className="text-gray-900 font-bold text-lg">さらに安くするには</h2>
         <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-3 text-gray-600 text-sm leading-relaxed shadow-sm">
           <p>
             一部の予約サイトはアクセス元の国によっても価格を変えています。
-            VPNで別の国から接続すると、さらに安い価格が表示される場合があります。
+            ログインすれば格安価格を表示できるようになります。
           </p>
-          <p className="text-gray-400 text-xs">
-            おすすめ: <a href="https://protonvpn.com/" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">Proton VPN</a>（無料プランあり）
-          </p>
+          <Link href="/login" className="inline-block mt-1 px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium transition-colors">
+            ログインする
+          </Link>
         </div>
       </section>
 
