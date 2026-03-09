@@ -12,13 +12,21 @@ function toLocalDate(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export default function SearchForm() {
+interface FormProps {
+  initialHotel?: string;
+  initialCheckin?: string;
+  initialCheckout?: string;
+  initialAdults?: number;
+  initialRooms?: number;
+}
+
+export default function SearchForm({ initialHotel, initialCheckin, initialCheckout, initialAdults, initialRooms }: FormProps = {}) {
   const router = useRouter();
-  const [hotel, setHotel] = useState('');
-  const [checkin, setCheckin] = useState('');
-  const [checkout, setCheckout] = useState('');
-  const [adults, setAdults] = useState(2);
-  const [rooms, setRooms] = useState(1);
+  const [hotel, setHotel] = useState(initialHotel || '');
+  const [checkin, setCheckin] = useState(initialCheckin || '');
+  const [checkout, setCheckout] = useState(initialCheckout || '');
+  const [adults, setAdults] = useState(initialAdults || 2);
+  const [rooms, setRooms] = useState(initialRooms || 1);
   const [today, setToday] = useState('');
 
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -35,8 +43,8 @@ export default function SearchForm() {
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
     setToday(toLocalDate(now));
-    setCheckin(toLocalDate(now));
-    setCheckout(toLocalDate(tomorrow));
+    if (!initialCheckin) setCheckin(toLocalDate(now));
+    if (!initialCheckout) setCheckout(toLocalDate(tomorrow));
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => { locationRef.current = { lat: pos.coords.latitude, lng: pos.coords.longitude }; },
@@ -250,8 +258,41 @@ export default function SearchForm() {
       >
         価格を比較する
       </button>
-      <p className="text-gray-400 text-[10px] text-center">
-        ホテル名を入力するだけで予約サイトの価格比較が表示されます
+      <div className="space-y-3 mt-2">
+        <a href="/login" className="block bg-gradient-to-r from-blue-100 to-blue-100 border border-blue-300 rounded-2xl px-5 py-4 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center">
+              <svg className="w-5 h-5 text-blue-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-blue-900 font-bold text-sm">ログインで高速検索</p>
+              <p className="text-blue-700 text-xs mt-0.5">無料ログインで3倍速く、より多くの予約サイト価格を比較できます</p>
+            </div>
+            <svg className="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </a>
+        <a href="/login" className="block bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 hover:bg-amber-100/50 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+              <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-amber-800 font-bold text-sm">ログインして更に激安価格をゲット！！</p>
+              <p className="text-amber-600 text-xs mt-0.5">マジで安くなる。これを知らない人が意外に多い。</p>
+            </div>
+            <svg className="w-5 h-5 text-amber-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </a>
+      </div>
+      <p className="hidden">
       </p>
     </form>
   );

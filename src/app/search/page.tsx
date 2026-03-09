@@ -240,7 +240,7 @@ function SearchResults() {
       </button>
       {showEditForm && (
         <div className="bg-white border border-gray-200 rounded-2xl px-5 py-4 shadow-sm">
-          <SearchForm />
+          <SearchForm initialHotel={displayName} initialCheckin={checkin} initialCheckout={checkout} initialAdults={adults} initialRooms={rooms} />
         </div>
       )}
 
