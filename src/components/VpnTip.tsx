@@ -87,13 +87,20 @@ export default function VpnTip({ hotelName }: Props) {
     >
       <div className="px-5 py-4">
         <div className="flex items-center justify-between">
-          <div>
-            <p className="text-amber-800 font-bold text-sm">
-              VPNでさらに安くなる可能性あり
-            </p>
-            <p className="text-amber-600 text-xs mt-1">
-              {tip.vpn1}や{tip.vpn2}のVPNで{tip.platform}を見ると最大<span className="font-bold">{tip.discount}OFF</span>
-            </p>
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+              <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-amber-800 font-bold text-sm">
+                ログインして更に激安価格をゲット！！
+              </p>
+              <p className="text-amber-600 text-xs mt-0.5">
+                マジで安くなる。これを知らない人が意外に多い。
+              </p>
+            </div>
           </div>
           <svg className="w-5 h-5 text-amber-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
