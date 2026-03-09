@@ -82,23 +82,22 @@ function findBestMatch(query: string, candidates: Candidate[]): Candidate | null
   if (candidates.length === 0) return null;
   if (candidates.length === 1) return candidates[0];
 
-  const queryNorm = japaneseToEnglish(query);
-  const queryWords = queryNorm.split(/\s+/).filter(w => w.length > 1);
+  // Normalize both sides the same way (strip address, lowercase)
+  const queryClean = query.split(',')[0].trim().toLowerCase();
 
   let bestMatch: Candidate | null = null;
   let bestScore = -1;
 
   for (const c of candidates) {
-    const cNorm = c.name.toLowerCase().replace(/[,\s]+/g, ' ').trim();
-    const cWords = cNorm.split(/\s+/).filter(w => w.length > 1);
+    const cClean = c.name.split(',')[0].trim().toLowerCase();
 
-    // Count how many query words appear in candidate
-    const queryHits = queryWords.filter(w => cNorm.includes(w)).length;
-    // Count how many candidate words appear in query
-    const candHits = cWords.filter(w => queryNorm.includes(w)).length;
-    // Combined score weighted by both directions
-    const score = (queryWords.length > 0 ? queryHits / queryWords.length : 0)
-                + (cWords.length > 0 ? candHits / cWords.length : 0);
+    // Exact match on hotel name part
+    if (queryClean === cClean) return c;
+
+    // Check containment in both directions
+    const qInC = cClean.includes(queryClean) ? 1 : 0;
+    const cInQ = queryClean.includes(cClean) ? 1 : 0;
+    const score = qInC + cInQ;
 
     if (score > bestScore) {
       bestScore = score;
@@ -106,8 +105,7 @@ function findBestMatch(query: string, candidates: Candidate[]): Candidate | null
     }
   }
 
-  // Only auto-select if reasonable match (at least 50% of query words matched)
-  if (bestMatch && bestScore >= 0.8) return bestMatch;
+  if (bestMatch && bestScore >= 1) return bestMatch;
   return null;
 }
 
