@@ -194,15 +194,15 @@ function SearchResults() {
         )
       )}
 
-      {/* VPN tip */}
-      {selectedKey && <VpnTip hotelName={selectedName || hotel} />}
-
-      {/* Disclaimer */}
-      <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-center">
-        <p className="text-gray-500 text-xs">
-          表示価格は各予約サイトの掲載価格であり、RyokoAIは正確性や最新性を保証しません。予約前に必ずリンク先で最終価格をご確認ください。
+      {/* Disclaimer — right after prices */}
+      <div className="bg-gray-100 border border-gray-300 rounded-xl px-4 py-3 text-center">
+        <p className="text-gray-700 text-xs font-medium">
+          表示価格は各予約サイトの掲載価格です。予約前に必ずリンク先で最終価格をご確認ください。
         </p>
       </div>
+
+      {/* VPN tip */}
+      {selectedKey && <VpnTip hotelName={selectedName || hotel} />}
     </div>
   );
 }
