@@ -154,6 +154,11 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
         return fetch(`${base}&phase=prices&id=${encodeURIComponent(data.hotel_id)}&loc=${data.location_code || 2392}`, { signal: controller.signal })
           .then(r => r.json())
           .then(priceData => {
+            if (priceData.error) {
+              setError(priceData.error);
+              setLoadingPrices(false);
+              return;
+            }
             if (priceData.hotel_name) setHotelTitle(priceData.hotel_name);
             setPrices(priceData.prices || []);
             setLoadingPrices(false);

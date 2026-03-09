@@ -1,6 +1,5 @@
 import LoginForm from '@/components/auth/LoginForm'
 import Link from 'next/link'
-import Image from 'next/image'
 
 export const metadata = {
   title: 'ログイン | RyokoAI',

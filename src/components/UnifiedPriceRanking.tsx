@@ -202,8 +202,8 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
 
       {prices.length > 0 && (
         <div>
-          {best && savings > 0 && (
-            <a href={best.link || '#'} target="_blank" rel="noopener noreferrer" className="block bg-emerald-50 px-5 py-3 border-b border-emerald-100 hover:bg-emerald-100/60 transition-colors">
+          {best && savings > 0 && best.link && (
+            <a href={best.link} target="_blank" rel="noopener noreferrer" className="block bg-emerald-50 px-5 py-3 border-b border-emerald-100 hover:bg-emerald-100/60 transition-colors">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-emerald-600 text-sm font-bold">{best.source}</span>

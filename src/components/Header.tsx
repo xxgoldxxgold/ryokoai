@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { useAuth } from '@/lib/useAuth';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
