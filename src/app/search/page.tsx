@@ -168,21 +168,24 @@ function SearchResults() {
     setSelectedKey(null);
     setSelectedName(null);
 
+    // Strip address parts after first comma for better matching
+    const hotelNameOnly = hotel.split(',')[0].trim();
+
     // Use VPS API (returns Japanese names from tripadvisor.jp)
-    fetch(`https://vpn.ryokoai.com/suggest.php?q=${encodeURIComponent(hotel)}`)
+    fetch(`https://vpn.ryokoai.com/suggest.php?q=${encodeURIComponent(hotelNameOnly)}`)
       .then((res) => res.json())
       .then((results: Candidate[]) => {
         if (results.length > 0) {
           setCandidates(results);
-          // Find best match by scoring against input
-          const best = findBestMatch(hotel, results);
+          // Find best match by scoring against input (use name without address)
+          const best = findBestMatch(hotelNameOnly, results);
           if (best) {
             setSelectedKey(best.hotel_key);
             setSelectedName(best.name);
           }
         } else {
           // Fallback to original API (English names → convert to Japanese)
-          return fetch(`/api/hotel-search?query=${encodeURIComponent(hotel)}`)
+          return fetch(`/api/hotel-search?query=${encodeURIComponent(hotelNameOnly)}`)
             .then((res) => res.json())
             .then((data) => {
               const cands: Candidate[] = (data.candidates || []).map((c: Candidate) => ({
@@ -190,7 +193,7 @@ function SearchResults() {
                 name: englishToJapanese(c.name),
               }));
               setCandidates(cands);
-              const best = findBestMatch(hotel, cands);
+              const best = findBestMatch(hotelNameOnly, cands);
               if (best) {
                 setSelectedKey(best.hotel_key);
                 setSelectedName(best.name);
