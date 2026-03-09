@@ -104,7 +104,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
           .catch(() => [] as PriceEntry[])
       : Promise.resolve([] as PriceEntry[]);
 
-    const serpPromise = fetch(`/api/google-hotels?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}&currency=USD`)
+    const serpPromise = fetch(`https://vpn.ryokoai.com/hotel-serpapi.php?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}&currency=USD`)
       .then(r => r.json())
       .then(data => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -138,7 +138,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
       .finally(() => setSerpDone(true));
 
     // Fetch DataForSEO (slow) — merge into existing on arrival
-    fetch(`/api/dataforseo-hotels?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}`)
+    fetch(`https://vpn.ryokoai.com/hotel-prices.php?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}`)
       .then(r => r.json())
       .then(data => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
