@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
     const data = await res.json();
 
     if (data.error) {
-      return NextResponse.json({ error: data.error.message || 'Xotelo API error', rates: [] }, { status: 200 });
+      return NextResponse.json({ error: data.error.message || 'Xotelo API error', rates: [] }, { status: 502 });
     }
 
     return NextResponse.json({
@@ -40,6 +40,6 @@ export async function GET(req: NextRequest) {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ error: message, rates: [] }, { status: 200 });
+    return NextResponse.json({ error: message, rates: [] }, { status: 500 });
   }
 }

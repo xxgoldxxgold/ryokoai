@@ -18,6 +18,7 @@ export default function HotelScrapePage() {
   const [hotelName, setHotelName] = useState('AYANA Resort Bali');
   const [checkin, setCheckin] = useState('2026-05-10');
   const [checkout, setCheckout] = useState('2026-05-11');
+  const [adults, setAdults] = useState(2);
   const [currency, setCurrency] = useState('JPY');
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(false);
@@ -36,7 +37,7 @@ export default function HotelScrapePage() {
 
     try {
       // 1. Start run
-      const startData = await api({ hotelName, checkIn: checkin, checkOut: checkout, currency, adults: 2 });
+      const startData = await api({ hotelName, checkIn: checkin, checkOut: checkout, currency, adults });
       if (startData.error) { setError(startData.error); return; }
       const { runId, datasetId } = startData;
 
@@ -86,7 +87,7 @@ export default function HotelScrapePage() {
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base"
                 placeholder="例: AYANA Resort Bali, Marina Bay Sands..." />
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">チェックイン</label>
                 <input type="date" value={checkin} onChange={e => setCheckin(e.target.value)}
@@ -96,6 +97,13 @@ export default function HotelScrapePage() {
                 <label className="block text-sm font-medium text-gray-600 mb-1">チェックアウト</label>
                 <input type="date" value={checkout} onChange={e => setCheckout(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">人数</label>
+                <select value={adults} onChange={e => setAdults(Number(e.target.value))}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                  {[1,2,3,4].map(n => <option key={n} value={n}>{n}名</option>)}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">通貨</label>

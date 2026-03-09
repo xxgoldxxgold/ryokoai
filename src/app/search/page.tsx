@@ -157,6 +157,7 @@ function SearchResults() {
   const [selectedKey, setSelectedKey] = useState<string | null>(directKey);
   const [selectedName, setSelectedName] = useState<string | null>(hotelDisplayName);
   const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
   useEffect(() => {
     if (directKey || !hotel) return;
@@ -164,6 +165,7 @@ function SearchResults() {
     setCandidates([]);
     setSelectedKey(null);
     setSelectedName(null);
+    setSearchError(null);
 
     // Strip address parts after first comma for better matching
     const hotelNameOnly = hotel.split(',')[0].trim();
@@ -201,7 +203,7 @@ function SearchResults() {
             });
         }
       })
-      .catch(() => {})
+      .catch(() => { setSearchError('ホテル情報の取得に失敗しました。もう一度お試しください。'); })
       .finally(() => setSearching(false));
   }, [hotel, directKey]);
 
@@ -272,8 +274,15 @@ function SearchResults() {
         </div>
       )}
 
+      {/* Search error */}
+      {searchError && (
+        <div className="bg-red-50 border border-red-200 rounded-2xl px-5 py-4 shadow-sm">
+          <p className="text-red-600 text-sm">{searchError}</p>
+        </div>
+      )}
+
       {/* No results */}
-      {!searching && !directKey && !selectedKey && candidates.length === 0 && (
+      {!searching && !searchError && !directKey && !selectedKey && candidates.length === 0 && (
         <div className="bg-white border border-gray-200 rounded-2xl px-5 py-4 shadow-sm">
           <p className="text-gray-400 text-sm">
             ホテルが見つかりませんでした。TripAdvisorのURLを直接入力してみてください。

@@ -234,14 +234,16 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
                 最高値より ¥{(worst.price - best.price).toLocaleString()}お得
                 （{Math.round(((worst.price - best.price) / worst.price) * 100)}%OFF）
               </p>
-              <a
-                href={buildLink(best.ota, best.flag, hotelName, checkin, checkout, adults, rooms)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block mt-2 bg-emerald-500/20 text-emerald-400 text-xs font-medium px-3 py-1.5 rounded hover:bg-emerald-500/30 transition-colors"
-              >
-                {best.otaName}で予約する →
-              </a>
+              {buildLink(best.ota, best.flag, hotelName, checkin, checkout, adults, rooms) !== '#' && (
+                <a
+                  href={buildLink(best.ota, best.flag, hotelName, checkin, checkout, adults, rooms)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block mt-2 bg-emerald-500/20 text-emerald-400 text-xs font-medium px-3 py-1.5 rounded hover:bg-emerald-500/30 transition-colors"
+                >
+                  {best.otaName}で予約する →
+                </a>
+              )}
             </div>
           )}
 
@@ -251,13 +253,13 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
               const flag = FLAG_EMOJI[p.flag] || p.flag;
               const isBest = i === 0;
               const link = buildLink(p.ota, p.flag, hotelName, checkin, checkout, adults, rooms);
+              const Tag = link !== '#' ? 'a' : 'div';
+              const linkProps = link !== '#' ? { href: link, target: '_blank', rel: 'noopener noreferrer' } : {};
 
               return (
-                <a
+                <Tag
                   key={p.ota + '-' + p.country}
-                  href={link}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  {...linkProps}
                   className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${
                     isBest
                       ? 'bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/15'
@@ -280,7 +282,7 @@ export default function GeoPriceComparison({ hotelName, checkin, checkout, adult
                     </span>
                     <span className="text-white/20 text-[10px]">→</span>
                   </div>
-                </a>
+                </Tag>
               );
             })}
           </div>

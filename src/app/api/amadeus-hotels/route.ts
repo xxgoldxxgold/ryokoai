@@ -142,6 +142,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ offers });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ error: message, offers: [] }, { status: 200 });
+    return NextResponse.json({ error: message, offers: [] }, { status: 500 });
   }
 }
