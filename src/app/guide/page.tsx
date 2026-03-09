@@ -10,6 +10,9 @@ export default function GuidePage() {
   return (
     <div className="px-4 py-12 max-w-2xl mx-auto space-y-10">
       <div className="space-y-3">
+        <Link href="/" className="inline-flex items-center gap-1 text-sm text-blue-700 hover:text-blue-900 transition-colors">
+          ← トップへ戻る
+        </Link>
         <h1 className="text-gray-900 font-bold text-2xl">予約サイト比較でホテルを安く予約する方法</h1>
         <p className="text-gray-500 text-sm leading-relaxed">
           同じホテル、同じ日程でも、予約サイトによって価格が大きく異なります。
