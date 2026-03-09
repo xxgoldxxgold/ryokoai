@@ -202,7 +202,7 @@ export default function Header() {
             Ryoko<span className="text-blue-700">AI</span>
           </Link>
           <nav className="flex items-center gap-4 text-sm">
-            <Link href="/guide" className="text-gray-400 hover:text-gray-700 transition-colors">
+            <Link href="/guide" className="text-gray-900 hover:text-gray-700 transition-colors">
               説明
             </Link>
             {!loading && (
