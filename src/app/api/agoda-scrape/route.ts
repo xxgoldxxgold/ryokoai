@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const VPS_URL = 'https://denwa2.com/proxy-scrape/scrape-agoda';
-const API_KEY = 'ryokoai_scraper_2026';
+const VPS_URL = process.env.AGODA_SCRAPE_URL || '';
+const API_KEY = process.env.AGODA_SCRAPE_KEY || '';
 
 export async function POST(req: NextRequest) {
   try {

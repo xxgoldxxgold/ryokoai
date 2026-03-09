@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const DATAFORSEO_AUTH = process.env.DATAFORSEO_AUTH || 'eEB4LmdvbGQ6ZDg1ZjM5MDQwZDg1OGVkNw==';
+const DATAFORSEO_AUTH = process.env.DATAFORSEO_AUTH || '';
 
 const idCache = new Map<string, { id: string; title: string; basePrice: number; locationCode: number; expires: number }>();
 

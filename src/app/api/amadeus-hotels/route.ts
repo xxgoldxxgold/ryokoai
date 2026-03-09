@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const AMADEUS_KEY = process.env.AMADEUS_KEY || 'h92HUKbKofSlZSPjQc6B0qiCk5AuybP4';
-const AMADEUS_SECRET = process.env.AMADEUS_SECRET || 'zAxccfx7G0yHC9zs';
+const AMADEUS_KEY = process.env.AMADEUS_KEY || '';
+const AMADEUS_SECRET = process.env.AMADEUS_SECRET || '';
 const AMADEUS_BASE = 'https://test.api.amadeus.com';
 
 let cachedToken: { token: string; expires: number } | null = null;
