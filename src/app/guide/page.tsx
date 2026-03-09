@@ -30,7 +30,7 @@ export default function GuidePage() {
             仕入れ価格、手数料率、販促キャンペーンが異なるため、同じ部屋でもサイトごとに価格が変わります。
           </p>
           <p>
-            差額は<strong className="text-gray-900">数十ドル（数千円）</strong>に及ぶことも珍しくありません。
+            差額は<strong className="text-gray-900">数千円〜1万円以上</strong>になることも珍しくありません。
             比較せずに予約するのは、お金を捨てているようなものです。
           </p>
         </div>
@@ -44,20 +44,20 @@ export default function GuidePage() {
           <div className="space-y-1.5 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-500">Agoda</span>
-              <span className="text-emerald-600 font-semibold">$251</span>
+              <span className="text-emerald-600 font-semibold">¥37,648</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Trip.com</span>
-              <span className="text-gray-700">$256</span>
+              <span className="text-gray-700">¥38,397</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Booking.com</span>
-              <span className="text-gray-700">$336</span>
+              <span className="text-gray-700">¥50,397</span>
             </div>
             <div className="h-px bg-gray-200 my-2" />
             <div className="flex justify-between">
               <span className="text-gray-500">予約サイト間の最大差額</span>
-              <span className="text-amber-600 font-semibold">$85 (25%)</span>
+              <span className="text-amber-600 font-semibold">¥12,749 (25%)</span>
             </div>
           </div>
           <p className="text-gray-400 text-xs">
