@@ -267,14 +267,20 @@ function SearchResults() {
       {/* Price ranking — branch by auth state */}
       {!authLoading && selectedKey && checkin && checkout && (
         isLoggedIn ? (
-          <UnifiedPriceRanking
-            hotelName={selectedName || hotel}
-            hotelKey={selectedKey}
-            checkin={checkin}
-            checkout={checkout}
-            adults={adults}
-            rooms={rooms}
-          />
+          <>
+            <div className="bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-200 rounded-2xl px-5 py-4 shadow-sm">
+              <p className="text-amber-900 font-bold text-sm">RyokoAIに登録してくれたメンバー様向けの激安価格をご提供</p>
+              <p className="text-amber-700 text-xs mt-0.5">ご利用になる方はこちらから。ご利用は自己責任で。</p>
+            </div>
+            <UnifiedPriceRanking
+              hotelName={selectedName || hotel}
+              hotelKey={selectedKey}
+              checkin={checkin}
+              checkout={checkout}
+              adults={adults}
+              rooms={rooms}
+            />
+          </>
         ) : (
           <>
             <SpeedPromoBanner />
@@ -295,8 +301,8 @@ function SearchResults() {
         </p>
       </div>
 
-      {/* VPN tip */}
-      <VpnTip hotelName={selectedName || hotel} />
+      {/* VPN tip — only for non-logged-in users */}
+      {!isLoggedIn && <VpnTip hotelName={selectedName || hotel} />}
     </div>
   );
 }
