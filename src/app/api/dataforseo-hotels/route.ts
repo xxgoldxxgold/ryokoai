@@ -137,8 +137,8 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const locationCodes = detectLocationCode(hotelName);
-    const searchNames = cleanHotelName(hotelName);
+    const locationCodes = detectLocationCode(hotelName).slice(0, 2);
+    const searchNames = cleanHotelName(hotelName).slice(0, 1);
     const langCode = detectLanguage(hotelName);
     let found = false;
 
@@ -147,7 +147,7 @@ export async function GET(req: NextRequest) {
       for (const locCode of locationCodes) {
         try {
           const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(), 15000);
+          const timeout = setTimeout(() => controller.abort(), 8000);
           const res = await fetch('https://api.dataforseo.com/v3/business_data/google/hotel_searches/live', {
             method: 'POST',
             signal: controller.signal,
@@ -200,7 +200,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const controller2 = new AbortController();
-    const timeout2 = setTimeout(() => controller2.abort(), 15000);
+    const timeout2 = setTimeout(() => controller2.abort(), 10000);
     const infoRes = await fetch('https://api.dataforseo.com/v3/business_data/google/hotel_info/live/advanced', {
       method: 'POST',
       signal: controller2.signal,
