@@ -217,15 +217,32 @@ function SearchResults() {
   const nights = daysBetween(checkin, checkout);
   const displayName = selectedName || hotel;
 
+  const [showEditForm, setShowEditForm] = useState(false);
+
   return (
     <div className="px-4 py-8 max-w-2xl mx-auto space-y-6">
       {/* Search summary */}
-      <div className="bg-white border border-gray-200 rounded-2xl px-5 py-4 shadow-sm">
-        <h1 className="text-gray-900 font-bold text-lg">{displayName}</h1>
-        <p className="text-gray-400 text-sm mt-0.5">
-          {checkin} ~ {checkout}（{nights}泊）/ {adults}名 / {rooms}室
-        </p>
-      </div>
+      <button
+        onClick={() => setShowEditForm(!showEditForm)}
+        className="w-full text-left bg-white border border-gray-200 rounded-2xl px-5 py-4 shadow-sm hover:bg-gray-50 transition-colors"
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-gray-900 font-bold text-lg">{displayName}</h1>
+            <p className="text-gray-400 text-sm mt-0.5">
+              {checkin} ~ {checkout}（{nights}泊）/ {adults}名 / {rooms}室
+            </p>
+          </div>
+          <svg className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${showEditForm ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </button>
+      {showEditForm && (
+        <div className="bg-white border border-gray-200 rounded-2xl px-5 py-4 shadow-sm">
+          <SearchForm />
+        </div>
+      )}
 
       {/* Hotel search status */}
       {searching && (
