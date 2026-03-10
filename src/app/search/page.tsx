@@ -313,6 +313,14 @@ function SearchResults() {
           <>
             <SpeedPromoBanner />
 
+            <UnifiedPriceRanking
+              hotelName={selectedName || hotel}
+              hotelKey={selectedKey}
+              checkin={checkin}
+              checkout={checkout}
+              adults={adults}
+              rooms={rooms}
+            />
             <DataForSeoPricePanel
               hotelName={selectedName || hotel}
               checkin={checkin}
