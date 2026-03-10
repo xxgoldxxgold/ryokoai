@@ -96,11 +96,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
         const raw = (data.prices || []).filter((p: any) => p.rate > 0);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return raw.map((p: any) => {
-          // Google click-through links lead to search pages showing wrong hotels — remove them
-          let link = p.link as string | null;
-          if (link && link.includes('google.com/aclk')) {
-            link = null;
-          }
+          const link = p.link as string | null;
           return { source: p.source, link, rate: p.rate, rateWithTax: p.rateWithTax || 0, from: 'serpapi' as const };
         }) as PriceEntry[];
       })
