@@ -92,12 +92,26 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
     const serpPromise = fetch(`https://vpn.ryokoai.com/hotel-serpapi.php?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}&currency=JPY`, { signal })
       .then(r => r.json())
       .then(data => {
+        const serpHotelName = data.hotel_name || hotelName.split(',')[0].trim();
+        const encodedName = encodeURIComponent(serpHotelName);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const raw = (data.prices || []).filter((p: any) => p.rate > 0);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return raw.map((p: any) => ({
-          source: p.source, link: p.link, rate: p.rate, rateWithTax: p.rateWithTax || 0, from: 'serpapi' as const,
-        })) as PriceEntry[];
+        return raw.map((p: any) => {
+          // Replace Google click-through links with direct OTA search URLs
+          let link = p.link as string | null;
+          if (link && link.includes('google.com/aclk')) {
+            const src = (p.source as string).toLowerCase();
+            if (src.includes('booking')) link = `https://www.booking.com/searchresults.ja.html?ss=${encodedName}&checkin=${checkin}&checkout=${checkout}&group_adults=${adults}&lang=ja&selected_currency=JPY`;
+            else if (src.includes('agoda')) link = `https://www.agoda.com/ja-jp/search?q=${encodedName}&checkIn=${checkin}&checkOut=${checkout}&adults=${adults}&currency=JPY`;
+            else if (src.includes('expedia')) link = `https://www.expedia.co.jp/Hotel-Search?destination=${encodedName}&startDate=${checkin}&endDate=${checkout}&adults=${adults}&currency=JPY`;
+            else if (src.includes('hotels.com')) link = `https://jp.hotels.com/Hotel-Search?destination=${encodedName}&startDate=${checkin}&endDate=${checkout}&rooms=1&adults=${adults}&currency=JPY`;
+            else if (src.includes('trip.com') || src === 'trip') link = `https://jp.trip.com/hotels/list?keyword=${encodedName}&checkin=${checkin}&checkout=${checkout}&adult=${adults}&curr=JPY`;
+            else if (src.includes('skyscanner')) link = `https://www.skyscanner.jp/hotels?query=${encodedName}&checkin=${checkin}&checkout=${checkout}&adults=${adults}`;
+            else link = null; // Remove unreliable Google redirect links
+          }
+          return { source: p.source, link, rate: p.rate, rateWithTax: p.rateWithTax || 0, from: 'serpapi' as const };
+        }) as PriceEntry[];
       })
       .catch(() => [] as PriceEntry[]);
 

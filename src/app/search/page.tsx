@@ -378,7 +378,14 @@ function SearchResults() {
         </p>
       </div>
 
-      {/* VPN tip removed — login prompt already shown via SpeedPromoBanner */}
+      {/* Debug info — shows what hotel was matched */}
+      <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs text-gray-500 space-y-1">
+        <p>検索クエリ: {hotel?.split(',')[0].trim()}</p>
+        <p>マッチしたホテル: {selectedName?.split(',')[0].trim() || '未選択'}</p>
+        <p>ホテルキー: {selectedKey || directKey || 'なし'}</p>
+        <p>候補数: {candidates.length} / ソース: {directKey ? 'URL直接' : candidates.length > 0 ? 'suggest.php' : 'なし'}</p>
+        <p>認証状態: {authLoading ? '読み込み中' : isLoggedIn ? 'ログイン済み' : '未ログイン'}</p>
+      </div>
     </div>
   );
 }
