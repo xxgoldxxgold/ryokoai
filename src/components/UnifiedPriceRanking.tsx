@@ -58,30 +58,15 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
   const prevParamsRef = useRef('');
 
   const paramsKey = `${hotelName}|${checkin}|${checkout}|${adults}|${rooms}`;
-  const cacheKey = `ryoko_prices_${paramsKey}`;
 
   useEffect(() => {
     if (!hotelName || !checkin || !checkout) return;
     if (prevParamsRef.current === paramsKey) return;
     prevParamsRef.current = paramsKey;
 
-    // Restore cached prices instantly to avoid flicker
-    try {
-      const cached = sessionStorage.getItem(cacheKey);
-      if (cached) {
-        const parsed = JSON.parse(cached) as PriceEntry[];
-        setPrices(parsed);
-        serpRef.current = parsed;
-        setLoading(false);
-      } else {
-        setPrices([]);
-        setLoading(true);
-      }
-    } catch {
-      setPrices([]);
-      setLoading(true);
-    }
-
+    // Always start fresh — no sessionStorage cache (prevents stale hotel data)
+    setPrices([]);
+    setLoading(true);
     setSerpDone(false);
     setDfsDone(false);
     serpRef.current = [];
@@ -132,7 +117,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
         serpRef.current = d;
         setPrices(d);
         setLoading(false);
-        try { sessionStorage.setItem(cacheKey, JSON.stringify(d)); } catch {}
+        // No sessionStorage cache — always fetch fresh to prevent stale hotel data
       })
       .catch(() => setLoading(false))
       .finally(() => setSerpDone(true));

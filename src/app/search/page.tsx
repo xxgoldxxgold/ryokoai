@@ -160,8 +160,19 @@ function SearchResults() {
   const [searchError, setSearchError] = useState<string | null>(null);
   const [showEditForm, setShowEditForm] = useState(false);
 
+  // Clear stale price caches when search params change
+  useEffect(() => {
+    try {
+      const keys = Object.keys(sessionStorage);
+      for (const k of keys) {
+        if (k.startsWith('ryoko_prices_')) sessionStorage.removeItem(k);
+      }
+    } catch { /* ignore */ }
+  }, [hotel, checkin, checkout, adults, rooms]);
+
   useEffect(() => {
     if (directKey || !hotel) return;
+    const controller = new AbortController();
     setSearching(true);
     setCandidates([]);
     setSelectedKey(null);
@@ -172,7 +183,7 @@ function SearchResults() {
     const hotelNameOnly = hotel.split(',')[0].trim();
 
     // Use VPS API (returns Japanese names from tripadvisor.jp)
-    fetch(`https://vpn.ryokoai.com/suggest.php?q=${encodeURIComponent(hotelNameOnly)}`)
+    fetch(`https://vpn.ryokoai.com/suggest.php?q=${encodeURIComponent(hotelNameOnly)}`, { signal: controller.signal })
       .then((res) => res.json())
       .then((results: Candidate[]) => {
         if (results.length > 0) {
@@ -185,7 +196,7 @@ function SearchResults() {
           }
         } else {
           // Fallback to original API (English names → convert to Japanese)
-          return fetch(`/api/hotel-search?query=${encodeURIComponent(hotelNameOnly)}`)
+          return fetch(`/api/hotel-search?query=${encodeURIComponent(hotelNameOnly)}`, { signal: controller.signal })
             .then((res) => res.json())
             .then((data) => {
               const cands: Candidate[] = (data.candidates || []).map((c: Candidate) => ({
@@ -204,8 +215,13 @@ function SearchResults() {
             });
         }
       })
-      .catch(() => { setSearchError('ホテル情報の取得に失敗しました。もう一度お試しください。'); })
+      .catch((e) => {
+        if (e.name === 'AbortError') return;
+        setSearchError('ホテル情報の取得に失敗しました。もう一度お試しください。');
+      })
       .finally(() => setSearching(false));
+
+    return () => controller.abort();
   }, [hotel, directKey]);
 
   if (!hotel || !checkin || !checkout) {
@@ -253,20 +269,33 @@ function SearchResults() {
         </div>
       )}
 
-      {/* Candidate selection — only when auto_select was false */}
-      {!searching && candidates.length > 1 && !selectedKey && (
+      {/* Candidate selection — always show when multiple candidates exist */}
+      {!searching && candidates.length > 1 && (
         <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-3">
           <h3 className="text-gray-900 font-bold text-sm">
-            該当するホテルを選択してください（{candidates.length}件）
+            {selectedKey ? '検索対象ホテル（変更可）' : '該当するホテルを選択してください'}（{candidates.length}件）
           </h3>
           <div className="space-y-2">
             {candidates.map((c) => (
               <button
                 key={c.hotel_key}
                 onClick={() => { setSelectedKey(c.hotel_key); setSelectedName(c.name); }}
-                className="w-full text-left px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 hover:bg-blue-100 hover:border-blue-300 transition-colors"
+                className={`w-full text-left px-4 py-3 rounded-xl border transition-colors ${
+                  c.hotel_key === selectedKey
+                    ? 'bg-blue-50 border-blue-300 ring-1 ring-blue-200'
+                    : 'bg-gray-50 border-gray-200 hover:bg-blue-100 hover:border-blue-300'
+                }`}
               >
-                <span className="text-gray-900 text-sm">{c.name}</span>
+                <div className="flex items-center gap-2">
+                  {c.hotel_key === selectedKey && (
+                    <svg className="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                  <span className={`text-sm ${c.hotel_key === selectedKey ? 'text-blue-900 font-medium' : 'text-gray-900'}`}>
+                    {c.name.split(',')[0].trim()}
+                  </span>
+                </div>
               </button>
             ))}
           </div>
