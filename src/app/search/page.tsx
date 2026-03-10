@@ -269,8 +269,8 @@ function SearchResults() {
         </div>
       )}
 
-      {/* Candidate selection — always show when multiple candidates exist */}
-      {!searching && candidates.length > 1 && (
+      {/* Candidate selection — only show when no auto-match found */}
+      {!searching && candidates.length > 1 && !selectedKey && (
         <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-3">
           <h3 className="text-gray-900 font-bold text-sm">
             {selectedKey ? '検索対象ホテル（変更可）' : '該当するホテルを選択してください'}（{candidates.length}件）
@@ -378,14 +378,6 @@ function SearchResults() {
         </p>
       </div>
 
-      {/* Debug info — shows what hotel was matched */}
-      <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs text-gray-500 space-y-1">
-        <p>検索クエリ: {hotel?.split(',')[0].trim()}</p>
-        <p>マッチしたホテル: {selectedName?.split(',')[0].trim() || '未選択'}</p>
-        <p>ホテルキー: {selectedKey || directKey || 'なし'}</p>
-        <p>候補数: {candidates.length} / ソース: {directKey ? 'URL直接' : candidates.length > 0 ? 'suggest.php' : 'なし'}</p>
-        <p>認証状態: {authLoading ? '読み込み中' : isLoggedIn ? 'ログイン済み' : '未ログイン'}</p>
-      </div>
     </div>
   );
 }
