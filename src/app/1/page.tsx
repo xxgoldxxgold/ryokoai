@@ -1,192 +1,186 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
-interface PriceInfo { provider: string; price: number; link: string; }
-interface Hotel { title: string; thumbnail: string; address: string; rating: number; reviews: number; prices: PriceInfo[]; priceRange: string; }
-
-async function api(body: Record<string, unknown>) {
-  const res = await fetch('/api/proxy-scrape', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  return res.json();
+interface GeoResult {
+  country: string;
+  country_name: string;
+  original_price?: number;
+  currency?: string;
+  jpy_price?: number;
+  error?: string;
 }
 
-export default function HotelScrapePage() {
-  const [hotelName, setHotelName] = useState('AYANA Resort Bali');
-  const [checkin, setCheckin] = useState(() => new Date().toISOString().slice(0, 10));
-  const [checkout, setCheckout] = useState(() => new Date(Date.now() + 86400000).toISOString().slice(0, 10));
-  const [adults, setAdults] = useState(2);
-  const [currency, setCurrency] = useState('JPY');
-  const [hotels, setHotels] = useState<Hotel[]>([]);
+const FLAG: Record<string, string> = {
+  vn:'🇻🇳',pl:'🇵🇱',th:'🇹🇭',ph:'🇵🇭',id:'🇮🇩',br:'🇧🇷',us:'🇺🇸',jp:'🇯🇵',kr:'🇰🇷',tw:'🇹🇼',
+  'in':'🇮🇳',my:'🇲🇾',mx:'🇲🇽',tr:'🇹🇷',eg:'🇪🇬',ar:'🇦🇷',za:'🇿🇦',ro:'🇷🇴',hu:'🇭🇺',cz:'🇨🇿',
+  bg:'🇧🇬',co:'🇨🇴',pe:'🇵🇪',cl:'🇨🇱',pk:'🇵🇰',bd:'🇧🇩',lk:'🇱🇰',de:'🇩🇪',fr:'🇫🇷',gb:'🇬🇧',
+  it:'🇮🇹',es:'🇪🇸',au:'🇦🇺',ca:'🇨🇦',sg:'🇸🇬',hk:'🇭🇰',
+};
+
+const CURR_SYM: Record<string, string> = {
+  JPY:'¥',USD:'$',EUR:'€',GBP:'£',KRW:'₩',THB:'฿',VND:'₫',IDR:'Rp',INR:'₹',
+  MXN:'$',TRY:'₺',BRL:'R$',ARS:'$',PLN:'zł',HUF:'Ft',CZK:'Kč',BGN:'лв',
+  CLP:'$',COP:'$',PEN:'S/',PKR:'₨',BDT:'৳',LKR:'₨',MYR:'RM',PHP:'₱',
+  EGP:'E£',ZAR:'R',RON:'lei',AUD:'A$',CAD:'C$',SGD:'S$',HKD:'HK$',TWD:'NT$',
+};
+
+export default function GeoPricingPage() {
+  const [hotelName, setHotelName] = useState('Dusit Beach Resort Guam');
+  const [checkin, setCheckin] = useState(() => {
+    const d = new Date(); d.setDate(d.getDate() + 1);
+    return d.toISOString().slice(0, 10);
+  });
+  const [checkout, setCheckout] = useState(() => {
+    const d = new Date(); d.setDate(d.getDate() + 2);
+    return d.toISOString().slice(0, 10);
+  });
+  const [results, setResults] = useState<GeoResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [elapsed, setElapsed] = useState(0);
-  const [statusMsg, setStatusMsg] = useState('');
-
-  const currencies = ['JPY', 'USD', 'IDR', 'THB', 'VND', 'KRW', 'EUR'];
-  const sym = (c: string) => ({ JPY: '¥', USD: '$', IDR: 'Rp', THB: '฿', VND: '₫', KRW: '₩', EUR: '€' }[c] || c + ' ');
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const handleSearch = async () => {
-    if (!hotelName.trim()) { setError('ホテル名を入力してください'); return; }
-    setLoading(true); setError(''); setHotels([]); setElapsed(0); setStatusMsg('起動中...');
+    if (!hotelName.trim()) return;
+    setLoading(true);
+    setError('');
+    setResults([]);
+    setElapsed(0);
+
     const start = Date.now();
-    const timer = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 1000);
+    timerRef.current = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 500);
 
     try {
-      // 1. Start run
-      const startData = await api({ hotelName, checkIn: checkin, checkOut: checkout, currency, adults });
-      if (startData.error) { setError(startData.error); return; }
-      const { runId, datasetId } = startData;
-
-      // 2. Poll status from frontend
-      setStatusMsg('スクレイピング中...');
-      let status = 'RUNNING';
-      for (let i = 0; i < 60; i++) {
-        await new Promise(r => setTimeout(r, 5000));
-        const statusData = await api({ action: 'status', runId });
-        status = statusData.status;
-        if (statusData.statusMessage) setStatusMsg(statusData.statusMessage);
-        if (status === 'SUCCEEDED' || status === 'FAILED' || status === 'ABORTED') break;
+      const params = new URLSearchParams({
+        q: hotelName.trim(),
+        checkin,
+        checkout,
+      });
+      const res = await fetch(`https://vpn.ryokoai.com/geo-prices.php?${params}`);
+      const data = await res.json();
+      if (data.error) {
+        setError(data.error);
+      } else {
+        setResults(data.results || []);
       }
-
-      if (status !== 'SUCCEEDED') {
-        setError(`スクレイピングが失敗しました (${status})`);
-        return;
-      }
-
-      // 3. Get results
-      setStatusMsg('結果を取得中...');
-      const resultData = await api({ action: 'results', datasetId });
-      setHotels(resultData.hotels || []);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : '通信エラー');
+    } catch {
+      setError('通信エラーが発生しました');
     } finally {
-      clearInterval(timer); setLoading(false); setStatusMsg('');
+      if (timerRef.current) clearInterval(timerRef.current);
+      setLoading(false);
     }
   };
 
+  const priced = results.filter(r => r.jpy_price);
+  const cheapest = priced.length > 0 ? priced[0].jpy_price! : 0;
+  const jpPrice = results.find(r => r.country === 'jp')?.jpy_price;
+  const savings = jpPrice && cheapest ? jpPrice - cheapest : 0;
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-gradient-to-r from-blue-900 to-blue-950 p-4 text-white shadow-lg">
-        <div className="container mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold">🏨 Hotel Price <span className="text-yellow-400">Scanner</span></h1>
-          <span className="text-xs bg-blue-950/50 px-3 py-1 rounded-full border border-blue-600/50">複数サイトの価格を一括比較</span>
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800">
+      <nav className="bg-slate-900/80 backdrop-blur border-b border-slate-700 px-4 py-4">
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
+          <h1 className="text-white font-bold text-lg">GeoPrice Scanner</h1>
+          <span className="text-slate-400 text-xs">世界最安値を探す</span>
         </div>
       </nav>
 
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="space-y-4">
+      <main className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+        <div className="bg-slate-800 rounded-2xl border border-slate-700 p-5 space-y-4">
+          <input
+            type="text"
+            value={hotelName}
+            onChange={e => setHotelName(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && !loading && handleSearch()}
+            placeholder="ホテル名（英語）"
+            className="w-full px-4 py-3 rounded-xl bg-slate-700 border border-slate-600 text-white placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">ホテル名 / 地域</label>
-              <input type="text" value={hotelName} onChange={e => setHotelName(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSearch()}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base"
-                placeholder="例: AYANA Resort Bali, Marina Bay Sands..." />
+              <label className="block text-xs text-slate-400 mb-1">チェックイン</label>
+              <input type="date" value={checkin} onChange={e => setCheckin(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
-            <div className="grid grid-cols-4 gap-4">
+            <div>
+              <label className="block text-xs text-slate-400 mb-1">チェックアウト</label>
+              <input type="date" value={checkout} onChange={e => setCheckout(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+          <button
+            onClick={handleSearch}
+            disabled={loading}
+            className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white font-bold text-sm transition-colors"
+          >
+            {loading ? `検索中... (${elapsed}秒)` : '世界最安値を検索'}
+          </button>
+        </div>
+
+        {error && (
+          <div className="bg-red-900/30 border border-red-700 rounded-xl px-4 py-3 text-red-300 text-sm">{error}</div>
+        )}
+
+        {priced.length > 0 && savings > 0 && (
+          <div className="bg-emerald-900/30 border border-emerald-700 rounded-2xl px-5 py-4">
+            <div className="flex items-center justify-between">
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">チェックイン</label>
-                <input type="date" value={checkin} onChange={e => setCheckin(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                <p className="text-emerald-400 text-xs font-medium">最安値（{priced[0].country_name}）</p>
+                <p className="text-emerald-300 text-2xl font-bold mt-1">¥{cheapest.toLocaleString()}</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">チェックアウト</label>
-                <input type="date" value={checkout} onChange={e => setCheckout(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">人数</label>
-                <select value={adults} onChange={e => setAdults(Number(e.target.value))}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                  {[1,2,3,4].map(n => <option key={n} value={n}>{n}名</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">通貨</label>
-                <select value={currency} onChange={e => setCurrency(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                  {currencies.map(c => <option key={c} value={c}>{c} ({sym(c)})</option>)}
-                </select>
+              <div className="text-right">
+                <p className="text-emerald-400 text-xs">日本価格との差額</p>
+                <p className="text-emerald-300 text-xl font-bold mt-1">-¥{savings.toLocaleString()}</p>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
-        <button onClick={handleSearch} disabled={loading}
-          className="w-full bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white font-bold py-4 rounded-xl transition-all shadow-lg mb-6 text-lg">
-          {loading ? (
-            <span className="flex items-center justify-center gap-2">
-              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              {statusMsg} ({elapsed}秒)
-            </span>
-          ) : '価格を検索'}
-        </button>
-
-        {error && <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 mb-6">{error}</div>}
-
-        {hotels.length > 0 && (
-          <div className="space-y-6">
-            {hotels.map((h) => (
-              <div key={h.title || h.address} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                <div className="flex flex-col md:flex-row">
-                  {h.thumbnail && (
-                    <div className="md:w-56 h-44 md:h-auto flex-shrink-0">
-                      <img src={h.thumbnail} alt={h.title} className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                  <div className="flex-1 p-5">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <h3 className="font-bold text-lg">{h.title}</h3>
-                      {h.rating > 0 && (
-                        <div className="flex-shrink-0 text-center">
-                          <div className={`text-white text-sm font-bold px-2.5 py-1 rounded-lg ${
-                            h.rating >= 4.5 ? 'bg-green-600' : h.rating >= 4 ? 'bg-blue-800' : 'bg-gray-500'
-                          }`}>{h.rating}</div>
-                          <p className="text-[10px] text-gray-400 mt-0.5">{h.reviews?.toLocaleString()}件</p>
-                        </div>
+        {results.length > 0 && (
+          <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+            <div className="px-5 py-3 border-b border-slate-700">
+              <h2 className="text-white font-bold text-sm">国別価格ランキング</h2>
+              <p className="text-slate-400 text-xs mt-0.5">{priced.length}カ国で価格を取得 / {results.length - priced.length}カ国は取得失敗</p>
+            </div>
+            <div className="divide-y divide-slate-700/50">
+              {results.map((r, i) => (
+                <div key={r.country} className={`flex items-center justify-between px-5 py-3 ${i === 0 && r.jpy_price ? 'bg-emerald-900/20' : ''}`}>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-xs w-6 text-center font-bold ${r.jpy_price ? (i === 0 ? 'text-emerald-400' : 'text-slate-500') : 'text-slate-600'}`}>
+                      {r.jpy_price ? i + 1 : '-'}
+                    </span>
+                    <span className="text-lg">{FLAG[r.country] || '🏳️'}</span>
+                    <div>
+                      <span className="text-white text-sm">{r.country_name}</span>
+                      {r.original_price && r.currency && r.currency !== 'JPY' && (
+                        <span className="text-slate-500 text-xs ml-2">
+                          {CURR_SYM[r.currency] || r.currency}{r.original_price.toLocaleString()}
+                        </span>
                       )}
                     </div>
-                    {h.address && <p className="text-xs text-gray-500 mb-3">{h.address}</p>}
-
-                    {h.prices && h.prices.length > 0 ? (
-                      <div className="space-y-2">
-                        <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">予約サイト別 価格比較</p>
-                        {h.prices.map((p, j) => (
-                          <a key={p.provider || j} href={p.link} target="_blank" rel="noopener noreferrer"
-                            className={`flex items-center justify-between px-4 py-2.5 rounded-lg border transition-all hover:shadow-md ${
-                              j === 0 ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-100'
-                            }`}>
-                            <div className="flex items-center gap-2">
-                              {j === 0 && <span className="bg-green-500 text-white text-[10px] px-1.5 py-0.5 rounded font-bold">最安</span>}
-                              <span className="text-sm font-medium">{p.provider}</span>
-                            </div>
-                            <span className={`font-bold text-lg ${j === 0 ? 'text-red-600' : 'text-gray-700'}`}>
-                              {sym(currency)}{p.price?.toLocaleString()}
-                            </span>
-                          </a>
-                        ))}
-                      </div>
+                  </div>
+                  <div className="text-right">
+                    {r.jpy_price ? (
+                      <span className={`font-bold text-sm ${i === 0 ? 'text-emerald-400' : 'text-white'}`}>
+                        ¥{r.jpy_price.toLocaleString()}
+                      </span>
                     ) : (
-                      <p className="text-sm text-gray-400">価格情報なし</p>
+                      <span className="text-slate-600 text-xs">{r.error || '—'}</span>
                     )}
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!loading && results.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-slate-500 text-sm">ホテル名を入力して検索してください</p>
+            <p className="text-slate-600 text-xs mt-2">各国のGoogleから価格を取得し、日本円に換算して比較します</p>
           </div>
         )}
       </main>
-
-      <footer className="text-center py-10 text-gray-400 text-xs">
-        &copy; 2026 Hotel Price Scanner - Google Hotels経由で価格比較
-      </footer>
     </div>
   );
 }
