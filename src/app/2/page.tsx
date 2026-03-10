@@ -24,8 +24,8 @@ interface Hotel {
 
 export default function AgodaPricePage() {
   const [hotelName, setHotelName] = useState('AYANA Resort Bali');
-  const [checkin, setCheckin] = useState('2026-05-10');
-  const [checkout, setCheckout] = useState('2026-05-11');
+  const [checkin, setCheckin] = useState(() => new Date().toISOString().slice(0, 10));
+  const [checkout, setCheckout] = useState(() => new Date(Date.now() + 86400000).toISOString().slice(0, 10));
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -113,11 +113,11 @@ export default function AgodaPricePage() {
         {hotels.length > 0 && (
           <div className="space-y-4">
             <p className="text-sm text-gray-500">{hotels.length}件のホテルが見つかりました</p>
-            {hotels.map((h, i) => {
-              const priceIDR = h.priceText ? parseInt(h.priceText.replace(/[^\d]/g, ''), 10) : 0;
+            {hotels.map((h) => {
+              const priceIDR = typeof h.priceText === 'string' ? parseInt(h.priceText.replace(/[^\d]/g, ''), 10) || 0 : 0;
               const priceJPY = priceIDR > 0 ? Math.round(priceIDR / 107) : 0;
               return (
-                <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                <div key={str(h.hotelName) || str(h.agodaUrl)} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                   <div className="flex flex-col sm:flex-row">
                     {h.imageUrl && (
                       <div className="sm:w-48 h-36 sm:h-auto flex-shrink-0">

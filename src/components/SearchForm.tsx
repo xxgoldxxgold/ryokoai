@@ -158,7 +158,7 @@ export default function SearchForm({ initialHotel, initialCheckin, initialChecko
     if (selectedKeyRef.current) {
       params.set('name', hotel.trim());
     }
-    router.push(`/search?${params.toString()}`);
+    window.location.href = `/search?${params.toString()}`;
     selectedKeyRef.current = null;
   }
 

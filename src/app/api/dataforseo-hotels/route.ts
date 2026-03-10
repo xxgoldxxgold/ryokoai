@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/api-auth';
+import { validateDates, validateAdults } from '@/lib/validate';
 
 const DATAFORSEO_AUTH = process.env.DATAFORSEO_AUTH || '';
 
@@ -122,7 +124,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing q, checkin, checkout' }, { status: 400 });
   }
 
-  const cacheKey = hotelName.toLowerCase().trim();
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
+  const dateErr = validateDates(checkin, checkout);
+  if (dateErr) return dateErr;
+
+  const adultsNum = validateAdults(adults);
+
+  const cacheKey = `${hotelName.toLowerCase().trim()}|${checkin}|${checkout}|${adultsNum}`;
   const cached = idCache.get(cacheKey);
   const hasCached = cached && Date.now() < cached.expires;
 
@@ -158,7 +168,7 @@ export async function GET(req: NextRequest) {
               language_code: langCode,
               check_in: checkin,
               check_out: checkout,
-              adults: parseInt(adults),
+              adults: adultsNum,
               currency: 'JPY',
             }]),
           });
@@ -209,7 +219,7 @@ export async function GET(req: NextRequest) {
         hotel_identifier: hotelId,
         check_in: checkin,
         check_out: checkout,
-        adults: parseInt(adults),
+        adults: adultsNum,
         currency: 'JPY',
         language_code: 'en',
         location_code: entry?.locationCode || 2840,
@@ -251,8 +261,7 @@ export async function GET(req: NextRequest) {
       hotel_name: hotelTitle,
       prices: deduped,
     });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ phase: 'prices', error: message, prices: [] }, { status: 200 });
+  } catch {
+    return NextResponse.json({ phase: 'prices', error: 'Failed to fetch prices', prices: [] }, { status: 200 });
   }
 }

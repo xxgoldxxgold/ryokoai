@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/api-auth';
+import { validateDates } from '@/lib/validate';
 
 const AMADEUS_KEY = process.env.AMADEUS_KEY || '';
 const AMADEUS_SECRET = process.env.AMADEUS_SECRET || '';
-const AMADEUS_BASE = 'https://test.api.amadeus.com';
+const AMADEUS_BASE = process.env.AMADEUS_BASE_URL || 'https://api.amadeus.com';
 
 let cachedToken: { token: string; expires: number } | null = null;
 
@@ -75,6 +77,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing hotelName, checkin, checkout' }, { status: 400 });
   }
 
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
+  const dateErr = validateDates(checkin, checkout);
+  if (dateErr) return dateErr;
+
   try {
     const token = await getToken();
 
@@ -140,8 +148,7 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({ offers });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ error: message, offers: [] }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: 'Failed to fetch offers', offers: [] }, { status: 500 });
   }
 }

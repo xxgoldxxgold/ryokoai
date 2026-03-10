@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/api-auth';
+import { validateDates, validateAdults } from '@/lib/validate';
 
-const SERPAPI_KEY = process.env.SERPAPI_KEY || 'cb66256e697b8d0950261d58b89144171bc38edc6e058bfae78fbf4b1404e126';
+const SERPAPI_KEY = process.env.SERPAPI_KEY || '';
 
 interface SerpPrice {
   source: string;
@@ -27,16 +29,24 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing q, checkin, checkout' }, { status: 400 });
   }
 
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
+  const dateErr = validateDates(checkin, checkout);
+  if (dateErr) return dateErr;
+
+  const adultsNum = validateAdults(adults);
+
   try {
     const url = new URL('https://serpapi.com/search');
     url.searchParams.set('engine', 'google_hotels');
     url.searchParams.set('q', query);
     url.searchParams.set('check_in_date', checkin);
     url.searchParams.set('check_out_date', checkout);
-    url.searchParams.set('adults', adults);
+    url.searchParams.set('adults', String(adultsNum));
     url.searchParams.set('currency', currency);
-    url.searchParams.set('gl', 'us');
-    url.searchParams.set('hl', 'en');
+    url.searchParams.set('gl', 'jp');
+    url.searchParams.set('hl', 'ja');
     url.searchParams.set('api_key', SERPAPI_KEY);
 
     const controller = new AbortController();
@@ -73,7 +83,7 @@ export async function GET(req: NextRequest) {
           detailUrl.searchParams.set('q', query);
           detailUrl.searchParams.set('check_in_date', checkin);
           detailUrl.searchParams.set('check_out_date', checkout);
-          detailUrl.searchParams.set('adults', adults);
+          detailUrl.searchParams.set('adults', String(adultsNum));
           detailUrl.searchParams.set('currency', currency);
           detailUrl.searchParams.set('gl', 'us');
           detailUrl.searchParams.set('hl', 'en');
@@ -135,8 +145,7 @@ export async function GET(req: NextRequest) {
       hotel_name: hotelName,
       prices,
     });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ error: message, prices: [] }, { status: 200 });
+  } catch {
+    return NextResponse.json({ error: 'Failed to fetch prices', prices: [] }, { status: 200 });
   }
 }

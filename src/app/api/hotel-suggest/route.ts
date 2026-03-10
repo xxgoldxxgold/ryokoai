@@ -104,6 +104,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Return debug info when no results
-  return NextResponse.json({ debug: errors, query, englishQuery: toEnglish(query) });
+  return NextResponse.json([]);
 }

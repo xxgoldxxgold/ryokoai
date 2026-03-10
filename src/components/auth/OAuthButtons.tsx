@@ -5,9 +5,11 @@ import { useState } from 'react'
 
 export default function OAuthButtons() {
   const [loading, setLoading] = useState<string | null>(null)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   const handleOAuth = async (provider: 'google' | 'apple') => {
     setLoading(provider)
+    setErrorMsg(null)
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
@@ -16,13 +18,16 @@ export default function OAuthButtons() {
       },
     })
     if (error) {
-      console.error(`${provider} OAuth error:`, error)
+      setErrorMsg('ログインに失敗しました。もう一度お試しください。')
       setLoading(null)
     }
   }
 
   return (
     <div className="flex flex-col gap-3">
+      {errorMsg && (
+        <p className="text-red-600 text-sm text-center bg-red-50 rounded-lg px-3 py-2">{errorMsg}</p>
+      )}
       <button
         onClick={() => handleOAuth('google')}
         disabled={loading !== null}

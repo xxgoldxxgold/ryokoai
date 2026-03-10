@@ -131,7 +131,7 @@ function SpeedPromoBanner() {
         <div className="flex-1 min-w-0">
           <p className="text-blue-900 font-bold text-sm">ログインで高速検索</p>
           <p className="text-blue-700 text-xs mt-0.5">
-            無料ログインで3倍速く、より多くの予約サイト価格を比較できます
+            無料ログインで爆速検索、より多くの予約サイト価格を比較できます
           </p>
         </div>
         <svg className="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -158,6 +158,7 @@ function SearchResults() {
   const [selectedName, setSelectedName] = useState<string | null>(hotelDisplayName);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [showEditForm, setShowEditForm] = useState(false);
 
   useEffect(() => {
     if (directKey || !hotel) return;
@@ -218,8 +219,6 @@ function SearchResults() {
 
   const nights = daysBetween(checkin, checkout);
   const displayName = selectedName || hotel;
-
-  const [showEditForm, setShowEditForm] = useState(false);
 
   return (
     <div className="px-4 py-8 max-w-2xl mx-auto space-y-6">
@@ -312,6 +311,26 @@ function SearchResults() {
         ) : (
           <>
             <SpeedPromoBanner />
+
+            <Link
+              href="/login"
+              className="block bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 hover:bg-amber-100/50 transition-colors shadow-sm"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-amber-800 font-bold text-sm">ログインして更に激安価格をゲット！！</p>
+                  <p className="text-amber-600 text-xs mt-0.5">マジで安くなる。これを知らない人が意外に多い。</p>
+                </div>
+                <svg className="w-5 h-5 text-amber-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </Link>
 
             <DataForSeoPricePanel
               hotelName={selectedName || hotel}

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/api-auth';
 
 const APIFY_TOKEN = process.env.APIFY_TOKEN || '';
 const ACTOR_ID = 'martin.forejt~google-hotels-scraper';
@@ -6,6 +7,9 @@ const ACTOR_ID = 'martin.forejt~google-hotels-scraper';
 // POST: start a run
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+
     const { action, runId, datasetId, hotelName, checkIn, checkOut, adults, currency } = await req.json();
 
     // Action: check status
@@ -37,8 +41,8 @@ export async function POST(req: NextRequest) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           searchQuery: hotelName,
-          checkInDate: checkIn || '2026-05-10',
-          checkOutDate: checkOut || '2026-05-11',
+          checkInDate: checkIn || new Date().toISOString().slice(0, 10),
+          checkOutDate: checkOut || new Date(Date.now() + 86400000).toISOString().slice(0, 10),
           numberOfAdults: adults || 2,
           numberOfChildren: 0,
           currencyCode: currency || 'JPY',
@@ -56,8 +60,7 @@ export async function POST(req: NextRequest) {
       runId: runData.data.id,
       datasetId: runData.data.defaultDatasetId,
     });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }

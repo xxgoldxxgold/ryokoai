@@ -10,5 +10,8 @@ export const config = {
     '/login',
     '/signup',
     '/auth/:path*',
+    '/search',
+    '/1',
+    '/2',
   ],
 }

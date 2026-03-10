@@ -16,8 +16,8 @@ async function api(body: Record<string, unknown>) {
 
 export default function HotelScrapePage() {
   const [hotelName, setHotelName] = useState('AYANA Resort Bali');
-  const [checkin, setCheckin] = useState('2026-05-10');
-  const [checkout, setCheckout] = useState('2026-05-11');
+  const [checkin, setCheckin] = useState(() => new Date().toISOString().slice(0, 10));
+  const [checkout, setCheckout] = useState(() => new Date(Date.now() + 86400000).toISOString().slice(0, 10));
   const [adults, setAdults] = useState(2);
   const [currency, setCurrency] = useState('JPY');
   const [hotels, setHotels] = useState<Hotel[]>([]);
@@ -133,8 +133,8 @@ export default function HotelScrapePage() {
 
         {hotels.length > 0 && (
           <div className="space-y-6">
-            {hotels.map((h, i) => (
-              <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            {hotels.map((h) => (
+              <div key={h.title || h.address} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                 <div className="flex flex-col md:flex-row">
                   {h.thumbnail && (
                     <div className="md:w-56 h-44 md:h-auto flex-shrink-0">
@@ -159,7 +159,7 @@ export default function HotelScrapePage() {
                       <div className="space-y-2">
                         <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">予約サイト別 価格比較</p>
                         {h.prices.map((p, j) => (
-                          <a key={j} href={p.link} target="_blank" rel="noopener noreferrer"
+                          <a key={p.provider || j} href={p.link} target="_blank" rel="noopener noreferrer"
                             className={`flex items-center justify-between px-4 py-2.5 rounded-lg border transition-all hover:shadow-md ${
                               j === 0 ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-100'
                             }`}>

@@ -90,7 +90,7 @@ export default function AmadeusPricePanel({ hotelName, checkin, checkout, adults
               </div>
               <div className="divide-y divide-gray-50">
                 {hotel.offers.sort((a, b) => a.price - b.price).map((offer, i) => (
-                  <div key={i} className="flex items-center justify-between px-5 py-3.5">
+                  <div key={`${offer.roomType}-${offer.price}-${i}`} className="flex items-center justify-between px-5 py-3.5">
                     <div className="flex-1 min-w-0">
                       <span className="text-gray-700 text-sm">{offer.roomType}</span>
                       {offer.bedType && (

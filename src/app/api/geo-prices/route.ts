@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/api-auth';
+import { validateDates } from '@/lib/validate';
 
 const GEO_API_URL = process.env.GEO_PRICE_API_URL || 'https://denwa2.com/geo-prices';
-const GEO_API_KEY = process.env.GEO_PRICE_API_KEY || 'ryokoai_geo_2026';
+const GEO_API_KEY = process.env.GEO_PRICE_API_KEY || '';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -14,6 +16,12 @@ export async function GET(req: NextRequest) {
   if (!hotel || !checkin || !checkout) {
     return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
   }
+
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
+  const dateErr = validateDates(checkin, checkout);
+  if (dateErr) return dateErr;
 
   const params = new URLSearchParams({ hotel, checkin, checkout, adults, key: GEO_API_KEY });
   const endpoint = action === 'start' ? 'start' : 'status';

@@ -57,7 +57,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
   const serpRef = useRef<PriceEntry[]>([]);
   const prevParamsRef = useRef('');
 
-  const paramsKey = `${hotelName}|${checkin}|${checkout}|${adults}`;
+  const paramsKey = `${hotelName}|${checkin}|${checkout}|${adults}|${rooms}`;
   const cacheKey = `ryoko_prices_${paramsKey}`;
 
   useEffect(() => {
@@ -86,9 +86,12 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
     setDfsDone(false);
     serpRef.current = [];
 
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     // Fetch Xotelo (fast, uses TripAdvisor hotel_key) + SerpAPI in parallel
     const xoteloPromise = hotelKey
-      ? fetch(`/api/hotel-rates?hotel_key=${encodeURIComponent(hotelKey)}&checkin=${checkin}&checkout=${checkout}&currency=JPY&adults=${adults}`)
+      ? fetch(`/api/hotel-rates?hotel_key=${encodeURIComponent(hotelKey)}&checkin=${checkin}&checkout=${checkout}&currency=JPY&adults=${adults}`, { signal })
           .then(r => r.json())
           .then(data => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -101,7 +104,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
           .catch(() => [] as PriceEntry[])
       : Promise.resolve([] as PriceEntry[]);
 
-    const serpPromise = fetch(`https://vpn.ryokoai.com/hotel-serpapi.php?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}&currency=JPY`)
+    const serpPromise = fetch(`https://vpn.ryokoai.com/hotel-serpapi.php?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}&currency=JPY`, { signal })
       .then(r => r.json())
       .then(data => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -135,7 +138,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
       .finally(() => setSerpDone(true));
 
     // Fetch DataForSEO (slow) — merge into existing on arrival
-    fetch(`https://vpn.ryokoai.com/hotel-prices.php?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}`)
+    fetch(`https://vpn.ryokoai.com/hotel-prices.php?q=${encodeURIComponent(hotelName)}&checkin=${checkin}&checkout=${checkout}&adults=${adults}&phase=all`, { signal })
       .then(r => r.json())
       .then(data => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -170,6 +173,8 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
       })
       .catch(() => {})
       .finally(() => setDfsDone(true));
+
+    return () => controller.abort();
   }, [paramsKey, hotelName, checkin, checkout, adults]);
 
   const best = prices.length > 0 ? prices[0] : null;
@@ -185,7 +190,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
           <h3 className="text-gray-900 font-bold text-base">予約サイト最安ランキング</h3>
           {!dfsDone && (
             <span className="flex items-center gap-1 text-[10px] text-blue-700">
-              <span className="w-2.5 h-2.5 border border-blue-1000 border-t-blue-700 rounded-full animate-spin" />
+              <span className="w-2.5 h-2.5 border border-blue-200 border-t-blue-700 rounded-full animate-spin" />
               追加取得中
             </span>
           )}

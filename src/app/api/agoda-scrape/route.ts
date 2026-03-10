@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/api-auth';
 
 const VPS_URL = process.env.AGODA_SCRAPE_URL || '';
 const API_KEY = process.env.AGODA_SCRAPE_KEY || '';
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+
     const { hotelName, checkIn, checkOut, country } = await req.json();
 
     if (!hotelName) {
@@ -44,7 +48,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ error: 'リトライ失敗' }, { status: 500 });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }

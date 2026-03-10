@@ -38,8 +38,7 @@ export async function GET(req: NextRequest) {
       checkout: data.result?.chk_out,
       currency: data.result?.currency,
     });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ error: message, rates: [] }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: 'Failed to fetch rates', rates: [] }, { status: 500 });
   }
 }
