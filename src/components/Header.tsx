@@ -203,14 +203,14 @@ export default function Header() {
             Ryoko<span className="text-blue-700">AI</span>
           </Link>
           <nav className="flex items-center gap-4 text-sm">
-            <Link href="/guide" className="text-gray-900 hover:text-gray-700 transition-colors">
+            <Link href="/guide" className="text-gray-900 hover:text-gray-700 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
               説明
             </Link>
             {!loading && (
               user ? (
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-2 text-gray-400 hover:text-gray-700 transition-colors"
+                  className="flex items-center gap-2 text-gray-400 hover:text-gray-700 transition-colors min-h-[44px] min-w-[44px]"
                 >
                   <div className="w-7 h-7 rounded-full bg-blue-200 flex items-center justify-center">
                     <span className="text-blue-800 text-xs font-bold">
@@ -222,7 +222,7 @@ export default function Header() {
               ) : (
                 <button
                   onClick={() => setShowAuth(true)}
-                  className="px-4 py-1.5 rounded-full border-2 border-blue-700 bg-blue-100/50 text-blue-800 font-bold text-sm hover:bg-blue-200 active:translate-y-0 transition-all"
+                  className="px-4 py-1.5 min-h-[44px] rounded-full border-2 border-blue-700 bg-blue-100/50 text-blue-800 font-bold text-sm hover:bg-blue-200 active:translate-y-0 transition-all"
                 >
                   登録 / ログイン
                 </button>

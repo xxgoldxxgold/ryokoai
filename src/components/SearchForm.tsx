@@ -224,7 +224,7 @@ export default function SearchForm({ initialHotel, initialCheckin, initialChecko
             }}
             min={today || undefined}
             required
-            className="w-full px-1 py-2.5 rounded-lg bg-white border border-gray-200 text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-700/40 focus:border-blue-600 shadow-sm"
+            className="w-full px-1 py-2.5 min-h-[44px] rounded-lg bg-white border border-gray-200 text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-700/40 focus:border-blue-600 shadow-sm"
           />
         </div>
         <div className="min-w-0">
@@ -237,7 +237,7 @@ export default function SearchForm({ initialHotel, initialCheckin, initialChecko
             onChange={(e) => setCheckout(e.target.value)}
             min={checkin || today || undefined}
             required
-            className="w-full px-1 py-2.5 rounded-lg bg-white border border-gray-200 text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-700/40 focus:border-blue-600 shadow-sm"
+            className="w-full px-1 py-2.5 min-h-[44px] rounded-lg bg-white border border-gray-200 text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-700/40 focus:border-blue-600 shadow-sm"
           />
         </div>
       </div>
