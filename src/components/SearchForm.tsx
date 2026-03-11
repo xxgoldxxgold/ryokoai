@@ -175,7 +175,7 @@ export default function SearchForm({ initialHotel, initialCheckin, initialChecko
           aria-label="ホテル名"
           required
           autoComplete="off"
-          className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 placeholder:text-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700/40 focus:border-blue-600 shadow-sm"
+          className="w-full px-4 py-3 min-h-[44px] rounded-xl bg-white border border-gray-200 text-gray-900 placeholder:text-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700/40 focus:border-blue-600 shadow-sm"
         />
         {isLoading && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -250,7 +250,7 @@ export default function SearchForm({ initialHotel, initialCheckin, initialChecko
             value={adults}
             aria-label="大人の人数"
             onChange={(e) => setAdults(Number(e.target.value))}
-            className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700/40 focus:border-blue-600 shadow-sm"
+            className="w-full px-4 py-3 min-h-[44px] rounded-xl bg-white border border-gray-200 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700/40 focus:border-blue-600 shadow-sm"
           >
             {[1, 2, 3, 4, 5, 6].map((n) => (
               <option key={n} value={n}>{n}名</option>
@@ -264,7 +264,7 @@ export default function SearchForm({ initialHotel, initialCheckin, initialChecko
             value={rooms}
             aria-label="部屋数"
             onChange={(e) => setRooms(Number(e.target.value))}
-            className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700/40 focus:border-blue-600 shadow-sm"
+            className="w-full px-4 py-3 min-h-[44px] rounded-xl bg-white border border-gray-200 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700/40 focus:border-blue-600 shadow-sm"
           >
             {[1, 2, 3, 4].map((n) => (
               <option key={n} value={n}>{n}室</option>
