@@ -60,7 +60,7 @@ export default function GuidePage() {
               <span className="text-amber-600 font-semibold">¥12,749 (25%)</span>
             </div>
           </div>
-          <p className="text-gray-400 text-xs">
+          <p className="text-gray-500 text-xs">
             ※ 2026年3月時点のXotelo API取得データ
           </p>
         </div>
@@ -109,15 +109,15 @@ export default function GuidePage() {
         <div className="bg-amber-50 border border-amber-100 rounded-xl p-5 space-y-3 text-sm leading-relaxed">
           <div className="flex gap-2">
             <span className="shrink-0">&#x2705;</span>
-            <p className="text-gray-600"><strong className="text-gray-900">ホテル予約は問題なし</strong> &#8212; 主要予約サイトはVPN使用を明示的に禁止していません</p>
+            <p className="text-gray-600"><strong className="text-gray-900">ホテル予約は問題なし</strong> &#8212; 主要予約サイトの利用規約ではVPN使用は制限されていません</p>
           </div>
           <div className="flex gap-2">
             <span className="shrink-0">&#x26A0;&#xFE0F;</span>
-            <p className="text-gray-600"><strong className="text-gray-900">航空券は注意が必要</strong> &#8212; 予約キャンセルやアカウントBANのリスクあり</p>
+            <p className="text-gray-600"><strong className="text-gray-900">航空券は注意が必要</strong> &#8212; 航空会社によっては予約キャンセルやアカウント停止の可能性があります</p>
           </div>
           <div className="flex gap-2">
             <span className="shrink-0">&#x1F4B3;</span>
-            <p className="text-gray-600"><strong className="text-gray-900">クレジットカード</strong> &#8212; 海外通貨での決済になる場合、カード会社の海外利用設定が必要なことがあります</p>
+            <p className="text-gray-600"><strong className="text-gray-900">クレジットカード</strong> &#8212; 海外通貨での決済になる場合があります。事前にカード会社の海外利用設定をご確認ください</p>
           </div>
         </div>
       </section>
