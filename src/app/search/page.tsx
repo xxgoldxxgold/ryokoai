@@ -160,16 +160,6 @@ function SearchResults() {
   const [searchError, setSearchError] = useState<string | null>(null);
   const [showEditForm, setShowEditForm] = useState(false);
 
-  // Clear stale price caches when search params change
-  useEffect(() => {
-    try {
-      const keys = Object.keys(sessionStorage);
-      for (const k of keys) {
-        if (k.startsWith('ryoko_prices_')) sessionStorage.removeItem(k);
-      }
-    } catch { /* ignore */ }
-  }, [hotel, checkin, checkout, adults, rooms]);
-
   useEffect(() => {
     if (directKey || !hotel) return;
     const controller = new AbortController();

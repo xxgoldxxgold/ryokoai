@@ -83,7 +83,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
             const raw = (data.rates || []).filter((r: any) => r.rate > 0);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return raw.map((r: any) => ({
-              source: r.name || r.code, link: null, rate: r.rate, rateWithTax: r.rate + (r.tax || 0), from: 'serpapi' as const,
+              source: r.name || r.code, link: null, rate: r.rate, rateWithTax: r.rate + (r.tax || 0), from: 'both' as const,
             })) as PriceEntry[];
           })
           .catch(() => [] as PriceEntry[])
