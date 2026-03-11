@@ -88,7 +88,7 @@ function AuthModal({ onClose }: { onClose: () => void }) {
         className="relative bg-gray-50 rounded-2xl max-w-[440px] w-full p-7 shadow-2xl animate-[modalIn_0.2s_ease-out]"
         onClick={(e) => e.stopPropagation()}
       >
-        <button onClick={onClose} className="absolute top-3 right-4 text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+        <button onClick={onClose} aria-label="閉じる" className="absolute top-3 right-4 text-gray-400 hover:text-gray-700 text-2xl leading-none min-w-[44px] min-h-[44px] flex items-center justify-center">&times;</button>
 
         {/* Social OAuth */}
         <div className="mb-5">
@@ -147,7 +147,8 @@ function AuthModal({ onClose }: { onClose: () => void }) {
             <input
               type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
               placeholder="メールアドレス"
-              className="flex-1 text-sm text-gray-900 placeholder-gray-400 outline-none bg-transparent"
+              aria-label="メールアドレス"
+              className="flex-1 text-sm text-gray-900 placeholder-gray-500 outline-none bg-transparent"
             />
           </div>
           <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-4 py-3">
@@ -157,7 +158,8 @@ function AuthModal({ onClose }: { onClose: () => void }) {
             <input
               type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
               placeholder={tab === 'signup' ? 'パスワード（6文字以上）' : 'パスワード'}
-              className="flex-1 text-sm text-gray-900 placeholder-gray-400 outline-none bg-transparent"
+              aria-label="パスワード"
+              className="flex-1 text-sm text-gray-900 placeholder-gray-500 outline-none bg-transparent"
             />
           </div>
 

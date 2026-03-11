@@ -171,10 +171,11 @@ export default function SearchForm({ initialHotel, initialCheckin, initialChecko
           onChange={(e) => handleInputChange(e.target.value)}
           onFocus={() => { if (suggestions.length > 0 && !skipFetchRef.current) setShowSuggestions(true); }}
           onKeyDown={handleKeyDown}
-          placeholder="ホテル名"
+          placeholder="ホテル名を入力（例: ヒルトン東京）"
+          aria-label="ホテル名"
           required
           autoComplete="off"
-          className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700/40 focus:border-blue-600 shadow-sm"
+          className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 placeholder:text-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700/40 focus:border-blue-600 shadow-sm"
         />
         {isLoading && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -206,10 +207,12 @@ export default function SearchForm({ initialHotel, initialCheckin, initialChecko
 
       <div className="grid grid-cols-2 gap-3">
         <div className="min-w-0">
-          <label className="block text-xs text-gray-500 mb-1">チェックイン</label>
+          <label htmlFor="checkin" className="block text-xs text-gray-500 mb-1">チェックイン</label>
           <input
+            id="checkin"
             type="date"
             value={checkin}
+            aria-label="チェックイン日"
             onChange={(e) => {
               const val = e.target.value;
               setCheckin(val);
@@ -225,10 +228,12 @@ export default function SearchForm({ initialHotel, initialCheckin, initialChecko
           />
         </div>
         <div className="min-w-0">
-          <label className="block text-xs text-gray-500 mb-1">チェックアウト</label>
+          <label htmlFor="checkout" className="block text-xs text-gray-500 mb-1">チェックアウト</label>
           <input
+            id="checkout"
             type="date"
             value={checkout}
+            aria-label="チェックアウト日"
             onChange={(e) => setCheckout(e.target.value)}
             min={checkin || today || undefined}
             required
@@ -239,9 +244,11 @@ export default function SearchForm({ initialHotel, initialCheckin, initialChecko
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-gray-500 mb-1">大人</label>
+          <label htmlFor="adults" className="block text-xs text-gray-500 mb-1">大人</label>
           <select
+            id="adults"
             value={adults}
+            aria-label="大人の人数"
             onChange={(e) => setAdults(Number(e.target.value))}
             className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700/40 focus:border-blue-600 shadow-sm"
           >
@@ -251,9 +258,11 @@ export default function SearchForm({ initialHotel, initialCheckin, initialChecko
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">部屋数</label>
+          <label htmlFor="rooms" className="block text-xs text-gray-500 mb-1">部屋数</label>
           <select
+            id="rooms"
             value={rooms}
+            aria-label="部屋数"
             onChange={(e) => setRooms(Number(e.target.value))}
             className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700/40 focus:border-blue-600 shadow-sm"
           >
