@@ -64,7 +64,7 @@ export default function LoginForm() {
           <input
             id="email" type="email" required value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 block w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-700"
+            className="mt-1 block w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 placeholder-gray-500 focus:border-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-700"
             placeholder="you@example.com"
           />
         </div>
@@ -74,7 +74,7 @@ export default function LoginForm() {
           <input
             id="password" type="password" required value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-700"
+            className="mt-1 block w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 placeholder-gray-500 focus:border-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-700"
             placeholder="パスワード"
           />
         </div>
