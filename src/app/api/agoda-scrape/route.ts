@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ error: 'リトライ失敗' }, { status: 500 });
-  } catch (error: unknown) {
+  } catch {
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }

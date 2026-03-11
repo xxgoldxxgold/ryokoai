@@ -4,7 +4,24 @@ import { validateDates, validateAdults } from '@/lib/validate';
 
 const DATAFORSEO_AUTH = process.env.DATAFORSEO_AUTH || '';
 
+const ID_CACHE_MAX = 200;
 const idCache = new Map<string, { id: string; title: string; basePrice: number; locationCode: number; expires: number }>();
+
+function idCacheSet(key: string, value: { id: string; title: string; basePrice: number; locationCode: number; expires: number }) {
+  // Evict expired entries when cache is full
+  if (idCache.size >= ID_CACHE_MAX) {
+    const now = Date.now();
+    for (const [k, v] of idCache) {
+      if (v.expires < now) idCache.delete(k);
+    }
+    // If still full, delete oldest entry
+    if (idCache.size >= ID_CACHE_MAX) {
+      const firstKey = idCache.keys().next().value;
+      if (firstKey) idCache.delete(firstKey);
+    }
+  }
+  idCache.set(key, value);
+}
 
 interface DfsPrice {
   title: string;
@@ -180,7 +197,7 @@ export async function GET(req: NextRequest) {
           const first = items[0];
           const title = first.title || hotelName;
           const basePrice = first.prices?.price || 0;
-          idCache.set(cacheKey, { id: first.hotel_identifier, title, basePrice, locationCode: locCode, expires: Date.now() + 86400000 });
+          idCacheSet(cacheKey, { id: first.hotel_identifier, title, basePrice, locationCode: locCode, expires: Date.now() + 86400000 });
           found = true;
 
           if (phase === 'search') {

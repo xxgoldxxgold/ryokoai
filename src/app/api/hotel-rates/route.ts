@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/api-auth';
+import { validateDates, validateAdults } from '@/lib/validate';
 
 const XOTELO_BASE = process.env.XOTELO_API_BASE_URL || 'https://data.xotelo.com/api';
 
@@ -14,8 +16,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing required params: hotel_key, checkin, checkout' }, { status: 400 });
   }
 
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
+  const dateErr = validateDates(checkin, checkout);
+  if (dateErr) return dateErr;
+
+  const adultsNum = validateAdults(adults);
+
   try {
-    const url = `${XOTELO_BASE}/rates?hotel_key=${encodeURIComponent(hotelKey)}&chk_in=${checkin}&chk_out=${checkout}&currency=${currency}&adults=${adults}`;
+    const url = `${XOTELO_BASE}/rates?hotel_key=${encodeURIComponent(hotelKey)}&chk_in=${checkin}&chk_out=${checkout}&currency=${currency}&adults=${adultsNum}`;
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);
