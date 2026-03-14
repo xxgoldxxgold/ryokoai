@@ -77,7 +77,8 @@ export default function DataForSeoPricePanel({ hotelName, checkin, checkout, adu
       });
 
     return () => controller.abort();
-  }, [paramsKey, hotelName, checkin, checkout, adults, base]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paramsKey]);
 
   const [expanded, setExpanded] = useState(false);
 

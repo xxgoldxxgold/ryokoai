@@ -1,18 +1,26 @@
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import OAuthButtons from './OAuthButtons'
 
 export default function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [showResetHint, setShowResetHint] = useState(false)
+
+  useEffect(() => {
+    const callbackError = searchParams.get('error')
+    if (callbackError === 'auth_callback_error') {
+      setError('認証に失敗しました。もう一度お試しください。')
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

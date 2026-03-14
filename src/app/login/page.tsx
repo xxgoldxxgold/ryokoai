@@ -1,5 +1,6 @@
 import LoginForm from '@/components/auth/LoginForm'
 import Link from 'next/link'
+import { Suspense } from 'react'
 
 export const metadata = {
   title: 'ログイン | RyokoAI',
@@ -13,7 +14,9 @@ export default function LoginPage() {
         <img src="/logo.png" alt="RyokoAI" style={{ height: '0.8em', width: 'auto' }} />
         Ryoko<span className="text-blue-700">AI</span>
       </Link>
-      <LoginForm />
+      <Suspense fallback={<div className="text-gray-400 text-sm">読み込み中...</div>}>
+        <LoginForm />
+      </Suspense>
     </div>
   )
 }

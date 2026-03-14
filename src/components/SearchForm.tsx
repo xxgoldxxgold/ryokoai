@@ -138,6 +138,7 @@ export default function SearchForm({ initialHotel, initialCheckin, initialChecko
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!hotel.trim() || !checkin || !checkout) return;
+    if (checkout <= checkin) return;
     setShowSuggestions(false);
 
     // If hotel name unchanged from initial, just re-search with same name (no suggestion needed)

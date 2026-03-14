@@ -11,6 +11,7 @@ export const config = {
     '/signup',
     '/auth/:path*',
     '/search',
+    '/reset-password',
     '/1',
     '/2',
   ],

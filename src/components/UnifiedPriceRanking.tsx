@@ -57,7 +57,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
   const serpRef = useRef<PriceEntry[]>([]);
   const prevParamsRef = useRef('');
 
-  const paramsKey = `${hotelName}|${checkin}|${checkout}|${adults}|${rooms}`;
+  const paramsKey = `${hotelName}|${hotelKey}|${checkin}|${checkout}|${adults}|${rooms}`;
 
   useEffect(() => {
     if (!hotelName || !checkin || !checkout) return;
@@ -161,7 +161,7 @@ export default function UnifiedPriceRanking({ hotelName, hotelKey, checkin, chec
       .finally(() => setDfsDone(true));
 
     return () => controller.abort();
-  }, [paramsKey, hotelName, checkin, checkout, adults]);
+  }, [paramsKey, hotelName, checkin, checkout, adults, rooms]);
 
   const best = prices.length > 0 ? prices[0] : null;
   const worst = prices.length > 1 ? prices[prices.length - 1] : null;
