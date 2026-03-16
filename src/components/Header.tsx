@@ -182,7 +182,7 @@ function AuthModal({ onClose }: { onClose: () => void }) {
 }
 
 export default function Header() {
-  const { user, loading } = useAuth();
+  const { user, loading, profile } = useAuth();
   const router = useRouter();
   const [showAuth, setShowAuth] = useState(false);
 
@@ -193,6 +193,9 @@ export default function Header() {
   };
 
   const closeModal = useCallback(() => setShowAuth(false), []);
+
+  const displayInitial = (profile?.display_name?.[0] || user?.email?.[0] || 'U').toUpperCase();
+  const displayLabel = profile?.display_name || '';
 
   return (
     <>
@@ -212,12 +215,16 @@ export default function Header() {
                   onClick={handleLogout}
                   className="flex items-center gap-2 text-gray-400 hover:text-gray-700 transition-colors min-h-[44px] min-w-[44px]"
                 >
-                  <div className="w-7 h-7 rounded-full bg-blue-200 flex items-center justify-center">
-                    <span className="text-blue-800 text-xs font-bold">
-                      {(user.email?.[0] || 'U').toUpperCase()}
-                    </span>
-                  </div>
-                  <span className="hidden sm:inline text-xs">ログアウト</span>
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-blue-200 flex items-center justify-center">
+                      <span className="text-blue-800 text-xs font-bold">
+                        {displayInitial}
+                      </span>
+                    </div>
+                  )}
+                  <span className="hidden sm:inline text-xs">{displayLabel || 'ログアウト'}</span>
                 </button>
               ) : (
                 <button
